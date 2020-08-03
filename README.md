@@ -46,3 +46,7 @@ In a **separate terminal window**, run the following command to initiate the tes
 ```shell
 npm run truffle-test
 ```
+
+## Notes
+- wallet creation salt should include [a hash of] the signers associated with the wallet. 
+- forwarder creation salt should include [a hash of] the parentAddress.
