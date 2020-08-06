@@ -14,7 +14,10 @@ contract WalletFactory is CloneFactory {
   }
 
   function createWallet(address[] calldata allowedSigners, bytes32 salt) public {
-    address payable clone = createClone(implementationAddress, salt);
+    // include the signers in the salt so any contract deployed to a given address must have the same signers
+    bytes32 finalSalt = keccak256(abi.encodePacked(allowedSigners, salt));
+
+    address payable clone = createClone(implementationAddress, finalSalt);
     WalletSimple(clone).init(allowedSigners);
     emit WalletCreated(clone);
   }

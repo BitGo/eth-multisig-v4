@@ -14,7 +14,10 @@ contract ForwarderFactory is CloneFactory {
   }
 
   function createForwarder(address parent, bytes32 salt) public {
-    address payable clone = createClone(implementationAddress, salt);
+    // include the signers in the salt so any contract deployed to a given address must have the same signers
+    bytes32 finalSalt = keccak256(abi.encodePacked(parent, salt));
+
+    address payable clone = createClone(implementationAddress, finalSalt);
     Forwarder(clone).init(parent);
     emit ForwarderCreated(clone, parent);
   }
