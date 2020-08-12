@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.7.0;
-import "./Forwarder.sol";
-import "./ERC20Interface.sol";
+import "../Forwarder.sol";
+import "../ERC20Interface.sol";
 
 /**
  *
@@ -29,7 +29,7 @@ import "./ERC20Interface.sol";
  *
  *
  */
-contract WalletSimple {
+contract CeloWalletSimple {
   // Events
   event Deposited(address from, uint value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -142,7 +142,7 @@ contract WalletSimple {
       bytes calldata signature
   ) external onlySigner {
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked("ETHER", toAddress, value, data, expireTime, sequenceId));
+    bytes32 operationHash = keccak256(abi.encodePacked("CELO", toAddress, value, data, expireTime, sequenceId));
     
     address otherSigner = verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
 
@@ -176,7 +176,7 @@ contract WalletSimple {
       bytes calldata signature
   ) external onlySigner {
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked("ERC20", toAddress, value, tokenContractAddress, expireTime, sequenceId));
+    bytes32 operationHash = keccak256(abi.encodePacked("CELO-ERC20", toAddress, value, tokenContractAddress, expireTime, sequenceId));
     
     verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
     
