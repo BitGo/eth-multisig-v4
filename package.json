@@ -1,5 +1,5 @@
 {
-  "name": "eth-multisig-v2",
+  "name": "eth-multisig-v3",
   "version": "1.0.0",
   "description": "Ethereum multi signature wallet contract supporting single-tx execute and confirm with multiple owners",
   "author": "Ben Chan",
@@ -20,7 +20,6 @@
     "ethereum"
   ],
   "dependencies": {
-    "bip39": "2.3.0",
     "bluebird": "^3.3.5",
     "bn": "^1.0.1",
     "bn.js": "^4.11.3",
@@ -31,6 +30,7 @@
     "mocha": "^4.0.1",
     "q": "^1.5.1",
     "should": "^8.3.1",
-    "truffle": "^5.1.37"
+    "solc": "^0.7.0",
+    "truffle": "^5.1.39"
   }
 }
