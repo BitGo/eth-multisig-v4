@@ -2,7 +2,7 @@
 pragma solidity ^0.7.0;
 
 
-import "./Forwarder.sol";
+import "../Forwarder.sol";
 
 // This is a test target for a Forwarder.
 // It contains a public function with a side-effect.

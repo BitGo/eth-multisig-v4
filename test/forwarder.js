@@ -1,51 +1,97 @@
-require('should');
+require("should");
 
-const helpers = require('./helpers');
+const truffleAssert = require("truffle-assertions");
+const helpers = require("./helpers");
+const BigNumber = require("bignumber.js");
 
-const Forwarder = artifacts.require('./Forwarder.sol');
+const Forwarder = artifacts.require("./Forwarder.sol");
 
+const createForwarder = async (creator, parent) => {
+  const forwarderContract = await Forwarder.new([], { from: creator });
+  await forwarderContract.init(parent);
+  return forwarderContract;
+};
 
+const getBalanceInWei = async (address) => {
+  return new BigNumber(await web3.eth.getBalance(address));
+};
 
-contract('Forwarder', function(accounts) {
-  it('Basic forwarding test', async function () {
-    const forwardContract = await Forwarder.new([], { from: accounts[0] });
-    const account0StartEther = web3.fromWei(web3.eth.getBalance(accounts[0]), 'ether');
-    const txHash = await web3.eth.sendTransaction({ from: accounts[2], to: forwardContract.address, value: web3.toWei(2, 'ether') });
-    web3.eth.getTransaction(txHash);
-    web3.eth.getTransactionReceipt(txHash);
-    const account0EndEther = web3.fromWei(web3.eth.getBalance(accounts[0]), 'ether');
-    account0EndEther.minus(2).should.eql(account0StartEther);
+contract("Forwarder", function (accounts) {
+  it("Basic forwarding test", async function () {
+    const forwarder = await createForwarder(accounts[0], accounts[0]);
+    const startBalance = await getBalanceInWei(accounts[0]);
+    const amount = web3.utils.toWei("2", "ether");
+
+    await web3.eth.sendTransaction({
+      from: accounts[1],
+      to: forwarder.address,
+      value: amount
+    });
+
+    const endBalance = await getBalanceInWei(accounts[0]);
+    startBalance.plus(amount).eq(endBalance).should.be.true();
   });
 
-  it('Flush', async function() {
-    await web3.eth.sendTransaction({ from: accounts[0], to: accounts[1], value: web3.toWei(0, 'ether') });
+  it("Flush", async function () {
     // determine the forwarder contract address
-    const forwarderContractAddress = helpers.getNextContractAddress(accounts[0]);
+    const amount = web3.utils.toWei("5", "ether");
+    const baseAddress = accounts[3];
+    const senderAddress = accounts[0];
+    const forwarderAddress = await helpers.getNextContractAddress(
+      senderAddress
+    );
 
-    const account0StartEther = web3.fromWei(web3.eth.getBalance(accounts[0]), 'ether');
-    web3.fromWei(web3.eth.getBalance(accounts[1]), 'ether');
+    const startBalance = await getBalanceInWei(baseAddress);
 
     // send funds to the contract address first
-    await web3.eth.sendTransaction({ from: accounts[1], to: forwarderContractAddress, value: web3.toWei(5, 'ether') });
-    // Check that the ether is in the forwarder address and not yet in account 0
-    web3.fromWei(web3.eth.getBalance(forwarderContractAddress), 'ether').should.eql(web3.toBigNumber(5));
-    web3.fromWei(web3.eth.getBalance(accounts[0]), 'ether').should.eql(account0StartEther);
-    const forwardContract = await Forwarder.new([], { from: accounts[0] });
-    forwardContract.address.should.eql(forwarderContractAddress);
-    // Check that the ether is still in the forwarder address and not yet in account 0
-    web3.fromWei(web3.eth.getBalance(forwarderContractAddress), 'ether').should.eql(web3.toBigNumber(5));
-    // account0StartEther = web3.fromWei(web3.eth.getBalance(accounts[0]), 'ether');
-    const txHash = await forwardContract.flush.call(undefined, { from: accounts[0], gasPrice: 20000 });
-    web3.eth.getTransaction(txHash);
-    web3.eth.getTransactionReceipt(txHash);
-    // Can't get this assertion to work
-    //TODO: barath - fix this
-    /*
-    var a = new BN(gasUsed);
-    var b = new BN(20000);
-    var ethersPaidForFees = web3.fromWei(a.mul(b), 'ether');
-    var account0EndEther = web3.fromWei(web3.eth.getBalance(accounts[0]), 'ether');
-    account0EndEther.minus(5).plus(ethersPaidForFees).should.eql(account0StartEther);
-    */
+    await web3.eth.sendTransaction({
+      from: accounts[2],
+      to: forwarderAddress,
+      value: amount
+    });
+
+    // Check that the ether is in the forwarder address and not yet in the base address
+    (await getBalanceInWei(forwarderAddress)).eq(amount).should.be.true();
+    (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
+
+    const forwarder = await createForwarder(senderAddress, baseAddress);
+    forwarder.address.should.eql(forwarderAddress);
+
+    // Check that the ether is still in the forwarder address and not yet in the base address
+    (await getBalanceInWei(forwarderAddress)).eq(amount).should.be.true();
+    (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
+
+    await forwarder.flush.sendTransaction({ from: senderAddress });
+
+    // now the funds should have flushed to the parent
+    (await getBalanceInWei(forwarderAddress)).eq(0).should.be.true();
+    (await getBalanceInWei(baseAddress))
+      .eq(startBalance.plus(amount))
+      .should.be.true();
+  });
+
+  it("Should forward with data passed", async function () {
+    const forwarder = await createForwarder(accounts[0], accounts[0]);
+    const startBalance = await getBalanceInWei(accounts[0]);
+    const amount = web3.utils.toWei("2", "ether");
+
+    await web3.eth.sendTransaction({
+      from: accounts[1],
+      to: forwarder.address,
+      value: amount,
+      data: "0x1234abcd"
+    });
+
+    const endBalance = await getBalanceInWei(accounts[0]);
+    startBalance.plus(amount).eq(endBalance).should.be.true();
+  });
+
+  it("Should not init twice", async function () {
+    const baseAddress = accounts[3];
+    const forwarder = await createForwarder(baseAddress, baseAddress);
+
+    await truffleAssert.reverts(
+      forwarder.init(baseAddress, { from: baseAddress })
+    );
   });
 });
