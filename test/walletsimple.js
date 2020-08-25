@@ -10,6 +10,7 @@ const { privateKeyForAccount } = require("../testrpc/accounts");
 
 // Used to build the solidity tightly packed buffer to sha3, ecsign
 const util = require("ethereumjs-util");
+const abi = require("ethereumjs-abi");
 const crypto = require("crypto");
 
 const EthWalletSimple = artifacts.require("./WalletSimple.sol");
@@ -17,6 +18,8 @@ const RskWalletSimple = artifacts.require("./RskWalletSimple.sol");
 const EtcWalletSimple = artifacts.require("./EtcWalletSimple.sol");
 const CeloWalletSimple = artifacts.require("./CeloWalletSimple.sol");
 const Forwarder = artifacts.require("./Forwarder.sol");
+const ForwarderTarget = artifacts.require("./ForwarderTarget.sol");
+const ForwarderFactory = artifacts.require("./ForwarderFactory.sol");
 const FixedSupplyToken = artifacts.require("./FixedSupplyToken.sol");
 
 const assertVMException = (err) => {
@@ -24,8 +27,56 @@ const assertVMException = (err) => {
 };
 
 const createForwarderFromWallet = async (wallet) => {
-  const forwarderAddress = helpers.getNextContractAddress(wallet.address);
-  await wallet.createForwarder();
+  const parent = wallet.address;
+  const salt = util.bufferToHex(crypto.randomBytes(20));
+  const inputSalt = util.setLengthLeft(
+    Buffer.from(util.stripHexPrefix(salt), "hex"),
+    32
+  );
+  const calculationSalt = abi.soliditySHA3(
+    ["address", "bytes32"],
+    [parent, inputSalt]
+  );
+  const forwarderContract = await Forwarder.new([], {});
+  const forwarderFactory = await ForwarderFactory.new(
+    forwarderContract.address
+  );
+  const initCode = helpers.getInitCode(
+    util.stripHexPrefix(forwarderContract.address)
+  );
+  const forwarderAddress = helpers.getNextContractAddressCreate2(
+    forwarderFactory.address,
+    calculationSalt,
+    initCode
+  );
+
+  return {
+    forwarderAddress,
+    create: async () =>
+      executeCreateForwarder(
+        forwarderFactory,
+        calculationSalt,
+        inputSalt,
+        initCode,
+        parent
+      )
+  };
+};
+
+const executeCreateForwarder = async (
+  factory,
+  calculationSalt,
+  inputSalt,
+  initCode,
+  parent
+) => {
+  const forwarderAddress = helpers.getNextContractAddressCreate2(
+    factory.address,
+    calculationSalt,
+    initCode
+  );
+
+  await factory.createForwarder(parent, inputSalt);
   return Forwarder.at(forwarderAddress);
 };
 
@@ -58,7 +109,11 @@ const coins = [
 
 coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
   const getEventDetails = (eventName) => {
-    const abi = _.find(WalletSimple.abi, ({ name }) => name === eventName);
+    let abi = _.find(WalletSimple.abi, ({ name }) => name === eventName);
+    if (!abi) {
+      abi = _.find(Forwarder.abi, ({ name }) => name === eventName);
+    }
+
     const hash = web3.eth.abi.encodeEventSignature(abi);
     return { abi, hash };
   };
@@ -83,6 +138,7 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
   };
 
   const DEPOSITED_EVENT = "Deposited";
+  const FORWARDER_DEPOSITED_EVENT = "ForwarderDeposited";
   const TRANSACTED_EVENT = "Transacted";
   const SAFE_MODE_ACTIVATE_EVENT = "SafeModeActivated";
 
@@ -1026,7 +1082,7 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
       });
     });
 
-    xdescribe("Forwarder addresses", function () {
+    describe("Forwarder addresses", function () {
       const forwardAbi = [
         {
           constant: false,
@@ -1052,10 +1108,11 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
           accounts[1],
           accounts[2]
         ]);
-        const forwarder = await createForwarderFromWallet(wallet);
-        web3.utils
-          .fromWei(web3.eth.getBalance(forwarder.address), "ether")
-          .should.eql(web3.utils.toBN(0));
+        const forwarder = await (
+          await createForwarderFromWallet(wallet)
+        ).create();
+        const forwarderBalance = await web3.eth.getBalance(forwarder.address);
+        web3.utils.fromWei(forwarderBalance, "ether").should.eql("0");
 
         await web3.eth.sendTransaction({
           from: accounts[1],
@@ -1064,12 +1121,13 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
         });
 
         // Verify funds forwarded
-        web3.utils
-          .fromWei(web3.eth.getBalance(forwarder.address), "ether")
-          .should.eql(web3.utils.toBN(0));
-        web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(200));
+        const endForwarderBalance = await web3.eth.getBalance(
+          forwarder.address
+        );
+        web3.utils.fromWei(endForwarderBalance, "ether").should.eql("0");
+
+        const endWalletBalance = await web3.eth.getBalance(wallet.address);
+        web3.utils.fromWei(endWalletBalance, "ether").should.eql("200");
       });
 
       it("Forwards value, not call data", async function () {
@@ -1080,11 +1138,11 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
         // this could change in the future.
         // Simulate this with a ForwarderContract that has a side effect.
 
-        const ForwarderTarget = artifacts.require("./ForwarderTarget.sol");
-
         const forwarderTarget = await ForwarderTarget.new();
         // can be passed for wallet since it has the same interface
-        const forwarder = await createForwarderFromWallet(forwarderTarget);
+        const forwarder = await (
+          await createForwarderFromWallet(forwarderTarget)
+        ).create();
         const events = [];
         forwarder.allEvents({}, (err, event) => {
           if (err) {
@@ -1092,7 +1150,7 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
           }
           events.push(event);
         });
-        const forwarderAsTarget = ForwarderTarget.at(forwarder.address);
+        const forwarderAsTarget = await ForwarderTarget.at(forwarder.address);
 
         const newData = 0xc0fefe;
 
@@ -1101,26 +1159,33 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
           events.length = 0;
 
           // calls without value emit deposited event but don't get forwarded
-          await forwarderAsTarget.setData(newData, setDataReturn);
-          (await forwarderTarget.data.call()).should.eql(web3.utils.toBN(0));
+          const tx = await forwarderAsTarget.setData(newData, setDataReturn);
+          (await forwarderTarget.data.call()).toString().should.eql("0");
 
-          await helpers.waitForEvents(events, 1);
-          events.length.should.eql(1);
-          events.pop().event.should.eql("ForwarderDeposited");
+          const depositedEvent = await getEventFromTransaction(
+            tx.receipt.transactionHash,
+            FORWARDER_DEPOSITED_EVENT
+          );
+          should.exist(depositedEvent);
 
           // Same for setDataWithValue()
-          const oldBalance = web3.eth.getBalance(forwarderTarget.address);
-          await forwarderAsTarget.setDataWithValue(newData + 1, setDataReturn, {
-            value: 100
-          });
-          (await forwarderTarget.data.call()).should.eql(web3.utils.toBN(0));
-          web3.eth
-            .getBalance(forwarderTarget.address)
-            .should.eql(oldBalance.plus(100));
+          const oldBalance = await web3.eth.getBalance(forwarderTarget.address);
+          const setDataTx = await forwarderAsTarget.setDataWithValue(
+            newData + 1,
+            setDataReturn,
+            {
+              value: 100
+            }
+          );
+          (await forwarderTarget.data.call()).toString().should.eql("0");
+          const newBalance = await web3.eth.getBalance(forwarderTarget.address);
+          new BigNumber(oldBalance).plus(100).eq(newBalance).should.be.true();
 
-          await helpers.waitForEvents(events, 1);
-          events.length.should.eql(1);
-          events.pop().event.should.eql("ForwarderDeposited");
+          const depositedEvent2 = await getEventFromTransaction(
+            setDataTx.receipt.transactionHash,
+            FORWARDER_DEPOSITED_EVENT
+          );
+          should.exist(depositedEvent2);
         }
       });
 
@@ -1135,7 +1200,9 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
 
         // Create forwarders and send 4 ether to each of the addresses
         for (let i = 0; i < numForwardAddresses; i++) {
-          const forwarder = await createForwarderFromWallet(wallet);
+          const forwarder = await (
+            await createForwarderFromWallet(wallet)
+          ).create();
           await web3.eth.sendTransaction({
             from: accounts[1],
             to: forwarder.address,
@@ -1144,9 +1211,12 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
         }
 
         // Verify all the forwarding is complete
+        const balance = await web3.eth.getBalance(wallet.address);
         web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(etherEachSend * numForwardAddresses));
+          .fromWei(balance, "ether")
+          .should.eql(
+            web3.utils.toBN(etherEachSend * numForwardAddresses).toString()
+          );
       });
 
       it("Send before create, then flush", async function () {
@@ -1155,42 +1225,54 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
           accounts[4],
           accounts[5]
         ]);
-        const forwarderContractAddress = helpers.getNextContractAddress(
-          wallet.address
-        );
+        const {
+          forwarderAddress: forwarderContractAddress,
+          create
+        } = await createForwarderFromWallet(wallet);
+
         await web3.eth.sendTransaction({
           from: accounts[1],
           to: forwarderContractAddress,
           value: web3.utils.toWei("300", "ether")
         });
+        const forwarderBalance = await web3.eth.getBalance(
+          forwarderContractAddress
+        );
         web3.utils
-          .fromWei(web3.eth.getBalance(forwarderContractAddress), "ether")
-          .should.eql(web3.utils.toBN(300));
+          .fromWei(forwarderBalance, "ether")
+          .should.eql(web3.utils.toBN(300).toString());
+        const walletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(0));
+          .fromWei(walletBalance, "ether")
+          .should.eql(web3.utils.toBN(0).toString());
 
-        const forwarder = await createForwarderFromWallet(wallet);
+        const forwarder = await create();
         forwarder.address.should.eql(forwarderContractAddress);
 
         // Verify that funds are still stuck in forwarder contract address
+        const endForwarderBalance = await web3.eth.getBalance(
+          forwarderContractAddress
+        );
         web3.utils
-          .fromWei(web3.eth.getBalance(forwarderContractAddress), "ether")
-          .should.eql(web3.utils.toBN(300));
+          .fromWei(endForwarderBalance, "ether")
+          .should.eql(web3.utils.toBN(300).toString());
+        const endWalletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(0));
+          .fromWei(endWalletBalance, "ether")
+          .should.eql(web3.utils.toBN(0).toString());
 
         // Flush and verify
-        forwardContract
-          .at(forwarderContractAddress)
-          .flush({ from: accounts[0] });
+        await forwarder.flush({ from: accounts[0] });
+        const finalForwarderBalance = await web3.eth.getBalance(
+          forwarderContractAddress
+        );
         web3.utils
-          .fromWei(web3.eth.getBalance(forwarderContractAddress), "ether")
-          .should.eql(web3.utils.toBN(0));
+          .fromWei(finalForwarderBalance, "ether")
+          .should.eql(web3.utils.toBN(0).toString());
+        const finalWalletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(300));
+          .fromWei(finalWalletBalance, "ether")
+          .should.eql(web3.utils.toBN(300).toString());
       });
 
       it("Flush sent from external account", async function () {
@@ -1199,40 +1281,54 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
           accounts[5],
           accounts[6]
         ]);
-        const forwarderContractAddress = helpers.getNextContractAddress(
-          wallet.address
-        );
+        const {
+          forwarderAddress: forwarderContractAddress,
+          create
+        } = await createForwarderFromWallet(wallet);
+
         await web3.eth.sendTransaction({
           from: accounts[1],
           to: forwarderContractAddress,
           value: web3.utils.toWei("300", "ether")
         });
+        const forwarderBalance = await web3.eth.getBalance(
+          forwarderContractAddress
+        );
         web3.utils
-          .fromWei(web3.eth.getBalance(forwarderContractAddress), "ether")
-          .should.eql(web3.utils.toBN(300));
+          .fromWei(forwarderBalance, "ether")
+          .should.eql(web3.utils.toBN(300).toString());
+        const walletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(0));
+          .fromWei(walletBalance, "ether")
+          .should.eql(web3.utils.toBN(0).toString());
 
-        const forwarder = await createForwarderFromWallet(wallet);
+        const forwarder = await create();
         forwarder.address.should.eql(forwarderContractAddress);
 
         // Verify that funds are still stuck in forwarder contract address
+        const endForwarderBalance = await web3.eth.getBalance(
+          forwarderContractAddress
+        );
         web3.utils
-          .fromWei(web3.eth.getBalance(forwarder.address), "ether")
-          .should.eql(web3.utils.toBN(300));
+          .fromWei(endForwarderBalance, "ether")
+          .should.eql(web3.utils.toBN(300).toString());
+        const endWalletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(0));
+          .fromWei(endWalletBalance, "ether")
+          .should.eql(web3.utils.toBN(0).toString());
 
         // Flush and verify
-        forwardContract.at(forwarder.address).flush({ from: accounts[0] });
+        await forwarder.flush({ from: accounts[0] });
+        const finalForwarderBalance = await web3.eth.getBalance(
+          forwarder.address
+        );
         web3.utils
-          .fromWei(web3.eth.getBalance(forwarder.address), "ether")
-          .should.eql(web3.utils.toBN(0));
+          .fromWei(finalForwarderBalance, "ether")
+          .should.eql(web3.utils.toBN(0).toString());
+        const finalWalletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
-          .fromWei(web3.eth.getBalance(wallet.address), "ether")
-          .should.eql(web3.utils.toBN(300));
+          .fromWei(finalWalletBalance, "ether")
+          .should.eql(web3.utils.toBN(300).toString());
       });
     });
 
@@ -1320,8 +1416,10 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
           .should.be.true();
       });
 
-      xit("Flush from Forwarder contract", async function () {
-        const forwarder = await createForwarderFromWallet(wallet);
+      it("Flush from Forwarder contract", async function () {
+        const forwarder = await (
+          await createForwarderFromWallet(wallet)
+        ).create();
         await fixedSupplyTokenContract.transfer(forwarder.address, 100, {
           from: accounts[0]
         });
