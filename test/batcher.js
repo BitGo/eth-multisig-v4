@@ -1,27 +1,30 @@
-const Batcher = artifacts.require('./Batcher.sol');
-const TestBatcherDriver = artifacts.require('./TestBatcherDriver.sol');
-const Reentry = artifacts.require('./Reentry.sol');
-const Fail = artifacts.require('./Fail.sol');
-const GasGuzzler = artifacts.require('./GasGuzzler.sol');
-const GasHeavy = artifacts.require('./GasHeavy.sol');
-const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
+const Batcher = artifacts.require("./Batcher.sol");
+const TestBatcherDriver = artifacts.require("./TestBatcherDriver.sol");
+const Reentry = artifacts.require("./Reentry.sol");
+const Fail = artifacts.require("./Fail.sol");
+const GasGuzzler = artifacts.require("./GasGuzzler.sol");
+const GasHeavy = artifacts.require("./GasHeavy.sol");
+const FixedSupplyToken = artifacts.require("./FixedSupplyToken.sol");
 
-const BatcherTransferEvent = '0xc42fa155158786a1dd6ccc3a785f35845467353c3cc700e0e31a79f90e22227d';
+const BatcherTransferEvent =
+  "0xc42fa155158786a1dd6ccc3a785f35845467353c3cc700e0e31a79f90e22227d";
 
 const { getBalance, abi: ethAbi } = web3.eth;
 const { toBN } = web3.utils;
 
-const emptyErrMsg = 'Must send to at least one person';
-const recipientsValuesMismatchErrMsg = 'There must be an equal amount of recipients and values';
-const fallbackErrMsg = 'The fallback should never be called';
-const plainReceiveErrMsg = 'The plain receive should never be called';
-const invalidRecipientErrMsg = 'Invalid recipient address';
-const returnFundsFailedErrMsg = 'Failed to return funds to sending wallet';
-const onlyOwnerErrMsg = 'Only the owner can perform this action';
-const maxRecipientsExceededErrMsg = 'Can only send to a max of 255 recipients';
-const unsuccessfulCallErrMsg = 'Call was not successful';
-const zeroAddrOwnerChangeErrMsg = 'New owner is not allowed to be zero address';
-const newGasTransferLimitTooLowErrMsg = 'New transfer gas limit must be at least 2300';
+const emptyErrMsg = "Must send to at least one person";
+const recipientsValuesMismatchErrMsg =
+  "There must be an equal amount of recipients and values";
+const fallbackErrMsg = "The fallback should never be called";
+const plainReceiveErrMsg = "The plain receive should never be called";
+const invalidRecipientErrMsg = "Invalid recipient address";
+const returnFundsFailedErrMsg = "Failed to return funds to sending wallet";
+const onlyOwnerErrMsg = "Only the owner can perform this action";
+const maxRecipientsExceededErrMsg = "Can only send to a max of 255 recipients";
+const unsuccessfulCallErrMsg = "Call was not successful";
+const zeroAddrOwnerChangeErrMsg = "New owner is not allowed to be zero address";
+const newGasTransferLimitTooLowErrMsg =
+  "New transfer gas limit must be at least 2300";
 
 // always between 1 and max included
 const randInt = (max) => {
@@ -42,11 +45,19 @@ const assertVMException = async (promise, expectedExceptionMsg) => {
     await promise;
     badSucceed = true;
   } catch (err) {
-    assert.notStrictEqual(err.message.search('VM Exception'), -1, 'Received non-VM exception');
-    assert.strictEqual(err.reason || '', expectedExceptionMsg, 'Didn\'t receive expected VM exception');
+    assert.notStrictEqual(
+      err.message.search("VM Exception"),
+      -1,
+      "Received non-VM exception"
+    );
+    assert.strictEqual(
+      err.reason || "",
+      expectedExceptionMsg,
+      "Didn't receive expected VM exception"
+    );
   }
   if (badSucceed) {
-    assert.fail('Didn\'t throw any exception');
+    assert.fail("Didn't throw any exception");
   }
 };
 
@@ -55,7 +66,7 @@ const assertBalanceDiff = (start, end, diff, errMsg) => {
   assert.strictEqual(startWithDiff.toString(), end.toString(), errMsg);
 };
 
-contract('Batcher', (accounts) => {
+contract("Batcher", (accounts) => {
   let batcherInstance;
   let reentryInstance;
   let failInstance;
@@ -64,7 +75,7 @@ contract('Batcher', (accounts) => {
 
   const sender = accounts[0];
   const batcherOwner = accounts[8];
-  const zeroAddr = '0x0000000000000000000000000000000000000000';
+  const zeroAddr = "0x0000000000000000000000000000000000000000";
 
   before(async () => {
     batcherInstance = await Batcher.new({ from: batcherOwner });
@@ -76,29 +87,71 @@ contract('Batcher', (accounts) => {
 
   const verifyLogs = (tx, sender, numSuccesses, recipients, values) => {
     const logs = tx.receipt.rawLogs;
-    assert.strictEqual(logs.length, numSuccesses, `Expected ${numSuccesses} BatcherTransfer event(s), actually saw ${logs.length}`);
+    assert.strictEqual(
+      logs.length,
+      numSuccesses,
+      `Expected ${numSuccesses} BatcherTransfer event(s), actually saw ${logs.length}`
+    );
     logs.forEach((log, i) => {
       const { topics, data } = log;
-      assert.strictEqual(topics.length, 1, `Unexpected topics length, should be 1, was ${topics.length}`);
-      assert.strictEqual(topics[0], BatcherTransferEvent, `Unexpected topic ${topics[0]}`);
-      assert.strictEqual(data.length, 194, `Incorrect data length ${data.length}`);
-      const senderAddress = '0x' + data.slice(26, 66);
-      assert.strictEqual(sender.toLowerCase(), senderAddress, 'Sender address in logs not what was expected');
-      const recipientAddress = '0x' + data.slice(90, 130);
-      const value = toBN('0x' + data.slice(130)).toString();
-      if (recipients[i] !== reentryInstance.address && recipients[i] !== failInstance.address) {
-        assert(recipients.find((elem) => recipientAddress === elem.toLowerCase()), 'Invalid recipient in log');
-        assert(values.find((elem) => value === elem.toString()), 'Invalid transfer amount in log');
+      assert.strictEqual(
+        topics.length,
+        1,
+        `Unexpected topics length, should be 1, was ${topics.length}`
+      );
+      assert.strictEqual(
+        topics[0],
+        BatcherTransferEvent,
+        `Unexpected topic ${topics[0]}`
+      );
+      assert.strictEqual(
+        data.length,
+        194,
+        `Incorrect data length ${data.length}`
+      );
+      const senderAddress = "0x" + data.slice(26, 66);
+      assert.strictEqual(
+        sender.toLowerCase(),
+        senderAddress,
+        "Sender address in logs not what was expected"
+      );
+      const recipientAddress = "0x" + data.slice(90, 130);
+      const value = toBN("0x" + data.slice(130)).toString();
+      if (
+        recipients[i] !== reentryInstance.address &&
+        recipients[i] !== failInstance.address
+      ) {
+        assert(
+          recipients.find((elem) => recipientAddress === elem.toLowerCase()),
+          "Invalid recipient in log"
+        );
+        assert(
+          values.find((elem) => value === elem.toString()),
+          "Invalid transfer amount in log"
+        );
       }
     });
   };
 
-  const runTestBatcherDriver = async ({ recipients, values, extraValue = 0, expectedRetVal = '0', doSelfFail = false,
-                                        doSelfReentry = false, expectedTransferFailures = [], expectOverallFailure = false,
-                                        expectedErrMsg = '', gasLimit = 2e6 }) => {
+  const runTestBatcherDriver = async ({
+    recipients,
+    values,
+    extraValue = 0,
+    expectedRetVal = "0",
+    doSelfFail = false,
+    doSelfReentry = false,
+    expectedTransferFailures = [],
+    expectOverallFailure = false,
+    expectedErrMsg = "",
+    gasLimit = 2e6
+  }) => {
     // another contract is used to make checking if funds are returned easier otherwise gas calculations
     // would have to be used to make sure correct amount was returned to sender
-    const testBatcherDriverInstance = await TestBatcherDriver.new(batcherInstance.address, doSelfFail, doSelfReentry);
+    const testBatcherDriverInstance = await TestBatcherDriver.new(
+      batcherInstance.address,
+      doSelfFail,
+      doSelfReentry
+    );
     const sendVal = values.reduce((sum, val) => sum + val, 0) + extraValue;
     const results = {};
     for (let i = 0; i < recipients.length; i++) {
@@ -112,33 +165,70 @@ contract('Batcher', (accounts) => {
     }
 
     if (expectOverallFailure) {
-      await assertVMException(testBatcherDriverInstance.driveTest(recipients, values, { from: sender, value: sendVal, gas: gasLimit }), expectedErrMsg);
+      await assertVMException(
+        testBatcherDriverInstance.driveTest(recipients, values, {
+          from: sender,
+          value: sendVal,
+          gas: gasLimit
+        }),
+        expectedErrMsg
+      );
       return;
     }
 
-    const tx = await testBatcherDriverInstance.driveTest(recipients, values, { from: sender, value: sendVal, gas: gasLimit });
-    verifyLogs(tx, testBatcherDriverInstance.address, recipients.length - expectedTransferFailures.length, recipients, values);
+    const tx = await testBatcherDriverInstance.driveTest(recipients, values, {
+      from: sender,
+      value: sendVal,
+      gas: gasLimit
+    });
+    verifyLogs(
+      tx,
+      testBatcherDriverInstance.address,
+      recipients.length - expectedTransferFailures.length,
+      recipients,
+      values
+    );
 
     for (const account of Object.keys(results)) {
       const startBalance = results[account].startBalance;
       const endBalance = toBN(await getBalance(account));
       const value = results[account].value;
       if (expectedTransferFailures.includes(account)) {
-        assertBalanceDiff(startBalance, endBalance, 0, 'Address that shouldn\'t have received funds did');
+        assertBalanceDiff(
+          startBalance,
+          endBalance,
+          0,
+          "Address that shouldn't have received funds did"
+        );
       } else {
-        assertBalanceDiff(startBalance, endBalance, value, 'Valid account didn\'t receive funds');
+        assertBalanceDiff(
+          startBalance,
+          endBalance,
+          value,
+          "Valid account didn't receive funds"
+        );
       }
     }
-    const testBatcherBalance = await getBalance(testBatcherDriverInstance.address);
-    assert.strictEqual(testBatcherBalance, expectedRetVal, 'TestBatcherDriver has more or less funds left over than it should');
+    const testBatcherBalance = await getBalance(
+      testBatcherDriverInstance.address
+    );
+    assert.strictEqual(
+      testBatcherBalance,
+      expectedRetVal,
+      "TestBatcherDriver has more or less funds left over than it should"
+    );
   };
 
   afterEach(async () => {
-    assert.strictEqual(await getBalance(batcherInstance.address), '0', 'Batcher balance should be zero after transaction');
+    assert.strictEqual(
+      await getBalance(batcherInstance.address),
+      "0",
+      "Batcher balance should be zero after transaction"
+    );
   });
 
-  describe('Good transactions single recipient', () => {
-    it('Sends batch with one recipient', async () => {
+  describe("Good transactions single recipient", () => {
+    it("Sends batch with one recipient", async () => {
       const params = {
         recipients: [accounts[1]],
         values: [5]
@@ -146,30 +236,30 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Deflects reentry and returns amount to sender', async () => {
+    it("Deflects reentry and returns amount to sender", async () => {
       const params = {
         recipients: [reentryInstance.address],
         values: [5],
         extraValue: 5,
-        expectedRetVal: '10',
+        expectedRetVal: "10",
         expectedTransferFailures: [reentryInstance.address]
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Returns amount to sender when a recipient fails', async () => {
+    it("Returns amount to sender when a recipient fails", async () => {
       const params = {
         recipients: [failInstance.address],
         values: [5],
-        expectedRetVal: '5',
+        expectedRetVal: "5",
         expectedTransferFailures: [failInstance.address]
       };
       await runTestBatcherDriver(params);
     });
   });
 
-  describe('Good transactions multiple recipients', () => {
-    it('Correctly sends with exact amount', async () => {
+  describe("Good transactions multiple recipients", () => {
+    it("Correctly sends with exact amount", async () => {
       const params = {
         recipients: accounts.slice(1, 4),
         values: createRandIntArr(3)
@@ -177,53 +267,74 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Correctly sends with extra value', async () => {
+    it("Correctly sends with extra value", async () => {
       const params = {
         recipients: accounts.slice(1, 4),
         values: createRandIntArr(3),
         extraValue: 50,
-        expectedRetVal: '50'
+        expectedRetVal: "50"
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Correctly sends with duplicate recipients', async () => {
+    it("Correctly sends with duplicate recipients", async () => {
       const params = {
-        recipients: [accounts[1], accounts[1], accounts[2], accounts[3], accounts[3], accounts[4]],
+        recipients: [
+          accounts[1],
+          accounts[1],
+          accounts[2],
+          accounts[3],
+          accounts[3],
+          accounts[4]
+        ],
         values: createRandIntArr(6)
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Correctly sends with duplicate recipients and extra value', async () => {
+    it("Correctly sends with duplicate recipients and extra value", async () => {
       const params = {
-        recipients: [accounts[1], accounts[1], accounts[2], accounts[3], accounts[3], accounts[4]],
+        recipients: [
+          accounts[1],
+          accounts[1],
+          accounts[2],
+          accounts[3],
+          accounts[3],
+          accounts[4]
+        ],
         values: createRandIntArr(6),
         extraValue: 100,
-        expectedRetVal: '100'
+        expectedRetVal: "100"
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Correctly sends with duplicate recipient/value pairs', async () => {
+    it("Correctly sends with duplicate recipient/value pairs", async () => {
       const params = {
-        recipients: [accounts[1], accounts[1], accounts[2], accounts[3], accounts[3], accounts[4]],
+        recipients: [
+          accounts[1],
+          accounts[1],
+          accounts[2],
+          accounts[3],
+          accounts[3],
+          accounts[4]
+        ],
         values: [5, 5, 10, 15, 15, 20]
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Correctly sends with one reentrant contract', async () => {
+    it("Correctly sends with one reentrant contract", async () => {
       const params = {
         recipients: [reentryInstance.address, accounts[1], accounts[2]],
         values: [10, ...createRandIntArr(2)],
-        expectedRetVal: '10',
+        expectedRetVal: "10",
         expectedTransferFailures: [reentryInstance.address]
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Doesn\'t fail with multiple recipients with less than enough value', async () => {
+    it("Doesn't fail with multiple recipients with less than enough value", async () => {
       const randVals = createRandIntArr(3);
       const params = {
         recipients: accounts.slice(1, 4),
@@ -235,19 +346,19 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Doesn\'t fail with multiple recipients with exactly less than enough value', async () => {
+    it("Doesn't fail with multiple recipients with exactly less than enough value", async () => {
       const randVals = createRandIntArr(3);
       const params = {
         recipients: accounts.slice(1, 4),
         values: randVals,
         extraValue: -1 * randVals[2],
         expectedTransferFailures: [accounts[3]],
-        expectedRetVal: '0'
+        expectedRetVal: "0"
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Doesn\'t fail with multiple recipients with less than enough value for multiple recipients', async () => {
+    it("Doesn't fail with multiple recipients with less than enough value for multiple recipients", async () => {
       const randVals = createRandIntArr(4);
       const lastTwo = randVals[2] + randVals[3];
       const params = {
@@ -255,12 +366,12 @@ contract('Batcher', (accounts) => {
         values: randVals,
         extraValue: -1 * (lastTwo - 1),
         expectedTransferFailures: [accounts[3], accounts[4]],
-        expectedRetVal: '1'
+        expectedRetVal: "1"
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Doesn\'t fail with multiple recipients with exactly less than enough value for multiple recipients', async () => {
+    it("Doesn't fail with multiple recipients with exactly less than enough value for multiple recipients", async () => {
       const randVals = createRandIntArr(4);
       const lastTwo = randVals[2] + randVals[3];
       const params = {
@@ -268,12 +379,12 @@ contract('Batcher', (accounts) => {
         values: randVals,
         extraValue: -1 * lastTwo,
         expectedTransferFailures: [accounts[3], accounts[4]],
-        expectedRetVal: '0'
+        expectedRetVal: "0"
       };
       await runTestBatcherDriver(params);
     });
 
-    it('Doesn\'t fail when gas guzzler', async () => {
+    it("Doesn't fail when gas guzzler", async () => {
       const randVals = createRandIntArr(4);
       const params = {
         recipients: [gasGuzzlerInstance.address].concat(accounts.slice(1, 4)),
@@ -285,7 +396,7 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Stress test 200 recipients', async () => {
+    it("Stress test 200 recipients", async () => {
       const bigRecipients = [];
       for (let i = 0; i < 200; i++) {
         bigRecipients.push(accounts[(i % 5) + 1]);
@@ -300,8 +411,8 @@ contract('Batcher', (accounts) => {
     });
   });
 
-  describe('Failed transactions', () => {
-    it('Fails with empty recipients and values', async () => {
+  describe("Failed transactions", () => {
+    it("Fails with empty recipients and values", async () => {
       const params = {
         recipients: [],
         values: [],
@@ -311,7 +422,7 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Fails with empty recipients and non-empty values', async () => {
+    it("Fails with empty recipients and non-empty values", async () => {
       const params = {
         recipients: [],
         values: [5],
@@ -321,7 +432,7 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Fails with recipients and values arrays of different sizes', async () => {
+    it("Fails with recipients and values arrays of different sizes", async () => {
       const params = {
         recipients: accounts.slice(1, 3),
         values: [5],
@@ -331,15 +442,25 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Fails when the fallback function is called', async () => {
-      await assertVMException(batcherInstance.sendTransaction({ from: sender, value: 5, data: '0x1234' }), fallbackErrMsg);
+    it("Fails when the fallback function is called", async () => {
+      await assertVMException(
+        batcherInstance.sendTransaction({
+          from: sender,
+          value: 5,
+          data: "0x1234"
+        }),
+        fallbackErrMsg
+      );
     });
 
-    it('Fails when the plain receive function is called', async () => {
-      await assertVMException(batcherInstance.sendTransaction({ from: sender, value: 5 }), plainReceiveErrMsg);
+    it("Fails when the plain receive function is called", async () => {
+      await assertVMException(
+        batcherInstance.sendTransaction({ from: sender, value: 5 }),
+        plainReceiveErrMsg
+      );
     });
 
-    it('Fails for zero address', async () => {
+    it("Fails for zero address", async () => {
       const params = {
         recipients: [zeroAddr],
         values: [5],
@@ -349,7 +470,7 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Fails when the contract sending funds back to tries to reenter', async () => {
+    it("Fails when the contract sending funds back to tries to reenter", async () => {
       const params = {
         recipients: [failInstance.address],
         values: [5],
@@ -361,7 +482,7 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Fails when the contract sending funds back to reverts', async () => {
+    it("Fails when the contract sending funds back to reverts", async () => {
       const params = {
         recipients: [accounts[1]],
         values: [5],
@@ -373,7 +494,7 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Fails when recipients length exceeds uint8 capacity', async () => {
+    it("Fails when recipients length exceeds uint8 capacity", async () => {
       let recipients = [];
       for (let i = 0; i < 256; i++) {
         recipients.push(accounts[1]);
@@ -387,7 +508,7 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Executes as many transfers as possible when not given enough gas', async () => {
+    it("Executes as many transfers as possible when not given enough gas", async () => {
       const randVals = createRandIntArr(3);
       const params = {
         recipients: accounts.slice(1, 4),
@@ -402,24 +523,52 @@ contract('Batcher', (accounts) => {
     });
   });
 
-  describe('Only owner functions', () => {
-    describe('Transferring ownership and setting gas transfer limit', () => {
+  describe("Only owner functions", () => {
+    describe("Transferring ownership and setting gas transfer limit", () => {
       // note: at the start of every test, the Batcher owner should be `batcherOwner`
       // and the transfer gas limit should be the default
       const otherBatcherOwner = accounts[7];
       const defaultTransferGasLimit = 1e4;
 
       const setBatcherOwner = async (oldBatcherOwner, newBatcherOwner) => {
-        const tx = await batcherInstance.transferOwnership(newBatcherOwner, { from: oldBatcherOwner });
-        const { logs: [{ args: { prevOwner, newOwner } }] } = tx;
-        assert.strictEqual(prevOwner, oldBatcherOwner, 'Log emitted for ownership change doesn\'t reflect old owner');
-        assert.strictEqual(newOwner, newBatcherOwner, 'Log emitted for ownership change doesn\'t reflect new owner');
+        const tx = await batcherInstance.transferOwnership(newBatcherOwner, {
+          from: oldBatcherOwner
+        });
+        const {
+          logs: [
+            {
+              args: { prevOwner, newOwner }
+            }
+          ]
+        } = tx;
+        assert.strictEqual(
+          prevOwner,
+          oldBatcherOwner,
+          "Log emitted for ownership change doesn't reflect old owner"
+        );
+        assert.strictEqual(
+          newOwner,
+          newBatcherOwner,
+          "Log emitted for ownership change doesn't reflect new owner"
+        );
       };
 
       const setTransferGasLimit = async (ownerExecuting, newGasLimit) => {
-        const tx = await batcherInstance.changeTransferGasLimit(newGasLimit, { from: ownerExecuting });
-        const { logs: [{ args: { newTransferGasLimit } }] } = tx;
-        assert.strictEqual(newTransferGasLimit.toNumber(), newGasLimit, 'Log emitted for transfer gas limit change doesn\'t reflect new limit');
+        const tx = await batcherInstance.changeTransferGasLimit(newGasLimit, {
+          from: ownerExecuting
+        });
+        const {
+          logs: [
+            {
+              args: { newTransferGasLimit }
+            }
+          ]
+        } = tx;
+        assert.strictEqual(
+          newTransferGasLimit.toNumber(),
+          newGasLimit,
+          "Log emitted for transfer gas limit change doesn't reflect new limit"
+        );
       };
 
       afterEach(async () => {
@@ -427,30 +576,36 @@ contract('Batcher', (accounts) => {
         await setTransferGasLimit(batcherOwner, defaultTransferGasLimit);
       });
 
-      it('Successfully transfers ownership', async () => {
+      it("Successfully transfers ownership", async () => {
         await setBatcherOwner(batcherOwner, otherBatcherOwner);
         await setBatcherOwner(otherBatcherOwner, batcherOwner);
       });
 
-      it('Fails to transfer ownership for non-owner', async () => {
-        await assertVMException(setBatcherOwner(otherBatcherOwner, batcherOwner), onlyOwnerErrMsg);
+      it("Fails to transfer ownership for non-owner", async () => {
+        await assertVMException(
+          setBatcherOwner(otherBatcherOwner, batcherOwner),
+          onlyOwnerErrMsg
+        );
       });
 
-      it('Fails to transfer ownership to zero address', async () => {
-        await assertVMException(setBatcherOwner(batcherOwner, zeroAddr), zeroAddrOwnerChangeErrMsg);
+      it("Fails to transfer ownership to zero address", async () => {
+        await assertVMException(
+          setBatcherOwner(batcherOwner, zeroAddr),
+          zeroAddrOwnerChangeErrMsg
+        );
       });
 
-      it('Successfully sets transfer gas limit', async () => {
+      it("Successfully sets transfer gas limit", async () => {
         await setTransferGasLimit(batcherOwner, 2e4);
       });
 
-      it('Succeeds when increasing transferGasLimit to accommodate for gas-heavy contract', async () => {
+      it("Succeeds when increasing transferGasLimit to accommodate for gas-heavy contract", async () => {
         await setTransferGasLimit(batcherOwner, 10000);
         // transferGasLimit of 10000 shouldn't be enough
         let params = {
           recipients: [gasHeavyInstance.address],
           values: [5],
-          expectedRetVal: '5',
+          expectedRetVal: "5",
           expectedTransferFailures: [gasHeavyInstance.address]
         };
         await runTestBatcherDriver(params);
@@ -464,69 +619,110 @@ contract('Batcher', (accounts) => {
         await runTestBatcherDriver(params);
       });
 
-      it('Fails to set transfer gas limit for non-owner', async () => {
-        await assertVMException(setTransferGasLimit(otherBatcherOwner, 2e4), onlyOwnerErrMsg);
+      it("Fails to set transfer gas limit for non-owner", async () => {
+        await assertVMException(
+          setTransferGasLimit(otherBatcherOwner, 2e4),
+          onlyOwnerErrMsg
+        );
       });
 
-      it('Fails to set transfer gas limit below 2300', async () => {
-        await assertVMException(setTransferGasLimit(batcherOwner, 2e3), newGasTransferLimitTooLowErrMsg);
+      it("Fails to set transfer gas limit below 2300", async () => {
+        await assertVMException(
+          setTransferGasLimit(batcherOwner, 2e3),
+          newGasTransferLimitTooLowErrMsg
+        );
       });
 
-      it('Reverts when a call that is made throws', async () => {
-        await assertVMException(batcherInstance.recover(failInstance.address, 5, '0x', { from: batcherOwner }),
-                                unsuccessfulCallErrMsg);
+      it("Reverts when a call that is made throws", async () => {
+        await assertVMException(
+          batcherInstance.recover(failInstance.address, 5, "0x", {
+            from: batcherOwner
+          }),
+          unsuccessfulCallErrMsg
+        );
       });
     });
 
-    describe('Using recover for ERC20 Tokens', () => {
+    describe("Using recover for ERC20 Tokens", () => {
       let tokenContract;
       let totalSupply;
       const tokenContractOwner = accounts[9];
 
       const checkBalance = async (address, expectedAmt) => {
         const balance = await tokenContract.balanceOf(address);
-        assert.strictEqual(balance.toString(), expectedAmt.toString(),
-          `Token balance of ${address} was ${balance.toString()} when ${expectedAmt.toString()} was expected`);
+        assert.strictEqual(
+          balance.toString(),
+          expectedAmt.toString(),
+          `Token balance of ${address} was ${balance.toString()} when ${expectedAmt.toString()} was expected`
+        );
       };
 
       const getTokenTransferData = (address, value) => {
-        return ethAbi.encodeFunctionCall({
-          name: 'transfer',
-          type: 'function',
-          inputs: [{
-            name: '_to',
-            type: 'address'
-          }, {
-            name: '_value',
-            type: 'uint256'
-          }]
-        }, [address, value]);
+        return ethAbi.encodeFunctionCall(
+          {
+            name: "transfer",
+            type: "function",
+            inputs: [
+              {
+                name: "_to",
+                type: "address"
+              },
+              {
+                name: "_value",
+                type: "uint256"
+              }
+            ]
+          },
+          [address, value]
+        );
       };
 
       beforeEach(async () => {
-        tokenContract = await FixedSupplyToken.new({ from: tokenContractOwner });
+        tokenContract = await FixedSupplyToken.new({
+          from: tokenContractOwner
+        });
         totalSupply = await tokenContract.totalSupply();
         await checkBalance(tokenContractOwner, totalSupply);
-        await tokenContract.transfer(batcherInstance.address, 5, { from: tokenContractOwner});
+        await tokenContract.transfer(batcherInstance.address, 5, {
+          from: tokenContractOwner
+        });
         await checkBalance(batcherInstance.address, 5);
       });
 
-      it('Correctly sends tokens back', async () => {
+      it("Correctly sends tokens back", async () => {
         const tokenTransferData = getTokenTransferData(tokenContractOwner, 5);
-        await batcherInstance.recover(tokenContract.address, 0, tokenTransferData, { from: batcherOwner });
+        await batcherInstance.recover(
+          tokenContract.address,
+          0,
+          tokenTransferData,
+          { from: batcherOwner }
+        );
         await checkBalance(tokenContractOwner, totalSupply);
       });
 
-      it('Doesn\'t allow an address other than the owner to transfer tokens', async () => {
+      it("Doesn't allow an address other than the owner to transfer tokens", async () => {
         const tokenTransferData = getTokenTransferData(accounts[1], 5);
-        await assertVMException(batcherInstance.recover(tokenContract.address, 0, tokenTransferData, { from: accounts[1] }),
-          onlyOwnerErrMsg);
+        await assertVMException(
+          batcherInstance.recover(tokenContract.address, 0, tokenTransferData, {
+            from: accounts[1]
+          }),
+          onlyOwnerErrMsg
+        );
       });
 
-      it('Returns false on a bad token transfer', async () => {
+      it("Returns false on a bad token transfer", async () => {
         const tokenTransferData = getTokenTransferData(tokenContractOwner, 10);
-        const res = await batcherInstance.recover.call(tokenContract.address, 0, tokenTransferData, { from: batcherOwner });
-        assert.strictEqual(ethAbi.decodeParameter('bool', res), false, 'Token transfer shouldn\'t have been successful');
+        const res = await batcherInstance.recover.call(
+          tokenContract.address,
+          0,
+          tokenTransferData,
+          { from: batcherOwner }
+        );
+        assert.strictEqual(
+          ethAbi.decodeParameter("bool", res),
+          false,
+          "Token transfer shouldn't have been successful"
+        );
         await checkBalance(tokenContractOwner, totalSupply - 5);
       });
     });

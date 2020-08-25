@@ -93,8 +93,29 @@ exports.serializeSignature = ({ r, s, v }) =>
  * @return address
  */
 exports.getNextContractAddress = async (address) => {
+  const addressBuffer = Buffer.from(util.stripHexPrefix(address), "hex");
   const nonce = await web3.eth.getTransactionCount(address);
   return util.toChecksumAddress(
-    util.bufferToHex(util.generateAddress(address, nonce))
+    util.bufferToHex(util.generateAddress(addressBuffer, util.toBuffer(nonce)))
   );
+};
+
+exports.getNextContractAddressCreate2 = (address, salt, initCode) => {
+  const addressBuffer = Buffer.from(util.stripHexPrefix(address), "hex");
+  const initCodeBuffer = Buffer.from(util.stripHexPrefix(initCode), "hex");
+  return util.toChecksumAddress(
+    util.bufferToHex(util.generateAddress2(addressBuffer, salt, initCodeBuffer))
+  );
+};
+
+exports.assertVMException = async (fn) => {
+  let failed = false;
+  try {
+    await fn();
+  } catch (err) {
+    err.message.toString().should.containEql("VM Exception");
+    failed = true;
+  }
+
+  failed.should.equal(true);
 };
