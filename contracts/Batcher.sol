@@ -54,7 +54,6 @@ contract Batcher {
      *  Thus, recipients and values must be the same length
      */
     function batch(address[] calldata recipients, uint256[] calldata values) external payable lockCall {
-        require(address(this).balance == msg.value, "Contract balance must be zero before the start of every batch");
         require(recipients.length != 0, "Must send to at least one person");
         require(recipients.length == values.length, "There must be an equal amount of recipients and values");
         require(recipients.length < 256, "Can only send to a max of 255 recipients");
