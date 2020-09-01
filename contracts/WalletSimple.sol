@@ -47,8 +47,7 @@ contract WalletSimple {
   bool public safeMode = false; // When active, wallet may only send to signer addresses
 
   // Internal fields
-  uint constant SEQUENCE_ID_WINDOW_SIZE = 10;
-  uint[10] recentSequenceIds;
+  uint lastSequenceId;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
@@ -61,7 +60,7 @@ contract WalletSimple {
   function init(address[] calldata allowedSigners) public onlyUninitialized {
     if (allowedSigners.length != 3) {
       // Invalid number of signers
-      revert();
+      revert("Invalid number of signers - required: 3");
     }
     signers = allowedSigners;
   }
@@ -86,7 +85,7 @@ contract WalletSimple {
    */
   modifier onlySigner {
     if (!isSigner(msg.sender)) {
-      revert();
+      revert("Non-signer in onlySigner method");
     }
     _;
   }
@@ -96,7 +95,7 @@ contract WalletSimple {
    */
   modifier onlyUninitialized {
     if (signers.length != 0) {
-      revert();
+      revert("Contract already initialized");
     }
     _;
   }
@@ -150,7 +149,7 @@ contract WalletSimple {
     (bool success,  ) = toAddress.call{value: value}(data);
     if (!success) {
       // Failed executing transaction
-        revert();
+        revert("Call execution failed");
     }
     
     Transacted(msg.sender, otherSigner, operationHash, toAddress, value, data);
@@ -182,7 +181,7 @@ contract WalletSimple {
     
     ERC20Interface instance = ERC20Interface(tokenContractAddress);
     if (!instance.transfer(toAddress, value)) {
-        revert();
+        revert("ERC20 Transfer call failed");
     }
   }
   
@@ -222,25 +221,21 @@ contract WalletSimple {
 
     // Verify if we are in safe mode. In safe mode, the wallet can only send to signers
     if (safeMode && !isSigner(toAddress)) {
-      // We are in safe mode and the toAddress is not a signer. Disallow!
-      revert();
+      revert("Sending to non-signer while in safe mode");
     }
     // Verify that the transaction has not expired
     if (expireTime < block.timestamp) {
-      // Transaction expired
-      revert();
+      revert("Transaction expired");
     }
 
     // Try to insert the sequence ID. Will revert if the sequence id was invalid
-    tryInsertSequenceId(sequenceId);
+    tryUpdateSequenceId(sequenceId);
 
     if (!isSigner(otherSigner)) {
-      // Other signer not on this wallet or operation does not match arguments
-      revert();
+      revert("Invalid signer");
     }
     if (otherSigner == msg.sender) {
-      // Cannot approve own transaction
-      revert();
+      revert("Invalid signature - cannot approve own transaction");
     }
 
     return otherSigner;
@@ -265,7 +260,7 @@ contract WalletSimple {
     bytes memory signature
   ) private pure returns (address) {
     if (signature.length != 65) {
-      revert();
+      revert("Invalid signature - too long");
     }
     // We need to unpack the signature, which is given as an array of 65 bytes (like eth.sign)
     bytes32 r;
@@ -283,34 +278,22 @@ contract WalletSimple {
   }
 
   /**
-   * Verify that the sequence id has not been used before and inserts it. Throws if the sequence ID was not accepted.
-   * We collect a window of up to 10 recent sequence ids, and allow any sequence id that is not in the window and
-   * greater than the minimum element in the window.
-   * @param sequenceId to insert into array of stored ids
+   * Verify that the sequence id is greater than the currently stored value and updates the stored value.
+   * By requiring sequence IDs to always increase, we ensure that the same signature can't be used twice.
+   * @param sequenceId The new sequenceId to use
    */
-  function tryInsertSequenceId(uint sequenceId) private onlySigner {
-    // Keep a pointer to the lowest value element in the window
-    uint lowestValueIndex = 0;
-    for (uint i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
-      if (recentSequenceIds[i] == sequenceId) {
-        // This sequence ID has been used before. Disallow!
-        revert();
-      }
-      if (recentSequenceIds[i] < recentSequenceIds[lowestValueIndex]) {
-        lowestValueIndex = i;
-      }
+  function tryUpdateSequenceId(uint sequenceId) private onlySigner {
+    if (sequenceId <= lastSequenceId) {
+        revert("sequenceId is too low");
     }
-    if (sequenceId < recentSequenceIds[lowestValueIndex]) {
-      // The sequence ID being used is lower than the lowest value in the window
-      // so we cannot accept it as it may have been used before
-      revert();
+
+    if (sequenceId > lastSequenceId + 10000) {
+        // Block sequence IDs which are much higher than the current
+        // This prevents people blocking the contract by using very large sequence IDs quickly
+        revert("sequenceId is too high");
     }
-    if (sequenceId > (recentSequenceIds[lowestValueIndex] + 10000)) {
-      // Block sequence IDs which are much higher than the lowest value
-      // This prevents people blocking the contract by using very large sequence IDs quickly
-      revert();
-    }
-    recentSequenceIds[lowestValueIndex] = sequenceId;
+
+    lastSequenceId = sequenceId;
   }
 
   /**
@@ -318,12 +301,6 @@ contract WalletSimple {
    * returns the sequenceId one higher than the highest currently stored
    */
   function getNextSequenceId() public view returns (uint) {
-    uint highestSequenceId = 0;
-    for (uint i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
-      if (recentSequenceIds[i] > highestSequenceId) {
-        highestSequenceId = recentSequenceIds[i];
-      }
-    }
-    return highestSequenceId + 1;
+    return lastSequenceId + 1;
   }
 }
