@@ -1243,29 +1243,16 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
         const forwarder = await create();
         forwarder.address.should.eql(forwarderContractAddress);
 
-        // Verify that funds are still stuck in forwarder contract address
+        // Verify that funds were automatically flushed to the base wallet
         const endForwarderBalance = await web3.eth.getBalance(
           forwarderContractAddress
         );
         web3.utils
           .fromWei(endForwarderBalance, "ether")
-          .should.eql(web3.utils.toBN(300).toString());
+          .should.eql(web3.utils.toBN(0).toString());
         const endWalletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
           .fromWei(endWalletBalance, "ether")
-          .should.eql(web3.utils.toBN(0).toString());
-
-        // Flush and verify
-        await forwarder.flush({ from: accounts[0] });
-        const finalForwarderBalance = await web3.eth.getBalance(
-          forwarderContractAddress
-        );
-        web3.utils
-          .fromWei(finalForwarderBalance, "ether")
-          .should.eql(web3.utils.toBN(0).toString());
-        const finalWalletBalance = await web3.eth.getBalance(wallet.address);
-        web3.utils
-          .fromWei(finalWalletBalance, "ether")
           .should.eql(web3.utils.toBN(300).toString());
       });
 
@@ -1299,29 +1286,16 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
         const forwarder = await create();
         forwarder.address.should.eql(forwarderContractAddress);
 
-        // Verify that funds are still stuck in forwarder contract address
+        // Verify that funds were flushed automatically
         const endForwarderBalance = await web3.eth.getBalance(
           forwarderContractAddress
         );
         web3.utils
           .fromWei(endForwarderBalance, "ether")
-          .should.eql(web3.utils.toBN(300).toString());
+          .should.eql(web3.utils.toBN(0).toString());
         const endWalletBalance = await web3.eth.getBalance(wallet.address);
         web3.utils
           .fromWei(endWalletBalance, "ether")
-          .should.eql(web3.utils.toBN(0).toString());
-
-        // Flush and verify
-        await forwarder.flush({ from: accounts[0] });
-        const finalForwarderBalance = await web3.eth.getBalance(
-          forwarder.address
-        );
-        web3.utils
-          .fromWei(finalForwarderBalance, "ether")
-          .should.eql(web3.utils.toBN(0).toString());
-        const finalWalletBalance = await web3.eth.getBalance(wallet.address);
-        web3.utils
-          .fromWei(finalWalletBalance, "ether")
           .should.eql(web3.utils.toBN(300).toString());
       });
     });

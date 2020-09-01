@@ -17,6 +17,7 @@ contract Forwarder {
    */
   function init(address _parentAddress) public onlyUninitialized {
     parentAddress = _parentAddress;
+    this.flush();
   }
 
   /**
