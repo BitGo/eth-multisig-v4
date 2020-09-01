@@ -101,7 +101,7 @@ contract WalletSimple {
   }
 
  /**
-   * Gets called when a transaction is received without calling a method
+   * Gets called when a transaction is received with data that does not match any other method
    */
   fallback() external payable {
     if (msg.value > 0) {
@@ -111,7 +111,7 @@ contract WalletSimple {
   }
   
   /**
-   * Gets called when a transaction is received without calling a method
+   * Gets called when a transaction is received with ether and no data
    */
   receive() external payable {
     if (msg.value > 0) {

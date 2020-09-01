@@ -41,14 +41,14 @@ contract Forwarder {
   }
 
   /**
-   * Default function; Gets called when Ether is deposited, and forwards it to the parent address
+   * Default function; Gets called when data is sent but does not match any other function
    */
   fallback() external payable {
       this.flush();
   }
   
   /**
-   * Default function; Gets called when Ether is deposited, and forwards it to the parent address
+   * Default function; Gets called when Ether is deposited with no data, and forwards it to the parent address
    */
   receive() external payable {
       this.flush();
