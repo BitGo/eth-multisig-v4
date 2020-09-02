@@ -47,7 +47,7 @@ contract WalletSimple {
   bool public safeMode = false; // When active, wallet may only send to signer addresses
 
   // Internal fields
-  uint lastSequenceId;
+  uint private lastSequenceId;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
@@ -57,10 +57,10 @@ contract WalletSimple {
    *
    * @param allowedSigners An array of signers on the wallet
    */
-  function init(address[] calldata allowedSigners) public onlyUninitialized {
+  function init(address[] calldata allowedSigners) external onlyUninitialized {
     if (allowedSigners.length != 3) {
       // Invalid number of signers
-      revert("Invalid number of signers - required: 3");
+      revert("Invalid number of signers");
     }
     signers = allowedSigners;
   }
@@ -221,7 +221,7 @@ contract WalletSimple {
 
     // Verify if we are in safe mode. In safe mode, the wallet can only send to signers
     if (safeMode && !isSigner(toAddress)) {
-      revert("Sending to non-signer while in safe mode");
+      revert("External transfer in safe mode");
     }
     // Verify that the transaction has not expired
     if (expireTime < block.timestamp) {
@@ -234,8 +234,9 @@ contract WalletSimple {
     if (!isSigner(otherSigner)) {
       revert("Invalid signer");
     }
+
     if (otherSigner == msg.sender) {
-      revert("Invalid signature - cannot approve own transaction");
+      revert("Confirming own transfer");
     }
 
     return otherSigner;
@@ -244,7 +245,7 @@ contract WalletSimple {
   /**
    * Irrevocably puts contract into safe mode. When in this mode, transactions may only be sent to signing addresses.
    */
-  function activateSafeMode() public onlySigner {
+  function activateSafeMode() external onlySigner {
     safeMode = true;
     SafeModeActivated(msg.sender);
   }
@@ -266,6 +267,8 @@ contract WalletSimple {
     bytes32 r;
     bytes32 s;
     uint8 v;
+
+    // solhint-disable-next-line
     assembly {
       r := mload(add(signature, 32))
       s := mload(add(signature, 64))
@@ -300,7 +303,7 @@ contract WalletSimple {
    * Gets the next available sequence ID for signing when using executeAndConfirm
    * returns the sequenceId one higher than the highest currently stored
    */
-  function getNextSequenceId() public view returns (uint) {
+  function getNextSequenceId() external view returns (uint) {
     return lastSequenceId + 1;
   }
 }

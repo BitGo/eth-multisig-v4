@@ -42,7 +42,7 @@ contract Batcher {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action");
+        require(msg.sender == owner, "Not owner");
         _;
     }
 
@@ -55,8 +55,8 @@ contract Batcher {
      */
     function batch(address[] calldata recipients, uint256[] calldata values) external payable lockCall {
         require(recipients.length != 0, "Must send to at least one person");
-        require(recipients.length == values.length, "There must be an equal amount of recipients and values");
-        require(recipients.length < 256, "Can only send to a max of 255 recipients");
+        require(recipients.length == values.length, "Unequal recipients and values");
+        require(recipients.length < 256, "Too many recipients");
 
         // ensure there is enough gas to make a batch transfer,
         // and return funds to sender, if necessary
@@ -74,7 +74,7 @@ contract Batcher {
 
         if (address(this).balance > 0) {
             (bool success,) = msg.sender.call{value: address(this).balance, gas: transferGasLimit}("");
-            require(success, "Failed to return funds to sending wallet");
+            require(success, "Sender refund failed");
         }
     }
 
@@ -95,7 +95,7 @@ contract Batcher {
      * @param newOwner The address to transfer ownership of the contract to
      */
     function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "New owner is not allowed to be zero address");
+        require(newOwner != address(0), "Invalid new owner");
         emit OwnerChange(owner, newOwner);
         owner = newOwner;
     }
@@ -107,16 +107,16 @@ contract Batcher {
      * @param newTransferGasLimit The new gas limit to send along with batched transfers
      */
     function changeTransferGasLimit(uint256 newTransferGasLimit) external onlyOwner {
-        require(newTransferGasLimit >= 2300, "New transfer gas limit must be at least 2300");
+        require(newTransferGasLimit >= 2300, "Transfer gas limit too low");
         emit TransferGasLimitChange(transferGasLimit, newTransferGasLimit);
         transferGasLimit = newTransferGasLimit;
     }
 
     fallback() external payable {
-        revert("The fallback should never be called");
+        revert("Invalid fallback");
     }
     
     receive() external payable {
-        revert("The plain receive should never be called");
+        revert("Invalid receive");
     }
 }

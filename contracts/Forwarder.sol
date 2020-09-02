@@ -15,7 +15,7 @@ contract Forwarder {
   /**
    * Initialize the contract, and sets the destination address to that of the creator
    */
-  function init(address _parentAddress) public onlyUninitialized {
+  function init(address _parentAddress) external onlyUninitialized {
     parentAddress = _parentAddress;
     this.flush();
   }
@@ -35,7 +35,7 @@ contract Forwarder {
    */
   modifier onlyUninitialized {
     if (parentAddress != address(0x0)) {
-      revert();
+      revert("Already initialized");
     }
     _;
   }
@@ -58,27 +58,28 @@ contract Forwarder {
    * Execute a token transfer of the full balance from the forwarder token to the parent address
    * @param tokenContractAddress the address of the erc20 token contract
    */
-  function flushTokens(address tokenContractAddress) public onlyParent {
+  function flushTokens(address tokenContractAddress) external onlyParent {
     ERC20Interface instance = ERC20Interface(tokenContractAddress);
     address forwarderAddress = address(this);
     uint256 forwarderBalance = instance.balanceOf(forwarderAddress);
     if (forwarderBalance == 0) {
-      return;
+        return;
     }
+
     if (!instance.transfer(parentAddress, forwarderBalance)) {
-      revert();
+        revert("Token flush failed");
     }
   }
 
   /**
    * Flush the entire balance of the contract to the parent address.
    */
-  function flush() public {
+  function flush() external {
     uint256 value = address(this).balance;
     
     (bool success,  ) = parentAddress.call{value: value}("");
     if (!success) {
-        revert();
+        revert("Flush failed");
     }
     emit ForwarderDeposited(msg.sender, value, msg.data);
   }

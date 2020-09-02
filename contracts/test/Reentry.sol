@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.7.0;
 
 import "../Batcher.sol";
 
 contract Reentry {
     Batcher private batcher;
-    address[] selfAddress;
-    uint256[] selfValue;
+    address[] public selfAddress;
+    uint256[] public selfValue;
 
     constructor(address payable _batcherAddr) {
         batcher = Batcher(_batcherAddr);

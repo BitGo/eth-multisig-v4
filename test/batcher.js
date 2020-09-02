@@ -14,17 +14,17 @@ const { toBN } = web3.utils;
 
 const emptyErrMsg = "Must send to at least one person";
 const recipientsValuesMismatchErrMsg =
-  "There must be an equal amount of recipients and values";
-const fallbackErrMsg = "The fallback should never be called";
-const plainReceiveErrMsg = "The plain receive should never be called";
+  "Unequal recipients and values";
+const fallbackErrMsg = "Invalid fallback";
+const plainReceiveErrMsg = "Invalid receive";
 const invalidRecipientErrMsg = "Invalid recipient address";
-const returnFundsFailedErrMsg = "Failed to return funds to sending wallet";
-const onlyOwnerErrMsg = "Only the owner can perform this action";
-const maxRecipientsExceededErrMsg = "Can only send to a max of 255 recipients";
+const returnFundsFailedErrMsg = "Sender refund failed";
+const onlyOwnerErrMsg = "Not owner";
+const maxRecipientsExceededErrMsg = "Too many recipients";
 const unsuccessfulCallErrMsg = "Call was not successful";
-const zeroAddrOwnerChangeErrMsg = "New owner is not allowed to be zero address";
+const zeroAddrOwnerChangeErrMsg = "Invalid new owner";
 const newGasTransferLimitTooLowErrMsg =
-  "New transfer gas limit must be at least 2300";
+  "Transfer gas limit too low";
 
 // always between 1 and max included
 const randInt = (max) => {

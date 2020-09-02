@@ -1,0 +1,11 @@
+{
+  "extends": "solhint:recommended",
+  "plugins": [],
+  "rules": {
+      "func-visibility": ["warn", { "ignoreConstructors": true }],
+      "avoid-low-level-calls": "off",
+      "compiler-version": ["error", "^0.7.0"],
+      "const-name-snakecase": "off",
+      "not-rely-on-time": "off"
+  }
+}

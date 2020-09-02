@@ -52,9 +52,7 @@ contract("Forwarder", function (accounts) {
 
     // Check that the ether is in the forwarder address and not yet in the base address
     (await getBalanceInWei(forwarderAddress)).eq(amount).should.be.true();
-    (await getBalanceInWei(baseAddress))
-      .eq(startBalance)
-      .should.be.true();
+    (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
 
     const forwarder = await createForwarder(senderAddress, baseAddress);
     forwarder.address.should.eql(forwarderAddress);

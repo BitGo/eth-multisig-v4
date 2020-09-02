@@ -1,15 +1,16 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.7.0;
 
 import "../Batcher.sol";
 
 contract TestBatcherDriver {
     Batcher private batcher;
-    bool doSelfFail;
-    bool doSelfReentry;
-    address[] selfReentryAddress;
-    uint256[] selfReentryValue;
+    bool public doSelfFail;
+    bool public doSelfReentry;
+    address[] public selfReentryAddress;
+    uint256[] public selfReentryValue;
 
-    constructor(address payable _batcherAddr, bool _doSelfFail, bool _doSelfReentry) public {
+    constructor(address payable _batcherAddr, bool _doSelfFail, bool _doSelfReentry) {
         batcher = Batcher(_batcherAddr);
         doSelfFail = _doSelfFail;
         doSelfReentry = _doSelfReentry;
@@ -17,7 +18,7 @@ contract TestBatcherDriver {
         selfReentryValue.push(1);
     }
 
-    function driveTest(address[] memory recipients, uint256[] memory values) public payable {
+    function driveTest(address[] memory recipients, uint256[] memory values) external payable {
         batcher.batch{value: msg.value}(recipients, values);
     }
 
