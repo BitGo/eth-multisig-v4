@@ -159,18 +159,10 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
     // Taken from http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html -
     // The automatic accessor function for a public state variable of array type only returns individual elements.
     // If you want to return the complete array, you have to manually write a function to do that.
-    const getSigners = async function getSigners(wallet) {
+    const isSigner = async function getSigners(wallet, signer) {
       const signers = [];
       let i = 0;
-      while (true) {
-        try {
-          const signer = await wallet.signers.call(i++);
-          signers.push(signer);
-        } catch (e) {
-          break;
-        }
-      }
-      return signers;
+      return await wallet.signers.call(signer);
     };
 
     describe("Wallet creation", function () {
@@ -181,8 +173,9 @@ coins.forEach(({ name: coinName, nativePrefix, tokenPrefix, WalletSimple }) => {
           accounts[2]
         ]);
 
-        const signers = await getSigners(wallet);
-        signers.should.eql([accounts[0], accounts[1], accounts[2]]);
+        for (const signer of [accounts[0], accounts[1], accounts[2]]) {
+          (await isSigner(wallet, signer)).should.eql(true);
+        }
 
         const isSafeMode = await wallet.safeMode.call();
         isSafeMode.should.eql(false);

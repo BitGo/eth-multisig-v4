@@ -13,8 +13,7 @@ const { getBalance, abi: ethAbi } = web3.eth;
 const { toBN } = web3.utils;
 
 const emptyErrMsg = "Must send to at least one person";
-const recipientsValuesMismatchErrMsg =
-  "Unequal recipients and values";
+const recipientsValuesMismatchErrMsg = "Unequal recipients and values";
 const fallbackErrMsg = "Invalid fallback";
 const plainReceiveErrMsg = "Invalid receive";
 const invalidRecipientErrMsg = "Invalid recipient address";
@@ -23,8 +22,7 @@ const onlyOwnerErrMsg = "Not owner";
 const maxRecipientsExceededErrMsg = "Too many recipients";
 const unsuccessfulCallErrMsg = "Call was not successful";
 const zeroAddrOwnerChangeErrMsg = "Invalid new owner";
-const newGasTransferLimitTooLowErrMsg =
-  "Transfer gas limit too low";
+const newGasTransferLimitTooLowErrMsg = "Transfer gas limit too low";
 
 // always between 1 and max included
 const randInt = (max) => {

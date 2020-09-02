@@ -43,11 +43,13 @@ contract RskWalletSimple {
   );
 
   // Public fields
-  address[] public signers; // The addresses that can co-sign transactions on the wallet
+  mapping(address => bool) public signers; // The addresses that can co-sign transactions on the wallet
   bool public safeMode = false; // When active, wallet may only send to signer addresses
+  bool public initialized = false; // True if the contract has been initialized
 
   // Internal fields
   uint private lastSequenceId;
+  uint private constant MAX_SEQUENCE_ID_INCREASE = 10000;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
@@ -62,7 +64,11 @@ contract RskWalletSimple {
       // Invalid number of signers
       revert("Invalid number of signers");
     }
-    signers = allowedSigners;
+
+    for (uint i = 0; i < allowedSigners.length; i++) {
+        signers[allowedSigners[i]] = true;
+    }
+    initialized = true;
   }
 
   /**
@@ -71,13 +77,7 @@ contract RskWalletSimple {
    * returns boolean indicating whether address is signer or not
    */
   function isSigner(address signer) public view returns (bool) {
-    // Iterate through all signers on the wallet and
-    for (uint i = 0; i < signers.length; i++) {
-      if (signers[i] == signer) {
-        return true;
-      }
-    }
-    return false;
+      return signers[signer];
   }
 
   /**
@@ -94,7 +94,7 @@ contract RskWalletSimple {
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
   modifier onlyUninitialized {
-    if (signers.length != 0) {
+    if (initialized) {
       revert("Contract already initialized");
     }
     _;
@@ -276,7 +276,7 @@ contract RskWalletSimple {
         revert("sequenceId is too low");
     }
 
-    if (sequenceId > lastSequenceId + 10000) {
+    if (sequenceId > lastSequenceId + MAX_SEQUENCE_ID_INCREASE) {
         // Block sequence IDs which are much higher than the current
         // This prevents people blocking the contract by using very large sequence IDs quickly
         revert("sequenceId is too high");
