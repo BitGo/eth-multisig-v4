@@ -76,6 +76,10 @@ contract Forwarder {
    */
   function flush() external {
     uint256 value = address(this).balance;
+
+    if (value == 0) {
+        return;
+    }
     
     (bool success,  ) = parentAddress.call{value: value}("");
     if (!success) {

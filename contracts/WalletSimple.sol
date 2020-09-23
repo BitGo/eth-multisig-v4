@@ -261,7 +261,7 @@ contract WalletSimple {
     bytes memory signature
   ) private pure returns (address) {
     if (signature.length != 65) {
-      revert("Invalid signature - too long");
+      revert("Invalid signature - wrong length");
     }
     // We need to unpack the signature, which is given as an array of 65 bytes (like eth.sign)
     bytes32 r;
@@ -301,7 +301,7 @@ contract WalletSimple {
 
   /**
    * Gets the next available sequence ID for signing when using executeAndConfirm
-   * returns the sequenceId one higher than the highest currently stored
+   * returns the sequenceId one higher than the one currently stored
    */
   function getNextSequenceId() external view returns (uint) {
     return lastSequenceId + 1;
