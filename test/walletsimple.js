@@ -93,28 +93,28 @@ const coins = [
     nativeBatchPrefix: "ETHER-Batch",
     tokenPrefix: "ERC20",
     WalletSimple: EthWalletSimple
+  },
+  {
+    name: "Rsk",
+    nativePrefix: "RSK",
+    nativeBatchPrefix: "RSK-Batch",
+    tokenPrefix: "RSK-ERC20",
+    WalletSimple: RskWalletSimple
+  },
+  {
+    name: "Etc",
+    nativePrefix: "ETC",
+    nativeBatchPrefix: "ETC-Batch",
+    tokenPrefix: "ETC-ERC20",
+    WalletSimple: EtcWalletSimple
+  },
+  {
+    name: "Celo",
+    nativePrefix: "CELO",
+    nativeBatchPrefix: "CELO-Batch",
+    tokenPrefix: "CELO-ERC20",
+    WalletSimple: CeloWalletSimple
   }
-  // {
-  //   name: "Rsk",
-  //   nativePrefix: "RSK",
-  //   nativeBatchPrefix: "RSK-Batch",
-  //   tokenPrefix: "RSK-ERC20",
-  //   WalletSimple: RskWalletSimple
-  // },
-  // {
-  //   name: "Etc",
-  //   nativePrefix: "ETC",
-  //   nativeBatchPrefix: "ETC-Batch",
-  //   tokenPrefix: "ETC-ERC20",
-  //   WalletSimple: EtcWalletSimple
-  // },
-  // {
-  //   name: "Celo",
-  //   nativePrefix: "CELO",
-  //   nativeBatchPrefix: "CELO-Batch",
-  //   tokenPrefix: "CELO-ERC20",
-  //   WalletSimple: CeloWalletSimple
-  // }
 ];
 
 coins.forEach(
