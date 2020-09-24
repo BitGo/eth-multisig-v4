@@ -42,6 +42,16 @@ contract WalletSimple {
     bytes data // Data sent when invoking the transaction
   );
 
+
+  event BatchTransfer(address sender, address recipient, uint256 value);
+  // this event shows the other signer and the operation hash that they signed
+  // specific batch transfer events are emitted in Batcher
+  event BatchTransacted(
+    address msgSender, // Address of the sender of the message initiating the transaction
+    address otherSigner, // Address of the signer (second signature) used to initiate the transaction
+    bytes32 operation // Operation hash (see Data Formats)
+  );
+
   // Public fields
   mapping(address => bool) public signers; // The addresses that can co-sign transactions on the wallet
   bool public safeMode = false; // When active, wallet may only send to signer addresses
@@ -154,6 +164,59 @@ contract WalletSimple {
     
     Transacted(msg.sender, otherSigner, operationHash, toAddress, value, data);
   }
+
+  /**
+   * Execute a batched multi-signature transaction from this wallet using 2 signers: one from msg.sender and the other from ecrecover.
+   * Sequence IDs are numbers starting from 1. They are used to prevent replay attacks and may not be repeated.
+   * The recipients and values to send are encoded in two arrays, where for index i, recipients[i] will be sent values[i].
+   *
+   * @param recipients The list of recipients to send to
+   * @param values The list of values to send to
+   * @param expireTime the number of seconds since 1970 for which this transaction is valid
+   * @param sequenceId the unique sequence id obtainable from getNextSequenceId
+   * @param signature see Data Formats
+   */
+  function sendMultiSigBatch(
+      address[] calldata recipients,
+      uint256[] calldata values,
+      uint expireTime,
+      uint sequenceId,
+      bytes calldata signature
+  ) external onlySigner {
+    require(recipients.length != 0, "Must send to at least one recipient");
+    require(recipients.length == values.length, "Unequal recipients and values");
+    require(recipients.length < 256, "Too many recipients");
+
+    // Verify the other signer
+    bytes32 operationHash = keccak256(abi.encodePacked("ETHER-Batch", recipients, values, expireTime, sequenceId));
+    
+    // the first parameter (toAddress) is used to ensure transactions in safe mode only go to a signer
+    // if in safe mode, we should use normal sendMultiSig to recover, so this check will always fail if in safe mode
+    require(!safeMode);
+    address otherSigner = verifyMultiSig(address(0x0), operationHash, signature, expireTime, sequenceId);
+
+    batchTransfer(recipients, values);
+    emit BatchTransacted(msg.sender, otherSigner, operationHash);
+  }
+
+    /**
+     * Transfer funds in a batch to each of recipients
+     * @param recipients The list of recipients to send to
+     * @param values The list of values to send to recipients. 
+     *  The recipient with index i in recipients array will be sent values[i].
+     *  Thus, recipients and values must be the same length
+     */
+    function batchTransfer(address[] calldata recipients, uint256[] calldata values) internal {
+        for (uint i = 0; i < recipients.length; i++) {
+            require(recipients[i] != address(0), "Invalid recipient address");
+            require(address(this).balance >= values[i], "Insufficient funds");
+
+            (bool success,) = recipients[i].call{value: values[i]}("");
+            require(success, "Call failed");
+
+            emit BatchTransfer(msg.sender, recipients[i], values[i]);
+        }
+    }
   
   /**
    * Execute a multi-signature token transfer from this wallet using 2 signers: one from msg.sender and the other from ecrecover.

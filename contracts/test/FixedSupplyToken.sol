@@ -8,7 +8,7 @@ pragma solidity ^0.7.0;
  
 // ERC Token Standard #20 Interface
 // https://github.com/ethereum/EIPs/issues/20
-abstract contract ERC20Interface {
+abstract contract IERC20 {
   // Get the total token supply
   function totalSupply() external virtual view returns (uint256);
 
@@ -36,7 +36,7 @@ abstract contract ERC20Interface {
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
  
-contract FixedSupplyToken is ERC20Interface {
+contract FixedSupplyToken is IERC20 {
   string public constant symbol = "FIXED";
   string public constant name = "Example Fixed Supply Token";
   uint8 public constant decimals = 18;
@@ -65,7 +65,7 @@ contract FixedSupplyToken is ERC20Interface {
     balances[owner] = _totalSupply;
   }
 
-  function totalSupply() external override view returns (uint256) {
+  function totalSupply() external override pure returns (uint256) {
     return _totalSupply;
   }
 
