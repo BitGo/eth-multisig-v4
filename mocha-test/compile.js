@@ -15,7 +15,6 @@ process.on("unhandledRejection", (r) => {
 describe("Contracts", async () => {
   const contracts = [
     "ERC20Interface.sol",
-    "FixedSupplyToken.sol",
     "Forwarder.sol",
     "WalletSimple.sol",
     "coins/EtcWalletSimple.sol",

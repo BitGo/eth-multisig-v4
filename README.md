@@ -13,7 +13,7 @@ Some of the features of the contract (WalletSimple.sol)
 5. ERC20 tokens can be flushed from the forwarder wallet to the main wallet with a single signature from any signer.
 6. ERC20 tokens and ether can be sent out from the main wallet through a multisig process.
 7. ‘Safe Mode’ can be set on a wallet contract that prevents ETH and ERC20 tokens from being sent anywhere other than to wallet signers.
-8. Transactions can be sent in batches through the [Batcher](contracts/Batcher.sol) contract to save on transfer fees.
+8. Transactions can be sent in batches through a batch function (sendMultiSigBatch) to save on fees if a user needs to perform multiple transactions.
 
 ### Deployment
 The Wallet contract and forwarder contracts can each be deployed independently of each other, using the provided ForwarderFactory and WalletFactory.
@@ -54,10 +54,6 @@ Factory to create wallets. Deploys a small proxy which utilizes the implementati
 [**ForwarderFactory**](contracts/ForwarderFactory.sol)
 
 Factory to create forwarder. Deploys a small proxy which utilizes the implementation of a single forwarder contract.
-
-[**Batcher**](contracts/Batcher.sol)
-
-Transfer batcher. Takes a list of recipients and amounts, and distributes ETH to them in a single transaction. 
 
 ## Installation
 

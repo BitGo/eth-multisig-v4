@@ -199,24 +199,23 @@ contract WalletSimple {
     emit BatchTransacted(msg.sender, otherSigner, operationHash);
   }
 
-    /**
-     * Transfer funds in a batch to each of recipients
-     * @param recipients The list of recipients to send to
-     * @param values The list of values to send to recipients. 
-     *  The recipient with index i in recipients array will be sent values[i].
-     *  Thus, recipients and values must be the same length
-     */
-    function batchTransfer(address[] calldata recipients, uint256[] calldata values) internal {
-        for (uint i = 0; i < recipients.length; i++) {
-            require(recipients[i] != address(0), "Invalid recipient address");
-            require(address(this).balance >= values[i], "Insufficient funds");
+  /**
+   * Transfer funds in a batch to each of recipients
+   * @param recipients The list of recipients to send to
+   * @param values The list of values to send to recipients. 
+   *  The recipient with index i in recipients array will be sent values[i].
+   *  Thus, recipients and values must be the same length
+   */
+  function batchTransfer(address[] calldata recipients, uint256[] calldata values) internal {
+    for (uint i = 0; i < recipients.length; i++) {
+      require(address(this).balance >= values[i], "Insufficient funds");
 
-            (bool success,) = recipients[i].call{value: values[i]}("");
-            require(success, "Call failed");
+      (bool success,) = recipients[i].call{value: values[i]}("");
+      require(success, "Call failed");
 
-            emit BatchTransfer(msg.sender, recipients[i], values[i]);
-        }
+      emit BatchTransfer(msg.sender, recipients[i], values[i]);
     }
+  }
   
   /**
    * Execute a multi-signature token transfer from this wallet using 2 signers: one from msg.sender and the other from ecrecover.
