@@ -82,6 +82,42 @@ contract WalletSimple {
   }
 
   /**
+   * Get the network identifier that signers must sign over
+   * This provides protection signatures being replayed on other chains
+   * This must be a virtual function because chain-specific contracts will need
+   *    to override with their own network ids. It also can't be a field
+   *    to allow this contract to be used by proxy with delegatecall, which will
+   *    not pick up on state variables
+   */
+  function getNetworkId() virtual internal pure returns (string memory) {
+      return "ETHER";
+  }
+
+  /**
+   * Get the network identifier that signers must sign over for token transfers
+   * This provides protection signatures being replayed on other chains
+   * This must be a virtual function because chain-specific contracts will need
+   *    to override with their own network ids. It also can't be a field
+   *    to allow this contract to be used by proxy with delegatecall, which will
+   *    not pick up on state variables
+   */
+  function getTokenNetworkId() virtual internal pure returns (string memory) {
+      return "ERC20";
+  }
+
+  /**
+   * Get the network identifier that signers must sign over for batch transfers
+   * This provides protection signatures being replayed on other chains
+   * This must be a virtual function because chain-specific contracts will need
+   *    to override with their own network ids. It also can't be a field
+   *    to allow this contract to be used by proxy with delegatecall, which will
+   *    not pick up on state variables
+   */
+  function getBatchNetworkId() virtual internal pure returns (string memory) {
+      return "ETHER-Batch";
+  }
+
+  /**
    * Determine if an address is a signer on this wallet
    * @param signer address to check
    * returns boolean indicating whether address is signer or not
@@ -151,7 +187,7 @@ contract WalletSimple {
       bytes calldata signature
   ) external onlySigner {
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked("ETHER", toAddress, value, data, expireTime, sequenceId));
+    bytes32 operationHash = keccak256(abi.encodePacked(getNetworkId(), toAddress, value, data, expireTime, sequenceId));
     
     address otherSigner = verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
 
@@ -188,7 +224,7 @@ contract WalletSimple {
     require(recipients.length < 256, "Too many recipients");
 
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked("ETHER-Batch", recipients, values, expireTime, sequenceId));
+    bytes32 operationHash = keccak256(abi.encodePacked(getBatchNetworkId(), recipients, values, expireTime, sequenceId));
     
     // the first parameter (toAddress) is used to ensure transactions in safe mode only go to a signer
     // if in safe mode, we should use normal sendMultiSig to recover, so this check will always fail if in safe mode
@@ -237,7 +273,7 @@ contract WalletSimple {
       bytes calldata signature
   ) external onlySigner {
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked("ERC20", toAddress, value, tokenContractAddress, expireTime, sequenceId));
+    bytes32 operationHash = keccak256(abi.encodePacked(getTokenNetworkId(), toAddress, value, tokenContractAddress, expireTime, sequenceId));
     
     verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
     
