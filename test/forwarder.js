@@ -32,7 +32,7 @@ contract("Forwarder", function (accounts) {
     startBalance.plus(amount).eq(endBalance).should.be.true();
   });
 
-  it("Flush", async function () {
+  it("Flush on initialization", async function () {
     // determine the forwarder contract address
     const amount = web3.utils.toWei("5", "ether");
     const baseAddress = accounts[3];
@@ -57,13 +57,7 @@ contract("Forwarder", function (accounts) {
     const forwarder = await createForwarder(senderAddress, baseAddress);
     forwarder.address.should.eql(forwarderAddress);
 
-    // Check that the ether is still in the forwarder address and not yet in the base address
-    (await getBalanceInWei(forwarderAddress)).eq(amount).should.be.true();
-    (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
-
-    await forwarder.flush.sendTransaction({ from: senderAddress });
-
-    // now the funds should have flushed to the parent
+    // Check that the ether was automatically flushed to the base address
     (await getBalanceInWei(forwarderAddress)).eq(0).should.be.true();
     (await getBalanceInWei(baseAddress))
       .eq(startBalance.plus(amount))

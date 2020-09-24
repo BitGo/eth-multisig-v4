@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: Apache-2.0
+
 pragma solidity ^0.7.0;
 
 contract GasGuzzler {
-    uint256 x = 1;
+    uint256 public x = 1;
     fallback() external payable {
         while(true) {
             x++;

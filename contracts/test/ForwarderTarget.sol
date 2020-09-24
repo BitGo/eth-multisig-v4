@@ -8,16 +8,14 @@ import "../Forwarder.sol";
 // It contains a public function with a side-effect.
 contract ForwarderTarget {
     uint public data;
+    event Received();
 
-    constructor() {
-    }
-
-    function setDataWithValue(uint d, bool b) payable public returns (bool) {
+    function setDataWithValue(uint d, bool b) payable external returns (bool) {
         data = d;
         return b;
     }
 
-    function setData(uint d, bool b) public returns (bool) {
+    function setData(uint d, bool b) external returns (bool) {
         data = d;
         return b;
     }
@@ -31,6 +29,7 @@ contract ForwarderTarget {
      */
     fallback() external payable {
         // accept unspendable balance
+        emit Received();
     }
 
     /**
@@ -38,5 +37,6 @@ contract ForwarderTarget {
      */
     receive() external payable {
         // accept unspendable balance
+        emit Received();
     }
 }

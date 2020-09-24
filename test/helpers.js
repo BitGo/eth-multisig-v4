@@ -61,6 +61,20 @@ exports.getSha3ForConfirmationTx = function (
   );
 };
 
+// Helper to get sha3 for solidity tightly-packed arguments
+exports.getSha3ForBatchTx = function (
+  prefix,
+  recipients,
+  values,
+  expireTime,
+  sequenceId
+) {
+  return abi.soliditySHA3(
+    ["string", "address[]", "uint[]", "uint", "uint"],
+    [prefix, recipients, values, expireTime, sequenceId]
+  );
+};
+
 // Helper to get token transactions sha3 for solidity tightly-packed arguments
 exports.getSha3ForConfirmationTokenTx = function (
   prefix,

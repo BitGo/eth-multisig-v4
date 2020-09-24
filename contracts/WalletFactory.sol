@@ -13,7 +13,7 @@ contract WalletFactory is CloneFactory {
     implementationAddress = _implementationAddress;
   }
 
-  function createWallet(address[] calldata allowedSigners, bytes32 salt) public {
+  function createWallet(address[] calldata allowedSigners, bytes32 salt) external {
     // include the signers in the salt so any contract deployed to a given address must have the same signers
     bytes32 finalSalt = keccak256(abi.encodePacked(allowedSigners, salt));
 
