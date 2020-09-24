@@ -2,18 +2,31 @@
 
 ## About
 
-Multi-sig contract suitable for use in wallets. 
+Multi-sig contract suitable for use as a 2-of-3 multisig wallet.
 
-Some of the features of the contract (WalletSimple.sol)
+The core functionality of the wallet is implemented in the [WalletSimple](contracts/WalletSimple.sol) contract. It is initialized with 3 signer addresses, two of which must participate in order to execute a transaction from the wallet.
+Auxillary contracts called [Forwarders](contracts/Forwarder.sol) can be deployed with a WalletSimple contract initialized as its "parent". Any funds that the forwarder receives will be sent on back to the parent wallet. This enables omnibus-style wallets to create many addresses that are all controlled by the same wallet.
+
+Features of the [wallet contract](contracts/WalletSimple.sol):
 
 1. Functions as a 2-of-3 multisig wallet for sending transactions.
 2. Support for synchronous (single transaction) approvals containing multiple signatures through the use of ecrecover.
-3. Can deploy Forwarder contracts so that a single wallet can have multiple receive addresses. 
-4. Forwarder address contracts have the ability to flush funds that were sent to the address before the contract was created.
-5. ERC20 tokens can be flushed from the forwarder wallet to the main wallet with a single signature from any signer.
-6. ERC20 tokens and ether can be sent out from the main wallet through a multisig process.
-7. ‘Safe Mode’ can be set on a wallet contract that prevents ETH and ERC20 tokens from being sent anywhere other than to wallet signers.
-8. Transactions can be sent in batches through a batch function (sendMultiSigBatch) to save on fees if a user needs to perform multiple transactions.
+3. ERC20 tokens and ether can be sent out from the main wallet through a multisig process.
+4. ‘Safe Mode’ can be set on a wallet contract that prevents ETH and ERC20 tokens from being sent anywhere other than to wallet signers.
+5. Transactions can be sent in batches through a batch function (sendMultiSigBatch) to save on fees if a user needs to perform multiple transactions.
+6. Slightly different implementations exist for non-eth chains, which require signatures to include a networkId to protect against cross-chain replay of signatures.
+
+Features of the [forwarder contract](contracts/Forwarder.sol)
+
+1. Deployed with a single, permanent parent address.
+2. Automatically flushes any ETH received to the parent address.
+3. Able to flush ERC20 tokens received to the parent address through a separate transaction (flushForwarderTokens).
+
+Note that this suite of contracts is an upgraded version of [eth-multisig-v2](https://github.com/bitgo/eth-multisig-v2). The main changes that were made are as follows:
+- Wallets and forwarders are deployed as proxy instances to a single implementation, to save on deployment fees.
+- Wallets and forwarders are deployed using CREATE2 to allow addresses to be generated on demand, but only deployed upon first use.
+- Wallets include a batch function to save on fees when sending multiple transactions.
+- SequenceId is now simply a strictly increasing nonce.
 
 ### Deployment
 The Wallet contract and forwarder contracts can each be deployed independently of each other, using the provided ForwarderFactory and WalletFactory.
