@@ -6,7 +6,7 @@ import "./CloneFactory.sol";
 contract WalletFactory is CloneFactory {
   address public implementationAddress;
 
-  event WalletCreated(address newWalletAddress);
+  event WalletCreated(address newWalletAddress, address[] allowedSigners);
 
   constructor(address _implementationAddress) {
     implementationAddress = _implementationAddress;
@@ -20,6 +20,6 @@ contract WalletFactory is CloneFactory {
 
     address payable clone = createClone(implementationAddress, finalSalt);
     WalletSimple(clone).init(allowedSigners);
-    emit WalletCreated(clone);
+    emit WalletCreated(clone, allowedSigners);
   }
 }

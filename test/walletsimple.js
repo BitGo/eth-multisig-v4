@@ -125,35 +125,6 @@ coins.forEach(
     tokenPrefix,
     WalletSimple
   }) => {
-    const getEventDetails = (eventName) => {
-      let abi = _.find(WalletSimple.abi, ({ name }) => name === eventName);
-      if (!abi) {
-        abi = _.find(Forwarder.abi, ({ name }) => name === eventName);
-      }
-
-      const hash = web3.eth.abi.encodeEventSignature(abi);
-      return { abi, hash };
-    };
-
-    const getEventFromTransaction = async (txHash, eventName) => {
-      const { abi, hash } = getEventDetails(eventName);
-      const receipt = await web3.eth.getTransactionReceipt(txHash);
-
-      if (!receipt) {
-        return undefined;
-      }
-
-      const eventData = _.find(receipt.logs, function (log) {
-        return log.topics && log.topics.length > 0 && log.topics[0] === hash;
-      });
-
-      if (!eventData) {
-        return undefined;
-      }
-
-      return web3.eth.abi.decodeLog(abi.inputs, eventData.data);
-    };
-
     const DEPOSITED_EVENT = "Deposited";
     const FORWARDER_DEPOSITED_EVENT = "ForwarderDeposited";
     const TRANSACTED_EVENT = "Transacted";
@@ -237,7 +208,7 @@ coins.forEach(
             value: web3.utils.toWei("20", "ether")
           });
 
-          const depositEvent = await getEventFromTransaction(
+          const depositEvent = await helpers.getEventFromTransaction(
             tx.transactionHash,
             DEPOSITED_EVENT
           );
@@ -254,7 +225,7 @@ coins.forEach(
             value: web3.utils.toWei("30", "ether"),
             data: "0xabcd"
           });
-          const depositEvent = await getEventFromTransaction(
+          const depositEvent = await helpers.getEventFromTransaction(
             tx.transactionHash,
             DEPOSITED_EVENT
           );
@@ -545,7 +516,7 @@ coins.forEach(
             .eq(walletEndBalance)
             .should.be.true();
 
-          const transactedEvent = await getEventFromTransaction(
+          const transactedEvent = await helpers.getEventFromTransaction(
             tx.receipt.transactionHash,
             TRANSACTED_EVENT
           );
@@ -1240,10 +1211,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(
-            params,
-            "Not enough recipients"
-          );
+          await expectFailSendMultiSigBatch(params, "Not enough recipients");
         });
 
         it("Sending with differing number of recipients and values should fail", async function () {
@@ -1575,7 +1543,7 @@ coins.forEach(
           });
           isSafeMode = await wallet.safeMode.call();
           isSafeMode.should.eql(true);
-          const safeModeEvent = await getEventFromTransaction(
+          const safeModeEvent = await helpers.getEventFromTransaction(
             tx.receipt.transactionHash,
             SAFE_MODE_ACTIVATE_EVENT
           );
@@ -1693,7 +1661,7 @@ coins.forEach(
             const tx = await forwarderAsTarget.setData(newData, setDataReturn);
             (await forwarderTarget.data.call()).toString().should.eql("0");
 
-            const depositedEvent = await getEventFromTransaction(
+            const depositedEvent = await helpers.getEventFromTransaction(
               tx.receipt.transactionHash,
               FORWARDER_DEPOSITED_EVENT
             );
@@ -1717,7 +1685,7 @@ coins.forEach(
             );
             new BigNumber(oldBalance).plus(100).eq(newBalance).should.be.true();
 
-            const depositedEvent2 = await getEventFromTransaction(
+            const depositedEvent2 = await helpers.getEventFromTransaction(
               setDataTx.receipt.transactionHash,
               FORWARDER_DEPOSITED_EVENT
             );

@@ -45,7 +45,16 @@ const createWallet = async (
     initCode
   );
 
-  await factory.createWallet(signers, inputSalt, { from: sender });
+  const tx = await factory.createWallet(signers, inputSalt, { from: sender });
+  const walletCreatedEvent = await helpers.getEventFromTransaction(
+    tx.receipt.transactionHash,
+    "WalletCreated"
+  );
+
+  walletCreatedEvent.newWalletAddress.should.equal(walletAddress);
+  JSON.stringify(walletCreatedEvent.allowedSigners).should.equal(
+    JSON.stringify(signers)
+  );
   return WalletSimple.at(walletAddress);
 };
 
