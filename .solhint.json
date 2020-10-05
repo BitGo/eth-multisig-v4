@@ -1,6 +1,6 @@
 {
   "extends": "solhint:recommended",
-  "plugins": [],
+  "plugins": ["prettier"],
   "rules": {
       "func-visibility": ["warn", { "ignoreConstructors": true }],
       "avoid-low-level-calls": "off",

@@ -1242,7 +1242,7 @@ coins.forEach(
 
           await expectFailSendMultiSigBatch(
             params,
-            "Must send to at least one recipient"
+            "Not enough recipients"
           );
         });
 

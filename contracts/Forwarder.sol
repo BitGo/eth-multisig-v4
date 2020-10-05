@@ -4,13 +4,12 @@ import "./ERC20Interface.sol";
 
 /**
  * Contract that will forward any incoming Ether to the creator of the contract
- * 
+ *
  */
 contract Forwarder {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
-  event ForwarderDeposited(address from, uint value, bytes data);
-
+  event ForwarderDeposited(address from, uint256 value, bytes data);
 
   /**
    * Initialize the contract, and sets the destination address to that of the creator
@@ -24,19 +23,15 @@ contract Forwarder {
    * Modifier that will execute internal code block only if the sender is the parent address
    */
   modifier onlyParent {
-    if (msg.sender != parentAddress) {
-      revert();
-    }
+    require(msg.sender == parentAddress, "Only Parent");
     _;
   }
-  
-    /**
+
+  /**
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
   modifier onlyUninitialized {
-    if (parentAddress != address(0x0)) {
-      revert("Already initialized");
-    }
+    require(parentAddress == address(0x0), "Already initialized");
     _;
   }
 
@@ -44,14 +39,14 @@ contract Forwarder {
    * Default function; Gets called when data is sent but does not match any other function
    */
   fallback() external payable {
-      this.flush();
+    this.flush();
   }
-  
+
   /**
    * Default function; Gets called when Ether is deposited with no data, and forwards it to the parent address
    */
   receive() external payable {
-      this.flush();
+    this.flush();
   }
 
   /**
@@ -63,12 +58,13 @@ contract Forwarder {
     address forwarderAddress = address(this);
     uint256 forwarderBalance = instance.balanceOf(forwarderAddress);
     if (forwarderBalance == 0) {
-        return;
+      return;
     }
 
-    if (!instance.transfer(parentAddress, forwarderBalance)) {
-        revert("Token flush failed");
-    }
+    require(
+      instance.transfer(parentAddress, forwarderBalance),
+      "Token flush failed"
+    );
   }
 
   /**
@@ -78,13 +74,11 @@ contract Forwarder {
     uint256 value = address(this).balance;
 
     if (value == 0) {
-        return;
+      return;
     }
-    
-    (bool success,  ) = parentAddress.call{value: value}("");
-    if (!success) {
-        revert("Flush failed");
-    }
+
+    (bool success, ) = parentAddress.call{value: value}("");
+    require(success, "Flush failed");
     emit ForwarderDeposited(msg.sender, value, msg.data);
   }
 }

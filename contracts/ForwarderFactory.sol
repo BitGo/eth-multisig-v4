@@ -4,7 +4,6 @@ import "./Forwarder.sol";
 import "./CloneFactory.sol";
 
 contract ForwarderFactory is CloneFactory {
-
   address public implementationAddress;
 
   event ForwarderCreated(address newForwarderAddress, address parentAddress);
