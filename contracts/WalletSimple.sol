@@ -198,7 +198,7 @@ contract WalletSimple {
     );
 
     // Success, send the transaction
-    (bool success, ) = toAddress.call{value: value}(data);
+    (bool success, ) = toAddress.call{ value: value }(data);
     require(success, "Call execution failed");
 
     Transacted(msg.sender, otherSigner, operationHash, toAddress, value, data);
@@ -269,7 +269,7 @@ contract WalletSimple {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], "Insufficient funds");
 
-      (bool success, ) = recipients[i].call{value: values[i]}("");
+      (bool success, ) = recipients[i].call{ value: values[i] }("");
       require(success, "Call failed");
 
       emit BatchTransfer(msg.sender, recipients[i], values[i]);

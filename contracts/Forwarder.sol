@@ -77,7 +77,7 @@ contract Forwarder {
       return;
     }
 
-    (bool success, ) = parentAddress.call{value: value}("");
+    (bool success, ) = parentAddress.call{ value: value }("");
     require(success, "Flush failed");
     emit ForwarderDeposited(msg.sender, value, msg.data);
   }
