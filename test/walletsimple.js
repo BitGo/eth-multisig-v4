@@ -128,6 +128,8 @@ coins.forEach(
     const DEPOSITED_EVENT = "Deposited";
     const FORWARDER_DEPOSITED_EVENT = "ForwarderDeposited";
     const TRANSACTED_EVENT = "Transacted";
+    const TOKEN_TRANSACTED_EVENT = "TransactedToken";
+    const FORWARDER_DEPOSITED_TOKEN_EVENT = "ForwarderDepositedToken";
     const SAFE_MODE_ACTIVATE_EVENT = "SafeModeActivated";
 
     const createWallet = async (creator, signers) => {
@@ -1866,7 +1868,7 @@ coins.forEach(
             privateKeyForAccount(accounts[4])
           );
 
-          await wallet.sendMultiSigToken(
+          const tx = await wallet.sendMultiSigToken(
             destinationAccount,
             amount,
             fixedSupplyTokenContract.address,
@@ -1875,6 +1877,21 @@ coins.forEach(
             helpers.serializeSignature(sig),
             { from: accounts[5] }
           );
+          const transactedTokenEvent = await helpers.getEventFromTransaction(
+            tx.receipt.transactionHash,
+            TOKEN_TRANSACTED_EVENT
+          );
+          transactedTokenEvent.msgSender.should.equal(accounts[5]);
+          transactedTokenEvent.otherSigner.should.equal(accounts[4]);
+          transactedTokenEvent.tokenContractAddress.should.equal(
+            fixedSupplyTokenContract.address
+          );
+          transactedTokenEvent.operation.should.equal(
+            "0x" + operationHash.toString("hex")
+          );
+          transactedTokenEvent.toAddress.should.equal(destinationAccount);
+          transactedTokenEvent.value.should.equal("50");
+
           const destinationAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
             destinationAccount
           );
@@ -1914,11 +1931,20 @@ coins.forEach(
             wallet.address
           );
 
-          await wallet.flushForwarderTokens(
+          const tx = await wallet.flushForwarderTokens(
             forwarder.address,
             fixedSupplyTokenContract.address,
             { from: accounts[5] }
           );
+          const forwarderDepositedTokenEvent = await helpers.getEventFromTransaction(
+            tx.receipt.transactionHash,
+            FORWARDER_DEPOSITED_TOKEN_EVENT
+          );
+          forwarderDepositedTokenEvent.tokenAddress.should.equal(
+            fixedSupplyTokenContract.address
+          );
+          forwarderDepositedTokenEvent.value.should.equal("100");
+
           const forwarderAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
             forwarder.address
           );

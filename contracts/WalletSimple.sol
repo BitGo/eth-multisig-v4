@@ -42,6 +42,15 @@ contract WalletSimple {
     bytes data // Data sent when invoking the transaction
   );
 
+  event TransactedToken(
+    address msgSender, // Address of the sender of the message initiating the transaction
+    address otherSigner, // Address of the signer (second signature) used to initiate the transaction
+    address tokenContractAddress, // Address of the token contract that we are sending
+    bytes32 operation, // Operation hash (see Data Formats)
+    address toAddress, // The address the transaction was sent to
+    uint256 value // Amount of Wei sent to the address
+  );
+
   event BatchTransfer(address sender, address recipient, uint256 value);
   // this event shows the other signer and the operation hash that they signed
   // specific batch transfer events are emitted in Batcher
@@ -201,7 +210,14 @@ contract WalletSimple {
     (bool success, ) = toAddress.call{ value: value }(data);
     require(success, "Call execution failed");
 
-    Transacted(msg.sender, otherSigner, operationHash, toAddress, value, data);
+    emit Transacted(
+      msg.sender,
+      otherSigner,
+      operationHash,
+      toAddress,
+      value,
+      data
+    );
   }
 
   /**
@@ -307,10 +323,25 @@ contract WalletSimple {
       )
     );
 
-    verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
+    address otherSigner = verifyMultiSig(
+      toAddress,
+      operationHash,
+      signature,
+      expireTime,
+      sequenceId
+    );
 
     ERC20Interface instance = ERC20Interface(tokenContractAddress);
     require(instance.transfer(toAddress, value), "ERC20 Transfer call failed");
+
+    emit TransactedToken(
+      msg.sender,
+      otherSigner,
+      tokenContractAddress,
+      operationHash,
+      toAddress,
+      value
+    );
   }
 
   /**

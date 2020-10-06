@@ -10,6 +10,7 @@ contract Forwarder {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   event ForwarderDeposited(address from, uint256 value, bytes data);
+  event ForwarderDepositedToken(address tokenAddress, uint256 value);
 
   /**
    * Initialize the contract, and sets the destination address to that of the creator
@@ -65,6 +66,7 @@ contract Forwarder {
       instance.transfer(parentAddress, forwarderBalance),
       "Token flush failed"
     );
+    emit ForwarderDepositedToken(tokenContractAddress, forwarderBalance);
   }
 
   /**
