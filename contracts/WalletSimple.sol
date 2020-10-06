@@ -81,6 +81,7 @@ contract WalletSimple {
     require(allowedSigners.length == 3, "Invalid number of signers");
 
     for (uint256 i = 0; i < allowedSigners.length; i++) {
+      require(allowedSigners[i] != address(0), "Invalid signer");
       signers[allowedSigners[i]] = true;
     }
     initialized = true;
@@ -427,7 +428,10 @@ contract WalletSimple {
     if (v < 27) {
       v += 27; // Ethereum versions are 27 or 28 as opposed to 0 or 1 which is submitted by some signing libs
     }
-    return ecrecover(operationHash, v, r, s);
+
+    address signer = ecrecover(operationHash, v, r, s);
+    require(signer != address(0), "Invalid signature");
+    return signer;
   }
 
   /**

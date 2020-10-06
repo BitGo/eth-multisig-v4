@@ -138,6 +138,15 @@ coins.forEach(
       return walletContract;
     };
 
+    const createWalletFactory = async () => {
+      const walletContract = await WalletSimple.new([], {});
+      const walletFactory = await WalletFactory.new(walletContract.address);
+      return {
+        implementationAddress: walletContract.address,
+        factory: walletFactory
+      };
+    };
+
     const getBalanceInWei = async (address) => {
       return web3.utils.toBN(await web3.eth.getBalance(address));
     };
@@ -191,6 +200,24 @@ coins.forEach(
           } catch (e) {
             e.message.should.not.containEql("should not be here");
           }
+        });
+
+        it("0 address signer", async function () {
+          let threw = false;
+          try {
+            const walletContract = await WalletSimple.new([], {
+              from: accounts[1]
+            });
+            await walletContract.init([
+              accounts[1],
+              accounts[2],
+              "0x0000000000000000000000000000000000000000"
+            ]);
+          } catch (e) {
+            threw = true;
+            assertVMException(e, "Invalid signer");
+          }
+          threw.should.be.true();
         });
       });
 
@@ -939,6 +966,50 @@ coins.forEach(
           };
 
           await expectFailSendMultiSig(params);
+        });
+
+        it("Should fail with an invalid signature", async function () {
+          const sequenceId = 200;
+          const msgSenderAddress = accounts[0];
+          const otherSignerAddress = accounts[5];
+          const toAddress = accounts[6];
+          const amount = "60";
+          const data = "";
+          const expireTime = Math.floor(new Date().getTime() / 1000) + 60;
+
+          const destinationStartBalance = await web3.eth.getBalance(toAddress);
+          const walletStartBalance = await web3.eth.getBalance(wallet.address);
+
+          // Get the operation hash to be signed
+          const operationHash = helpers.getSha3ForConfirmationTx(
+            nativePrefix,
+            toAddress.toLowerCase(),
+            web3.utils.toWei(amount, "ether"),
+            data,
+            expireTime,
+            sequenceId
+          );
+
+          // 2) sign tx with another account and modify the signature to make it invalid
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(otherSignerAddress)
+          );
+          sig.v = 0x666;
+
+          try {
+            await wallet.sendMultiSig(
+              toAddress.toLowerCase(),
+              web3.utils.toWei(web3.utils.toBN(amount), "ether"),
+              "0x" + data,
+              expireTime,
+              sequenceId,
+              helpers.serializeSignature(sig),
+              { from: msgSenderAddress }
+            );
+          } catch (e) {
+            assertVMException(e, "Invalid signature");
+          }
         });
 
         it("Send with a sequence ID that has been previously used should fail", async function () {
