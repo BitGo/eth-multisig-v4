@@ -42,15 +42,6 @@ contract WalletSimple {
     bytes data // Data sent when invoking the transaction
   );
 
-  event TransactedToken(
-    address msgSender, // Address of the sender of the message initiating the transaction
-    address otherSigner, // Address of the signer (second signature) used to initiate the transaction
-    address tokenContractAddress, // Address of the token contract that we are sending
-    bytes32 operation, // Operation hash (see Data Formats)
-    address toAddress, // The address the transaction was sent to
-    uint256 value // Amount of Wei sent to the address
-  );
-
   event BatchTransfer(address sender, address recipient, uint256 value);
   // this event shows the other signer and the operation hash that they signed
   // specific batch transfer events are emitted in Batcher
@@ -324,7 +315,7 @@ contract WalletSimple {
       )
     );
 
-    address otherSigner = verifyMultiSig(
+    verifyMultiSig(
       toAddress,
       operationHash,
       signature,
@@ -334,15 +325,6 @@ contract WalletSimple {
 
     ERC20Interface instance = ERC20Interface(tokenContractAddress);
     require(instance.transfer(toAddress, value), "ERC20 Transfer call failed");
-
-    emit TransactedToken(
-      msg.sender,
-      otherSigner,
-      tokenContractAddress,
-      operationHash,
-      toAddress,
-      value
-    );
   }
 
   /**
@@ -429,9 +411,10 @@ contract WalletSimple {
       v += 27; // Ethereum versions are 27 or 28 as opposed to 0 or 1 which is submitted by some signing libs
     }
 
-    address signer = ecrecover(operationHash, v, r, s);
-    require(signer != address(0), "Invalid signature");
-    return signer;
+    // note that this returns 0 if the signature is invalid
+    // Since 0x0 can never be a signer, when the recovered signer address
+    // is checked against our signer list, that 0x0 will cause an invalid signer failure
+    return ecrecover(operationHash, v, r, s);
   }
 
   /**
