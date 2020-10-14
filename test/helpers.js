@@ -2,6 +2,17 @@ const abi = require("ethereumjs-abi");
 const util = require("ethereumjs-util");
 const BN = require("bn.js");
 const Promise = require("bluebird");
+const Forwarder = artifacts.require("./Forwarder.sol");
+const ForwarderFactory = artifacts.require("./ForwarderFactory.sol");
+const WalletFactory = artifacts.require("./WalletFactory.sol");
+const WalletSimple = artifacts.require("./WalletSimple.sol");
+
+const abis = [
+  Forwarder.abi,
+  ForwarderFactory.abi,
+  WalletSimple.abi,
+  WalletFactory.abi
+];
 
 exports.showBalances = function () {
   const accounts = web3.eth.accounts;
@@ -139,4 +150,40 @@ exports.getInitCode = (targetAddress) => {
     .stripHexPrefix(targetAddress.toLowerCase())
     .padStart(40, "0");
   return `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${target}5af43d82803e903d91602b57fd5bf3`;
+};
+
+getEventDetails = (abis, eventName) => {
+  let foundAbi;
+  for (const abi of abis) {
+    foundAbi = _.find(abi, ({ name }) => name === eventName);
+    if (foundAbi) {
+      break;
+    }
+  }
+
+  if (!foundAbi) {
+    throw new Error(`Unknown event ${eventName}`);
+  }
+
+  const hash = web3.eth.abi.encodeEventSignature(foundAbi);
+  return { abi: foundAbi, hash };
+};
+
+exports.getEventFromTransaction = async (txHash, eventName) => {
+  const { abi, hash } = getEventDetails(abis, eventName);
+  const receipt = await web3.eth.getTransactionReceipt(txHash);
+
+  if (!receipt) {
+    return undefined;
+  }
+
+  const eventData = _.find(receipt.logs, function (log) {
+    return log.topics && log.topics.length > 0 && log.topics[0] === hash;
+  });
+
+  if (!eventData) {
+    return undefined;
+  }
+
+  return web3.eth.abi.decodeLog(abi.inputs, eventData.data);
 };

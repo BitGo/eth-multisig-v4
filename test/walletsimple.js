@@ -125,35 +125,6 @@ coins.forEach(
     tokenPrefix,
     WalletSimple
   }) => {
-    const getEventDetails = (eventName) => {
-      let abi = _.find(WalletSimple.abi, ({ name }) => name === eventName);
-      if (!abi) {
-        abi = _.find(Forwarder.abi, ({ name }) => name === eventName);
-      }
-
-      const hash = web3.eth.abi.encodeEventSignature(abi);
-      return { abi, hash };
-    };
-
-    const getEventFromTransaction = async (txHash, eventName) => {
-      const { abi, hash } = getEventDetails(eventName);
-      const receipt = await web3.eth.getTransactionReceipt(txHash);
-
-      if (!receipt) {
-        return undefined;
-      }
-
-      const eventData = _.find(receipt.logs, function (log) {
-        return log.topics && log.topics.length > 0 && log.topics[0] === hash;
-      });
-
-      if (!eventData) {
-        return undefined;
-      }
-
-      return web3.eth.abi.decodeLog(abi.inputs, eventData.data);
-    };
-
     const DEPOSITED_EVENT = "Deposited";
     const FORWARDER_DEPOSITED_EVENT = "ForwarderDeposited";
     const TRANSACTED_EVENT = "Transacted";
@@ -163,6 +134,15 @@ coins.forEach(
       const walletContract = await WalletSimple.new([], { from: creator });
       await walletContract.init(signers);
       return walletContract;
+    };
+
+    const createWalletFactory = async () => {
+      const walletContract = await WalletSimple.new([], {});
+      const walletFactory = await WalletFactory.new(walletContract.address);
+      return {
+        implementationAddress: walletContract.address,
+        factory: walletFactory
+      };
     };
 
     const getBalanceInWei = async (address) => {
@@ -219,6 +199,24 @@ coins.forEach(
             e.message.should.not.containEql("should not be here");
           }
         });
+
+        it("0 address signer", async function () {
+          let threw = false;
+          try {
+            const walletContract = await WalletSimple.new([], {
+              from: accounts[1]
+            });
+            await walletContract.init([
+              accounts[1],
+              accounts[2],
+              "0x0000000000000000000000000000000000000000"
+            ]);
+          } catch (e) {
+            threw = true;
+            assertVMException(e, "Invalid signer");
+          }
+          threw.should.be.true();
+        });
       });
 
       describe("Deposits", function () {
@@ -237,7 +235,7 @@ coins.forEach(
             value: web3.utils.toWei("20", "ether")
           });
 
-          const depositEvent = await getEventFromTransaction(
+          const depositEvent = await helpers.getEventFromTransaction(
             tx.transactionHash,
             DEPOSITED_EVENT
           );
@@ -254,7 +252,7 @@ coins.forEach(
             value: web3.utils.toWei("30", "ether"),
             data: "0xabcd"
           });
-          const depositEvent = await getEventFromTransaction(
+          const depositEvent = await helpers.getEventFromTransaction(
             tx.transactionHash,
             DEPOSITED_EVENT
           );
@@ -545,7 +543,7 @@ coins.forEach(
             .eq(walletEndBalance)
             .should.be.true();
 
-          const transactedEvent = await getEventFromTransaction(
+          const transactedEvent = await helpers.getEventFromTransaction(
             tx.receipt.transactionHash,
             TRANSACTED_EVENT
           );
@@ -968,6 +966,50 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
+        it("Should fail with an invalid signature", async function () {
+          sequenceId = sequenceId + 1;
+          const msgSenderAddress = accounts[0];
+          const otherSignerAddress = accounts[5];
+          const toAddress = accounts[6];
+          const amount = "60";
+          const data = "";
+          const expireTime = Math.floor(new Date().getTime() / 1000) + 60;
+
+          const destinationStartBalance = await web3.eth.getBalance(toAddress);
+          const walletStartBalance = await web3.eth.getBalance(wallet.address);
+
+          // Get the operation hash to be signed
+          const operationHash = helpers.getSha3ForConfirmationTx(
+            nativePrefix,
+            toAddress.toLowerCase(),
+            web3.utils.toWei(amount, "ether"),
+            data,
+            expireTime,
+            sequenceId
+          );
+
+          // 2) sign tx with another account and modify the signature to make it invalid
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(otherSignerAddress)
+          );
+          sig.v = 0x666;
+
+          try {
+            await wallet.sendMultiSig(
+              toAddress.toLowerCase(),
+              web3.utils.toWei(web3.utils.toBN(amount), "ether"),
+              "0x" + data,
+              expireTime,
+              sequenceId,
+              helpers.serializeSignature(sig),
+              { from: msgSenderAddress }
+            );
+          } catch (e) {
+            assertVMException(e, "Invalid signer");
+          }
+        });
+
         it("Send with a sequence ID that has been previously used should fail", async function () {
           sequenceId = usedSequenceId || sequenceId - 1;
           const params = {
@@ -1240,10 +1282,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(
-            params,
-            "Must send to at least one recipient"
-          );
+          await expectFailSendMultiSigBatch(params, "Not enough recipients");
         });
 
         it("Sending with differing number of recipients and values should fail", async function () {
@@ -1575,7 +1614,7 @@ coins.forEach(
           });
           isSafeMode = await wallet.safeMode.call();
           isSafeMode.should.eql(true);
-          const safeModeEvent = await getEventFromTransaction(
+          const safeModeEvent = await helpers.getEventFromTransaction(
             tx.receipt.transactionHash,
             SAFE_MODE_ACTIVATE_EVENT
           );
@@ -1693,7 +1732,7 @@ coins.forEach(
             const tx = await forwarderAsTarget.setData(newData, setDataReturn);
             (await forwarderTarget.data.call()).toString().should.eql("0");
 
-            const depositedEvent = await getEventFromTransaction(
+            const depositedEvent = await helpers.getEventFromTransaction(
               tx.receipt.transactionHash,
               FORWARDER_DEPOSITED_EVENT
             );
@@ -1717,7 +1756,7 @@ coins.forEach(
             );
             new BigNumber(oldBalance).plus(100).eq(newBalance).should.be.true();
 
-            const depositedEvent2 = await getEventFromTransaction(
+            const depositedEvent2 = await helpers.getEventFromTransaction(
               setDataTx.receipt.transactionHash,
               FORWARDER_DEPOSITED_EVENT
             );
@@ -1907,6 +1946,7 @@ coins.forEach(
             helpers.serializeSignature(sig),
             { from: accounts[5] }
           );
+
           const destinationAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
             destinationAccount
           );
@@ -1951,6 +1991,7 @@ coins.forEach(
             fixedSupplyTokenContract.address,
             { from: accounts[5] }
           );
+
           const forwarderAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
             forwarder.address
           );

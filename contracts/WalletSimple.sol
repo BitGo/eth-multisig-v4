@@ -31,17 +31,16 @@ import "./ERC20Interface.sol";
  */
 contract WalletSimple {
   // Events
-  event Deposited(address from, uint value, bytes data);
+  event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
   event Transacted(
     address msgSender, // Address of the sender of the message initiating the transaction
     address otherSigner, // Address of the signer (second signature) used to initiate the transaction
     bytes32 operation, // Operation hash (see Data Formats)
     address toAddress, // The address the transaction was sent to
-    uint value, // Amount of Wei sent to the address
+    uint256 value, // Amount of Wei sent to the address
     bytes data // Data sent when invoking the transaction
   );
-
 
   event BatchTransfer(address sender, address recipient, uint256 value);
   // this event shows the other signer and the operation hash that they signed
@@ -58,8 +57,8 @@ contract WalletSimple {
   bool public initialized = false; // True if the contract has been initialized
 
   // Internal fields
-  uint private lastSequenceId;
-  uint private constant MAX_SEQUENCE_ID_INCREASE = 10000;
+  uint256 private lastSequenceId;
+  uint256 private constant MAX_SEQUENCE_ID_INCREASE = 10000;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
@@ -70,13 +69,11 @@ contract WalletSimple {
    * @param allowedSigners An array of signers on the wallet
    */
   function init(address[] calldata allowedSigners) external onlyUninitialized {
-    if (allowedSigners.length != 3) {
-      // Invalid number of signers
-      revert("Invalid number of signers");
-    }
+    require(allowedSigners.length == 3, "Invalid number of signers");
 
-    for (uint i = 0; i < allowedSigners.length; i++) {
-        signers[allowedSigners[i]] = true;
+    for (uint256 i = 0; i < allowedSigners.length; i++) {
+      require(allowedSigners[i] != address(0), "Invalid signer");
+      signers[allowedSigners[i]] = true;
     }
     initialized = true;
   }
@@ -89,8 +86,8 @@ contract WalletSimple {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getNetworkId() virtual internal pure returns (string memory) {
-      return "ETHER";
+  function getNetworkId() internal virtual pure returns (string memory) {
+    return "ETHER";
   }
 
   /**
@@ -101,8 +98,8 @@ contract WalletSimple {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getTokenNetworkId() virtual internal pure returns (string memory) {
-      return "ERC20";
+  function getTokenNetworkId() internal virtual pure returns (string memory) {
+    return "ERC20";
   }
 
   /**
@@ -113,8 +110,8 @@ contract WalletSimple {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getBatchNetworkId() virtual internal pure returns (string memory) {
-      return "ETHER-Batch";
+  function getBatchNetworkId() internal virtual pure returns (string memory) {
+    return "ETHER-Batch";
   }
 
   /**
@@ -123,30 +120,26 @@ contract WalletSimple {
    * returns boolean indicating whether address is signer or not
    */
   function isSigner(address signer) public view returns (bool) {
-      return signers[signer];
+    return signers[signer];
   }
 
   /**
    * Modifier that will execute internal code block only if the sender is an authorized signer on this wallet
    */
   modifier onlySigner {
-    if (!isSigner(msg.sender)) {
-      revert("Non-signer in onlySigner method");
-    }
+    require(isSigner(msg.sender), "Non-signer in onlySigner method");
     _;
   }
-  
+
   /**
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
   modifier onlyUninitialized {
-    if (initialized) {
-      revert("Contract already initialized");
-    }
+    require(!initialized, "Contract already initialized");
     _;
   }
 
- /**
+  /**
    * Gets called when a transaction is received with data that does not match any other method
    */
   fallback() external payable {
@@ -155,7 +148,7 @@ contract WalletSimple {
       Deposited(msg.sender, msg.value, msg.data);
     }
   }
-  
+
   /**
    * Gets called when a transaction is received with ether and no data
    */
@@ -165,7 +158,6 @@ contract WalletSimple {
       Deposited(msg.sender, msg.value, msg.data);
     }
   }
-
 
   /**
    * Execute a multi-signature transaction from this wallet using 2 signers: one from msg.sender and the other from ecrecover.
@@ -179,26 +171,45 @@ contract WalletSimple {
    * @param signature see Data Formats
    */
   function sendMultiSig(
-      address toAddress,
-      uint value,
-      bytes calldata data,
-      uint expireTime,
-      uint sequenceId,
-      bytes calldata signature
+    address toAddress,
+    uint256 value,
+    bytes calldata data,
+    uint256 expireTime,
+    uint256 sequenceId,
+    bytes calldata signature
   ) external onlySigner {
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked(getNetworkId(), toAddress, value, data, expireTime, sequenceId));
-    
-    address otherSigner = verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
+    bytes32 operationHash = keccak256(
+      abi.encodePacked(
+        getNetworkId(),
+        toAddress,
+        value,
+        data,
+        expireTime,
+        sequenceId
+      )
+    );
+
+    address otherSigner = verifyMultiSig(
+      toAddress,
+      operationHash,
+      signature,
+      expireTime,
+      sequenceId
+    );
 
     // Success, send the transaction
-    (bool success,  ) = toAddress.call{value: value}(data);
-    if (!success) {
-      // Failed executing transaction
-        revert("Call execution failed");
-    }
-    
-    Transacted(msg.sender, otherSigner, operationHash, toAddress, value, data);
+    (bool success, ) = toAddress.call{ value: value }(data);
+    require(success, "Call execution failed");
+
+    emit Transacted(
+      msg.sender,
+      otherSigner,
+      operationHash,
+      toAddress,
+      value,
+      data
+    );
   }
 
   /**
@@ -213,23 +224,40 @@ contract WalletSimple {
    * @param signature see Data Formats
    */
   function sendMultiSigBatch(
-      address[] calldata recipients,
-      uint256[] calldata values,
-      uint expireTime,
-      uint sequenceId,
-      bytes calldata signature
+    address[] calldata recipients,
+    uint256[] calldata values,
+    uint256 expireTime,
+    uint256 sequenceId,
+    bytes calldata signature
   ) external onlySigner {
-    require(recipients.length != 0, "Must send to at least one recipient");
-    require(recipients.length == values.length, "Unequal recipients and values");
+    require(recipients.length != 0, "Not enough recipients");
+    require(
+      recipients.length == values.length,
+      "Unequal recipients and values"
+    );
     require(recipients.length < 256, "Too many recipients");
 
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked(getBatchNetworkId(), recipients, values, expireTime, sequenceId));
-    
+    bytes32 operationHash = keccak256(
+      abi.encodePacked(
+        getBatchNetworkId(),
+        recipients,
+        values,
+        expireTime,
+        sequenceId
+      )
+    );
+
     // the first parameter (toAddress) is used to ensure transactions in safe mode only go to a signer
     // if in safe mode, we should use normal sendMultiSig to recover, so this check will always fail if in safe mode
-    require(!safeMode);
-    address otherSigner = verifyMultiSig(address(0x0), operationHash, signature, expireTime, sequenceId);
+    require(!safeMode, "Batch in safe mode");
+    address otherSigner = verifyMultiSig(
+      address(0x0),
+      operationHash,
+      signature,
+      expireTime,
+      sequenceId
+    );
 
     batchTransfer(recipients, values);
     emit BatchTransacted(msg.sender, otherSigner, operationHash);
@@ -238,21 +266,24 @@ contract WalletSimple {
   /**
    * Transfer funds in a batch to each of recipients
    * @param recipients The list of recipients to send to
-   * @param values The list of values to send to recipients. 
+   * @param values The list of values to send to recipients.
    *  The recipient with index i in recipients array will be sent values[i].
    *  Thus, recipients and values must be the same length
    */
-  function batchTransfer(address[] calldata recipients, uint256[] calldata values) internal {
-    for (uint i = 0; i < recipients.length; i++) {
+  function batchTransfer(
+    address[] calldata recipients,
+    uint256[] calldata values
+  ) internal {
+    for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], "Insufficient funds");
 
-      (bool success,) = recipients[i].call{value: values[i]}("");
+      (bool success, ) = recipients[i].call{ value: values[i] }("");
       require(success, "Call failed");
 
       emit BatchTransfer(msg.sender, recipients[i], values[i]);
     }
   }
-  
+
   /**
    * Execute a multi-signature token transfer from this wallet using 2 signers: one from msg.sender and the other from ecrecover.
    * Sequence IDs are numbers starting from 1. They are used to prevent replay attacks and may not be repeated.
@@ -265,24 +296,37 @@ contract WalletSimple {
    * @param signature see Data Formats
    */
   function sendMultiSigToken(
-      address toAddress,
-      uint value,
-      address tokenContractAddress,
-      uint expireTime,
-      uint sequenceId,
-      bytes calldata signature
+    address toAddress,
+    uint256 value,
+    address tokenContractAddress,
+    uint256 expireTime,
+    uint256 sequenceId,
+    bytes calldata signature
   ) external onlySigner {
     // Verify the other signer
-    bytes32 operationHash = keccak256(abi.encodePacked(getTokenNetworkId(), toAddress, value, tokenContractAddress, expireTime, sequenceId));
-    
-    verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
-    
+    bytes32 operationHash = keccak256(
+      abi.encodePacked(
+        getTokenNetworkId(),
+        toAddress,
+        value,
+        tokenContractAddress,
+        expireTime,
+        sequenceId
+      )
+    );
+
+    verifyMultiSig(
+      toAddress,
+      operationHash,
+      signature,
+      expireTime,
+      sequenceId
+    );
+
     ERC20Interface instance = ERC20Interface(tokenContractAddress);
-    if (!instance.transfer(toAddress, value)) {
-        revert("ERC20 Transfer call failed");
-    }
+    require(instance.transfer(toAddress, value), "ERC20 Transfer call failed");
   }
-  
+
   /**
    * Execute a token flush from one of the forwarder addresses. This transfer needs only a single signature and can be done by any signer
    *
@@ -290,7 +334,7 @@ contract WalletSimple {
    * @param tokenContractAddress the address of the erc20 token contract
    */
   function flushForwarderTokens(
-    address payable forwarderAddress, 
+    address payable forwarderAddress,
     address tokenContractAddress
   ) public onlySigner {
     Forwarder forwarder = Forwarder(forwarderAddress);
@@ -308,34 +352,26 @@ contract WalletSimple {
    * returns address that has created the signature
    */
   function verifyMultiSig(
-      address toAddress,
-      bytes32 operationHash,
-      bytes calldata signature,
-      uint expireTime,
-      uint sequenceId
+    address toAddress,
+    bytes32 operationHash,
+    bytes calldata signature,
+    uint256 expireTime,
+    uint256 sequenceId
   ) private returns (address) {
-
     address otherSigner = recoverAddressFromSignature(operationHash, signature);
 
     // Verify if we are in safe mode. In safe mode, the wallet can only send to signers
-    if (safeMode && !isSigner(toAddress)) {
-      revert("External transfer in safe mode");
-    }
+    require(!safeMode || isSigner(toAddress), "External transfer in safe mode");
+
     // Verify that the transaction has not expired
-    if (expireTime < block.timestamp) {
-      revert("Transaction expired");
-    }
+    require(expireTime >= block.timestamp, "Transaction expired");
 
     // Try to insert the sequence ID. Will revert if the sequence id was invalid
     tryUpdateSequenceId(sequenceId);
 
-    if (!isSigner(otherSigner)) {
-      revert("Invalid signer");
-    }
+    require(isSigner(otherSigner), "Invalid signer");
 
-    if (otherSigner == msg.sender) {
-      revert("Confirming own transfer");
-    }
+    require(otherSigner != msg.sender, "Confirming own transfer");
 
     return otherSigner;
   }
@@ -358,9 +394,8 @@ contract WalletSimple {
     bytes32 operationHash,
     bytes memory signature
   ) private pure returns (address) {
-    if (signature.length != 65) {
-      revert("Invalid signature - wrong length");
-    }
+    require(signature.length == 65, "Invalid signature - wrong length");
+
     // We need to unpack the signature, which is given as an array of 65 bytes (like eth.sign)
     bytes32 r;
     bytes32 s;
@@ -375,6 +410,10 @@ contract WalletSimple {
     if (v < 27) {
       v += 27; // Ethereum versions are 27 or 28 as opposed to 0 or 1 which is submitted by some signing libs
     }
+
+    // note that this returns 0 if the signature is invalid
+    // Since 0x0 can never be a signer, when the recovered signer address
+    // is checked against our signer list, that 0x0 will cause an invalid signer failure
     return ecrecover(operationHash, v, r, s);
   }
 
@@ -383,16 +422,15 @@ contract WalletSimple {
    * By requiring sequence IDs to always increase, we ensure that the same signature can't be used twice.
    * @param sequenceId The new sequenceId to use
    */
-  function tryUpdateSequenceId(uint sequenceId) private onlySigner {
-    if (sequenceId <= lastSequenceId) {
-        revert("sequenceId is too low");
-    }
+  function tryUpdateSequenceId(uint256 sequenceId) private onlySigner {
+    require(sequenceId > lastSequenceId, "sequenceId is too low");
 
-    if (sequenceId > lastSequenceId + MAX_SEQUENCE_ID_INCREASE) {
-        // Block sequence IDs which are much higher than the current
-        // This prevents people blocking the contract by using very large sequence IDs quickly
-        revert("sequenceId is too high");
-    }
+    // Block sequence IDs which are much higher than the current
+    // This prevents people blocking the contract by using very large sequence IDs quickly
+    require(
+      sequenceId <= lastSequenceId + MAX_SEQUENCE_ID_INCREASE,
+      "sequenceId is too high"
+    );
 
     lastSequenceId = sequenceId;
   }
@@ -401,7 +439,7 @@ contract WalletSimple {
    * Gets the next available sequence ID for signing when using executeAndConfirm
    * returns the sequenceId one higher than the one currently stored
    */
-  function getNextSequenceId() external view returns (uint) {
+  function getNextSequenceId() external view returns (uint256) {
     return lastSequenceId + 1;
   }
 }
