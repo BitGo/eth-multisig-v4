@@ -68,6 +68,10 @@ Factory to create wallets. Deploys a small proxy which utilizes the implementati
 
 Factory to create forwarder. Deploys a small proxy which utilizes the implementation of a single forwarder contract.
 
+[**Batcher**](contracts/Batcher.sol)
+
+Transfer batcher. Takes a list of recipients and amounts, and distributes ETH to them in a single transaction.
+
 ## Installation
 
 NodeJS 8.14.0 is recommended.
