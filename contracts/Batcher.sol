@@ -58,18 +58,13 @@ contract Batcher {
         require(recipients.length == values.length, "Unequal recipients and values");
         require(recipients.length < 256, "Too many recipients");
 
-        // ensure there is enough gas to make a batch transfer,
-        // and return funds to sender, if necessary
-        uint256 safeGasLimit = transferGasLimit * 2;
+        // Try to send all given amounts to all given recipients
+        // Revert everything if any transfer fails
         for (uint8 i = 0; i < recipients.length; i++) {
             require(recipients[i] != address(0), "Invalid recipient address");
-            if (gasleft() < safeGasLimit || address(this).balance < values[i]) {
-                break;
-            }
             (bool success,) = recipients[i].call{value: values[i], gas: transferGasLimit}("");
-            if (success) {
-                emit BatchTransfer(msg.sender, recipients[i], values[i]);
-            }
+            require(success, "Send failed");
+            emit BatchTransfer(msg.sender, recipients[i], values[i]);
         }
 
         if (address(this).balance > 0) {

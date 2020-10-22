@@ -12,6 +12,7 @@ const BatcherTransferEvent =
 const { getBalance, abi: ethAbi } = web3.eth;
 const { toBN } = web3.utils;
 
+const sendFailedErrorMsg = "Send failed";
 const emptyErrMsg = "Must send to at least one person";
 const recipientsValuesMismatchErrMsg = "Unequal recipients and values";
 const fallbackErrMsg = "Invalid fallback";
@@ -240,7 +241,8 @@ contract("Batcher", (accounts) => {
         values: [5],
         extraValue: 5,
         expectedRetVal: "10",
-        expectedTransferFailures: [reentryInstance.address]
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
       };
       await runTestBatcherDriver(params);
     });
@@ -250,7 +252,8 @@ contract("Batcher", (accounts) => {
         recipients: [failInstance.address],
         values: [5],
         expectedRetVal: "5",
-        expectedTransferFailures: [failInstance.address]
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
       };
       await runTestBatcherDriver(params);
     });
@@ -322,54 +325,57 @@ contract("Batcher", (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it("Correctly sends with one reentrant contract", async () => {
+    it("Correctly fails whole transaction with one reentrant contract", async () => {
       const params = {
         recipients: [reentryInstance.address, accounts[1], accounts[2]],
         values: [10, ...createRandIntArr(2)],
         expectedRetVal: "10",
-        expectedTransferFailures: [reentryInstance.address]
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
       };
       await runTestBatcherDriver(params);
     });
 
-    it("Doesn't fail with multiple recipients with less than enough value", async () => {
+    it(" with multiple recipients with less than enough value", async () => {
       const randVals = createRandIntArr(3);
       const params = {
         recipients: accounts.slice(1, 4),
         values: randVals,
         extraValue: -1,
-        expectedTransferFailures: [accounts[3]],
-        expectedRetVal: (randVals[2] - 1).toString()
+        expectedRetVal: (randVals[2] - 1).toString(),
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
       };
       await runTestBatcherDriver(params);
     });
 
-    it("Doesn't fail with multiple recipients with exactly less than enough value", async () => {
+    it("Fails with multiple recipients with exactly less than enough value", async () => {
       const randVals = createRandIntArr(3);
       const params = {
         recipients: accounts.slice(1, 4),
         values: randVals,
         extraValue: -1 * randVals[2],
-        expectedTransferFailures: [accounts[3]],
-        expectedRetVal: "0"
+        expectedRetVal: "0",
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
       };
       await runTestBatcherDriver(params);
     });
 
-    it("Doesn't fail with multiple recipients with less than enough value for multiple recipients", async () => {
+    it("Fails with multiple recipients with less than enough value for multiple recipients", async () => {
       const randVals = createRandIntArr(4);
       const lastTwo = randVals[2] + randVals[3];
       const params = {
         recipients: accounts.slice(1, 5),
         values: randVals,
         extraValue: -1 * (lastTwo - 1),
-        expectedTransferFailures: [accounts[3], accounts[4]],
-        expectedRetVal: "1"
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
       };
       await runTestBatcherDriver(params);
     });
 
-    it("Doesn't fail with multiple recipients with exactly less than enough value for multiple recipients", async () => {
+    it("Fails with multiple recipients with exactly less than enough value for multiple recipients", async () => {
       const randVals = createRandIntArr(4);
       const lastTwo = randVals[2] + randVals[3];
       const params = {
@@ -377,7 +383,8 @@ contract("Batcher", (accounts) => {
         values: randVals,
         extraValue: -1 * lastTwo,
         expectedTransferFailures: [accounts[3], accounts[4]],
-        expectedRetVal: "0"
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
       };
       await runTestBatcherDriver(params);
     });
@@ -387,8 +394,9 @@ contract("Batcher", (accounts) => {
       const params = {
         recipients: [gasGuzzlerInstance.address].concat(accounts.slice(1, 4)),
         values: randVals,
-        expectedTransferFailures: [gasGuzzlerInstance.address],
         expectedRetVal: randVals[0].toString(),
+        expectOverallFailure: true,
+        expectedErrMsg: sendFailedErrorMsg,
         gasLimit: 1e6
       };
       await runTestBatcherDriver(params);
@@ -475,7 +483,7 @@ contract("Batcher", (accounts) => {
         extraValue: 5,
         doSelfReentry: true,
         expectOverallFailure: true,
-        expectedErrMsg: returnFundsFailedErrMsg
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -511,8 +519,6 @@ contract("Batcher", (accounts) => {
       const params = {
         recipients: accounts.slice(1, 4),
         values: randVals,
-        expectedRetVal: randVals[2].toString(),
-        expectedTransferFailures: [accounts[3]],
         // costs roughly 40,000 gas to get to beginning of `distributeBatch`
         // and then another 10,000 gas for each subsequent iteration
         gasLimit: 8e4
@@ -604,7 +610,8 @@ contract("Batcher", (accounts) => {
           recipients: [gasHeavyInstance.address],
           values: [5],
           expectedRetVal: "5",
-          expectedTransferFailures: [gasHeavyInstance.address]
+          expectOverallFailure: true,
+          expectedErrMsg: sendFailedErrorMsg,
         };
         await runTestBatcherDriver(params);
 
