@@ -411,6 +411,11 @@ contract WalletSimple {
       v += 27; // Ethereum versions are 27 or 28 as opposed to 0 or 1 which is submitted by some signing libs
     }
 
+    // protect against signature malleability
+    // S value must be in the lower half orader
+    // reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/051d340171a93a3d401aaaea46b4b62fa81e5d7c/contracts/cryptography/ECDSA.sol#L53
+    require(uint256(s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0, "ECDSA: invalid signature 's' value");
+
     // note that this returns 0 if the signature is invalid
     // Since 0x0 can never be a signer, when the recovered signer address
     // is checked against our signer list, that 0x0 will cause an invalid signer failure
