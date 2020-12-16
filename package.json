@@ -35,9 +35,9 @@
     "mocha": "^4.1.0",
     "q": "^1.5.1",
     "should": "^8.3.1",
-    "solc": "^0.7.0",
+    "solc": "0.7.5",
     "solhint": "^3.2.0",
-    "truffle": "^5.1.39",
+    "truffle": "^5.1.57",
     "truffle-assertions": "^0.9.2"
   },
   "devDependencies": {

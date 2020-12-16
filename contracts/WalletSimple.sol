@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.7.0;
+pragma solidity 0.7.5;
 import "./Forwarder.sol";
 import "./ERC20Interface.sol";
 
@@ -71,7 +71,7 @@ contract WalletSimple {
   function init(address[] calldata allowedSigners) external onlyUninitialized {
     require(allowedSigners.length == 3, "Invalid number of signers");
 
-    for (uint256 i = 0; i < allowedSigners.length; i++) {
+    for (uint8 i = 0; i < allowedSigners.length; i++) {
       require(allowedSigners[i] != address(0), "Invalid signer");
       signers[allowedSigners[i]] = true;
     }
@@ -235,7 +235,7 @@ contract WalletSimple {
       recipients.length == values.length,
       "Unequal recipients and values"
     );
-    require(recipients.length < 256, "Too many recipients");
+    require(recipients.length < 256, "Too many recipients, max 255");
 
     // Verify the other signer
     bytes32 operationHash = keccak256(
@@ -371,7 +371,7 @@ contract WalletSimple {
 
     require(isSigner(otherSigner), "Invalid signer");
 
-    require(otherSigner != msg.sender, "Confirming own transfer");
+    require(otherSigner != msg.sender, "Signers cannot be equal");
 
     return otherSigner;
   }
@@ -410,6 +410,11 @@ contract WalletSimple {
     if (v < 27) {
       v += 27; // Ethereum versions are 27 or 28 as opposed to 0 or 1 which is submitted by some signing libs
     }
+
+    // protect against signature malleability
+    // S value must be in the lower half orader
+    // reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/051d340171a93a3d401aaaea46b4b62fa81e5d7c/contracts/cryptography/ECDSA.sol#L53
+    require(uint256(s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0, "ECDSA: invalid signature 's' value");
 
     // note that this returns 0 if the signature is invalid
     // Since 0x0 can never be a signer, when the recovered signer address
