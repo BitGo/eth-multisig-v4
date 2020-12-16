@@ -71,7 +71,7 @@ contract WalletSimple {
   function init(address[] calldata allowedSigners) external onlyUninitialized {
     require(allowedSigners.length == 3, "Invalid number of signers");
 
-    for (uint256 i = 0; i < allowedSigners.length; i++) {
+    for (uint8 i = 0; i < allowedSigners.length; i++) {
       require(allowedSigners[i] != address(0), "Invalid signer");
       signers[allowedSigners[i]] = true;
     }
@@ -235,7 +235,7 @@ contract WalletSimple {
       recipients.length == values.length,
       "Unequal recipients and values"
     );
-    require(recipients.length < 256, "Too many recipients");
+    require(recipients.length < 256, "Too many recipients, max 255");
 
     // Verify the other signer
     bytes32 operationHash = keccak256(
@@ -371,7 +371,7 @@ contract WalletSimple {
 
     require(isSigner(otherSigner), "Invalid signer");
 
-    require(otherSigner != msg.sender, "Confirming own transfer");
+    require(otherSigner != msg.sender, "Signers cannot be equal");
 
     return otherSigner;
   }
