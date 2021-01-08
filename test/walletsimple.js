@@ -13,6 +13,7 @@ const util = require("ethereumjs-util");
 const abi = require("ethereumjs-abi");
 const crypto = require("crypto");
 
+const WalletFactory = artifacts.require("./WalletFactory.sol");
 const EthWalletSimple = artifacts.require("./WalletSimple.sol");
 const RskWalletSimple = artifacts.require("./RskWalletSimple.sol");
 const EtcWalletSimple = artifacts.require("./EtcWalletSimple.sol");
@@ -131,9 +132,26 @@ coins.forEach(
     const SAFE_MODE_ACTIVATE_EVENT = "SafeModeActivated";
 
     const createWallet = async (creator, signers) => {
-      const walletContract = await WalletSimple.new([], { from: creator });
-      await walletContract.init(signers);
-      return walletContract;
+      // OK to be the same for all wallets since we are using a new factory for each
+      const salt = '0x1234'; 
+      const { factory, implementationAddress } = await createWalletFactory();
+
+      const inputSalt = util.setLengthLeft(
+        Buffer.from(util.stripHexPrefix(salt), "hex"),
+        32
+      );
+      const calculationSalt = abi.soliditySHA3(
+        ["address[]", "bytes32"],
+        [signers, inputSalt]
+      );
+      const initCode = helpers.getInitCode(util.stripHexPrefix(implementationAddress));
+      const walletAddress = helpers.getNextContractAddressCreate2(
+        factory.address,
+        calculationSalt,
+        initCode
+      );
+      await factory.createWallet(signers, inputSalt, { from: creator });
+      return WalletSimple.at(walletAddress);
     };
 
     const createWalletFactory = async () => {
@@ -1384,7 +1402,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Confirming own transfer.");
+          await expectFailSendMultiSigBatch(params, "Signers cannot be equal.");
         });
 
         it("Sending from an unauthorized signer (but valid other signature) should fail", async function () {

@@ -336,7 +336,7 @@ contract WalletSimple {
   function flushForwarderTokens(
     address payable forwarderAddress,
     address tokenContractAddress
-  ) public onlySigner {
+  ) external onlySigner {
     Forwarder forwarder = Forwarder(forwarderAddress);
     forwarder.flushTokens(tokenContractAddress);
   }

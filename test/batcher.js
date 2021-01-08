@@ -242,7 +242,7 @@ contract("Batcher", (accounts) => {
         extraValue: 5,
         expectedRetVal: "10",
         expectOverallFailure: true,
-        expectedErrMsg: sendFailedErrorMsg,
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -253,7 +253,7 @@ contract("Batcher", (accounts) => {
         values: [5],
         expectedRetVal: "5",
         expectOverallFailure: true,
-        expectedErrMsg: sendFailedErrorMsg,
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -331,7 +331,7 @@ contract("Batcher", (accounts) => {
         values: [10, ...createRandIntArr(2)],
         expectedRetVal: "10",
         expectOverallFailure: true,
-        expectedErrMsg: sendFailedErrorMsg,
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -344,7 +344,7 @@ contract("Batcher", (accounts) => {
         extraValue: -1,
         expectedRetVal: (randVals[2] - 1).toString(),
         expectOverallFailure: true,
-        expectedErrMsg: sendFailedErrorMsg,
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -357,7 +357,7 @@ contract("Batcher", (accounts) => {
         extraValue: -1 * randVals[2],
         expectedRetVal: "0",
         expectOverallFailure: true,
-        expectedErrMsg: sendFailedErrorMsg,
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -370,7 +370,7 @@ contract("Batcher", (accounts) => {
         values: randVals,
         extraValue: -1 * (lastTwo - 1),
         expectOverallFailure: true,
-        expectedErrMsg: sendFailedErrorMsg,
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -384,7 +384,7 @@ contract("Batcher", (accounts) => {
         extraValue: -1 * lastTwo,
         expectedTransferFailures: [accounts[3], accounts[4]],
         expectOverallFailure: true,
-        expectedErrMsg: sendFailedErrorMsg,
+        expectedErrMsg: sendFailedErrorMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -611,7 +611,7 @@ contract("Batcher", (accounts) => {
           values: [5],
           expectedRetVal: "5",
           expectOverallFailure: true,
-          expectedErrMsg: sendFailedErrorMsg,
+          expectedErrMsg: sendFailedErrorMsg
         };
         await runTestBatcherDriver(params);
 

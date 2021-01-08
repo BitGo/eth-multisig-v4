@@ -16,7 +16,19 @@ contract Forwarder {
    */
   function init(address _parentAddress) external onlyUninitialized {
     parentAddress = _parentAddress;
-    this.flush();
+    uint256 value = address(this).balance;
+
+    if (value == 0) {
+      return;
+    }
+
+    (bool success, ) = parentAddress.call{ value: value }("");
+    require(success, "Flush failed");
+    // NOTE: since we are forwarding on initialization, 
+    // we don't have the context of the original sender. 
+    // We still emit an event about the forwarding but set
+    // the sender to the forwarder itself
+    emit ForwarderDeposited(address(this), value, msg.data);
   }
 
   /**
@@ -39,14 +51,14 @@ contract Forwarder {
    * Default function; Gets called when data is sent but does not match any other function
    */
   fallback() external payable {
-    this.flush();
+    flush();
   }
 
   /**
    * Default function; Gets called when Ether is deposited with no data, and forwards it to the parent address
    */
   receive() external payable {
-    this.flush();
+    flush();
   }
 
   /**
@@ -70,7 +82,7 @@ contract Forwarder {
   /**
    * Flush the entire balance of the contract to the parent address.
    */
-  function flush() external {
+  function flush() public {
     uint256 value = address(this).balance;
 
     if (value == 0) {
