@@ -1,4 +1,4 @@
-require("should");
+const should = require("should");
 
 const truffleAssert = require("truffle-assertions");
 const helpers = require("./helpers");
@@ -16,13 +16,15 @@ const getBalanceInWei = async (address) => {
   return new BigNumber(await web3.eth.getBalance(address));
 };
 
+const FORWARDER_DEPOSITED_EVENT = "ForwarderDeposited";
+
 contract("Forwarder", function (accounts) {
   it("Basic forwarding test", async function () {
     const forwarder = await createForwarder(accounts[0], accounts[0]);
     const startBalance = await getBalanceInWei(accounts[0]);
     const amount = web3.utils.toWei("2", "ether");
 
-    await web3.eth.sendTransaction({
+    const tx = await web3.eth.sendTransaction({
       from: accounts[1],
       to: forwarder.address,
       value: amount
@@ -30,6 +32,14 @@ contract("Forwarder", function (accounts) {
 
     const endBalance = await getBalanceInWei(accounts[0]);
     startBalance.plus(amount).eq(endBalance).should.be.true();
+    const forwardedEvent = await helpers.getEventFromTransaction(
+      tx.transactionHash,
+      FORWARDER_DEPOSITED_EVENT
+    );
+
+    should.exist(forwardedEvent);
+    forwardedEvent.from.should.equal(accounts[1]);
+    forwardedEvent.value.should.equal(amount);
   });
 
   it("Flush on initialization", async function () {
@@ -54,7 +64,8 @@ contract("Forwarder", function (accounts) {
     (await getBalanceInWei(forwarderAddress)).eq(amount).should.be.true();
     (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
 
-    const forwarder = await createForwarder(senderAddress, baseAddress);
+    const forwarder = await Forwarder.new([], { from: senderAddress });
+    const tx = await forwarder.init(baseAddress);
     forwarder.address.should.eql(forwarderAddress);
 
     // Check that the ether was automatically flushed to the base address
@@ -62,6 +73,15 @@ contract("Forwarder", function (accounts) {
     (await getBalanceInWei(baseAddress))
       .eq(startBalance.plus(amount))
       .should.be.true();
+
+    const forwardedEvent = await helpers.getEventFromTransaction(
+      tx.receipt.transactionHash,
+      FORWARDER_DEPOSITED_EVENT
+    );
+
+    should.exist(forwardedEvent);
+    forwardedEvent.from.should.equal(forwarderAddress);
+    forwardedEvent.value.should.equal(amount);
   });
 
   it("Should forward with data passed", async function () {
