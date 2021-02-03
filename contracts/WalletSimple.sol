@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.5;
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "./Forwarder.sol";
 import "./ERC20Interface.sol";
 
@@ -323,8 +324,7 @@ contract WalletSimple {
       sequenceId
     );
 
-    ERC20Interface instance = ERC20Interface(tokenContractAddress);
-    require(instance.transfer(toAddress, value), "ERC20 Transfer call failed");
+    TransferHelper.safeTransfer(tokenContractAddress, toAddress, value);
   }
 
   /**

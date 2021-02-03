@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.5;
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "./ERC20Interface.sol";
 
 /**
@@ -73,10 +74,7 @@ contract Forwarder {
       return;
     }
 
-    require(
-      instance.transfer(parentAddress, forwarderBalance),
-      "Token flush failed"
-    );
+    TransferHelper.safeTransfer(tokenContractAddress, parentAddress, forwarderBalance);
   }
 
   /**
