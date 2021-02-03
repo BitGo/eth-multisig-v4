@@ -25,6 +25,7 @@ const Forwarder = artifacts.require("./Forwarder.sol");
 const ForwarderTarget = artifacts.require("./ForwarderTarget.sol");
 const ForwarderFactory = artifacts.require("./ForwarderFactory.sol");
 const FixedSupplyToken = artifacts.require("./FixedSupplyToken.sol");
+const Tether = artifacts.require("./TetherToken.sol");
 
 const assertVMException = (err, expectedErrMsg) => {
   err.message.toString().should.containEql("VM Exception");
@@ -1901,6 +1902,7 @@ coins.forEach(
 
       describe("ERC20 token transfers", function () {
         let fixedSupplyTokenContract;
+        let tetherTokenContract;
         before(async function () {
           // Create and fund the wallet
           wallet = await createWallet(accounts[4], [
@@ -1915,6 +1917,13 @@ coins.forEach(
             accounts[0]
           );
           balance.toString().should.eql("1000000");
+          tetherTokenContract = await Tether.new("1000000", "USDT", "USDT", 6, {
+            from: accounts[0]
+          });
+          const tetherBalance = await tetherTokenContract.balanceOf.call(
+            accounts[0]
+          );
+          tetherBalance.toString().should.eql("1000000");
         });
 
         it("Receive and Send tokens from main wallet contract", async function () {
@@ -2017,6 +2026,49 @@ coins.forEach(
 
           // Check wallet balance
           const walletContractEndTokens = await fixedSupplyTokenContract.balanceOf.call(
+            wallet.address
+          );
+          walletContractStartTokens
+            .add(web3.utils.toBN(100))
+            .eq(walletContractEndTokens)
+            .should.be.true();
+          /* TODO Barath - Get event testing for forwarder contract token send to work
+           */
+        });
+
+        it("Flush Tether from Forwarder contract", async function () {
+          const forwarder = await (
+            await createForwarderFromWallet(wallet)
+          ).create();
+          await tetherTokenContract.transfer(forwarder.address, 100, {
+            from: accounts[0]
+          });
+          const balance = await tetherTokenContract.balanceOf.call(
+            accounts[0]
+          );
+          balance.should.eql(web3.utils.toBN(1000000 - 100));
+
+          const forwarderContractStartTokens = await tetherTokenContract.balanceOf.call(
+            forwarder.address
+          );
+          forwarderContractStartTokens.should.eql(web3.utils.toBN(100));
+          const walletContractStartTokens = await tetherTokenContract.balanceOf.call(
+            wallet.address
+          );
+
+          await wallet.flushForwarderTokens(
+            forwarder.address,
+            tetherTokenContract.address,
+            { from: accounts[5] }
+          );
+
+          const forwarderAccountEndTokens = await tetherTokenContract.balanceOf.call(
+            forwarder.address
+          );
+          forwarderAccountEndTokens.should.eql(web3.utils.toBN(0));
+
+          // Check wallet balance
+          const walletContractEndTokens = await tetherTokenContract.balanceOf.call(
             wallet.address
           );
           walletContractStartTokens
