@@ -1,34 +1,34 @@
-require("assert");
-const should = require("should");
-const truffleAssert = require("truffle-assertions");
-const BigNumber = require("bignumber.js");
-const Promise = require("bluebird");
-const _ = require("lodash");
+require('assert');
+const should = require('should');
+const truffleAssert = require('truffle-assertions');
+const BigNumber = require('bignumber.js');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
-const helpers = require("./helpers");
-const { privateKeyForAccount } = require("../testrpc/accounts");
+const helpers = require('./helpers');
+const { privateKeyForAccount } = require('../testrpc/accounts');
 
 // Used to build the solidity tightly packed buffer to sha3, ecsign
-const util = require("ethereumjs-util");
-const abi = require("ethereumjs-abi");
-const crypto = require("crypto");
+const util = require('ethereumjs-util');
+const abi = require('ethereumjs-abi');
+const crypto = require('crypto');
 
-const WalletFactory = artifacts.require("./WalletFactory.sol");
-const EthWalletSimple = artifacts.require("./WalletSimple.sol");
-const RskWalletSimple = artifacts.require("./RskWalletSimple.sol");
-const EtcWalletSimple = artifacts.require("./EtcWalletSimple.sol");
-const CeloWalletSimple = artifacts.require("./CeloWalletSimple.sol");
-const Fail = artifacts.require("./Fail.sol");
-const GasGuzzler = artifacts.require("./GasGuzzler.sol");
-const GasHeavy = artifacts.require("./GasHeavy.sol");
-const Forwarder = artifacts.require("./Forwarder.sol");
-const ForwarderTarget = artifacts.require("./ForwarderTarget.sol");
-const ForwarderFactory = artifacts.require("./ForwarderFactory.sol");
-const FixedSupplyToken = artifacts.require("./FixedSupplyToken.sol");
-const Tether = artifacts.require("./TetherToken.sol");
+const WalletFactory = artifacts.require('./WalletFactory.sol');
+const EthWalletSimple = artifacts.require('./WalletSimple.sol');
+const RskWalletSimple = artifacts.require('./RskWalletSimple.sol');
+const EtcWalletSimple = artifacts.require('./EtcWalletSimple.sol');
+const CeloWalletSimple = artifacts.require('./CeloWalletSimple.sol');
+const Fail = artifacts.require('./Fail.sol');
+const GasGuzzler = artifacts.require('./GasGuzzler.sol');
+const GasHeavy = artifacts.require('./GasHeavy.sol');
+const Forwarder = artifacts.require('./Forwarder.sol');
+const ForwarderTarget = artifacts.require('./ForwarderTarget.sol');
+const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
+const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
+const Tether = artifacts.require('./TetherToken.sol');
 
 const assertVMException = (err, expectedErrMsg) => {
-  err.message.toString().should.containEql("VM Exception");
+  err.message.toString().should.containEql('VM Exception');
   if (expectedErrMsg) {
     err.message.toString().should.containEql(expectedErrMsg);
   }
@@ -38,11 +38,11 @@ const createForwarderFromWallet = async (wallet) => {
   const parent = wallet.address;
   const salt = util.bufferToHex(crypto.randomBytes(20));
   const inputSalt = util.setLengthLeft(
-    Buffer.from(util.stripHexPrefix(salt), "hex"),
+    Buffer.from(util.stripHexPrefix(salt), 'hex'),
     32
   );
   const calculationSalt = abi.soliditySHA3(
-    ["address", "bytes32"],
+    ['address', 'bytes32'],
     [parent, inputSalt]
   );
   const forwarderContract = await Forwarder.new([], {});
@@ -90,31 +90,31 @@ const executeCreateForwarder = async (
 
 const coins = [
   {
-    name: "Eth",
-    nativePrefix: "ETHER",
-    nativeBatchPrefix: "ETHER-Batch",
-    tokenPrefix: "ERC20",
+    name: 'Eth',
+    nativePrefix: 'ETHER',
+    nativeBatchPrefix: 'ETHER-Batch',
+    tokenPrefix: 'ERC20',
     WalletSimple: EthWalletSimple
   },
   {
-    name: "Rsk",
-    nativePrefix: "RSK",
-    nativeBatchPrefix: "RSK-Batch",
-    tokenPrefix: "RSK-ERC20",
+    name: 'Rsk',
+    nativePrefix: 'RSK',
+    nativeBatchPrefix: 'RSK-Batch',
+    tokenPrefix: 'RSK-ERC20',
     WalletSimple: RskWalletSimple
   },
   {
-    name: "Etc",
-    nativePrefix: "ETC",
-    nativeBatchPrefix: "ETC-Batch",
-    tokenPrefix: "ETC-ERC20",
+    name: 'Etc',
+    nativePrefix: 'ETC',
+    nativeBatchPrefix: 'ETC-Batch',
+    tokenPrefix: 'ETC-ERC20',
     WalletSimple: EtcWalletSimple
   },
   {
-    name: "Celo",
-    nativePrefix: "CELO",
-    nativeBatchPrefix: "CELO-Batch",
-    tokenPrefix: "CELO-ERC20",
+    name: 'Celo',
+    nativePrefix: 'CELO',
+    nativeBatchPrefix: 'CELO-Batch',
+    tokenPrefix: 'CELO-ERC20',
     WalletSimple: CeloWalletSimple
   }
 ];
@@ -127,25 +127,27 @@ coins.forEach(
     tokenPrefix,
     WalletSimple
   }) => {
-    const DEPOSITED_EVENT = "Deposited";
-    const FORWARDER_DEPOSITED_EVENT = "ForwarderDeposited";
-    const TRANSACTED_EVENT = "Transacted";
-    const SAFE_MODE_ACTIVATE_EVENT = "SafeModeActivated";
+    const DEPOSITED_EVENT = 'Deposited';
+    const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
+    const TRANSACTED_EVENT = 'Transacted';
+    const SAFE_MODE_ACTIVATE_EVENT = 'SafeModeActivated';
 
     const createWallet = async (creator, signers) => {
       // OK to be the same for all wallets since we are using a new factory for each
-      const salt = '0x1234'; 
+      const salt = '0x1234';
       const { factory, implementationAddress } = await createWalletFactory();
 
       const inputSalt = util.setLengthLeft(
-        Buffer.from(util.stripHexPrefix(salt), "hex"),
+        Buffer.from(util.stripHexPrefix(salt), 'hex'),
         32
       );
       const calculationSalt = abi.soliditySHA3(
-        ["address[]", "bytes32"],
+        ['address[]', 'bytes32'],
         [signers, inputSalt]
       );
-      const initCode = helpers.getInitCode(util.stripHexPrefix(implementationAddress));
+      const initCode = helpers.getInitCode(
+        util.stripHexPrefix(implementationAddress)
+      );
       const walletAddress = helpers.getNextContractAddressCreate2(
         factory.address,
         calculationSalt,
@@ -177,12 +179,12 @@ coins.forEach(
       // If you want to return the complete array, you have to manually write a function to do that.
       const isSigner = async function getSigners(wallet, signer) {
         const signers = [];
-        let i = 0;
+        const i = 0;
         return await wallet.signers.call(signer);
       };
 
-      describe("Wallet creation", function () {
-        it("2 of 3 multisig wallet", async function () {
+      describe('Wallet creation', function () {
+        it('2 of 3 multisig wallet', async function () {
           const wallet = await createWallet(accounts[0], [
             accounts[0],
             accounts[1],
@@ -210,16 +212,16 @@ coins.forEach(
           isSignerArray[3].should.eql(false);
         });
 
-        it("Not enough signer addresses", async function () {
+        it('Not enough signer addresses', async function () {
           try {
             await createWallet(accounts[0], [accounts[0]]);
-            throw new Error("should not be here");
+            throw new Error('should not be here');
           } catch (e) {
-            e.message.should.not.containEql("should not be here");
+            e.message.should.not.containEql('should not be here');
           }
         });
 
-        it("0 address signer", async function () {
+        it('0 address signer', async function () {
           let threw = false;
           try {
             const walletContract = await WalletSimple.new([], {
@@ -228,17 +230,17 @@ coins.forEach(
             await walletContract.init([
               accounts[1],
               accounts[2],
-              "0x0000000000000000000000000000000000000000"
+              '0x0000000000000000000000000000000000000000'
             ]);
           } catch (e) {
             threw = true;
-            assertVMException(e, "Invalid signer");
+            assertVMException(e, 'Invalid signer');
           }
           threw.should.be.true();
         });
       });
 
-      describe("Deposits", function () {
+      describe('Deposits', function () {
         before(async function () {
           wallet = await createWallet(accounts[0], [
             accounts[0],
@@ -247,11 +249,11 @@ coins.forEach(
           ]);
         });
 
-        it("Should emit event on deposit", async function () {
+        it('Should emit event on deposit', async function () {
           const tx = await web3.eth.sendTransaction({
             from: accounts[0],
             to: wallet.address,
-            value: web3.utils.toWei("20", "ether")
+            value: web3.utils.toWei('20', 'ether')
           });
 
           const depositEvent = await helpers.getEventFromTransaction(
@@ -261,15 +263,15 @@ coins.forEach(
 
           // should.exist(depositEvent);
           depositEvent.from.should.eql(accounts[0]);
-          depositEvent.value.should.eql(web3.utils.toWei("20", "ether"));
+          depositEvent.value.should.eql(web3.utils.toWei('20', 'ether'));
         });
 
-        it("Should emit event with data on deposit", async function () {
+        it('Should emit event with data on deposit', async function () {
           const tx = await web3.eth.sendTransaction({
             from: accounts[0],
             to: wallet.address,
-            value: web3.utils.toWei("30", "ether"),
-            data: "0xabcd"
+            value: web3.utils.toWei('30', 'ether'),
+            data: '0xabcd'
           });
           const depositEvent = await helpers.getEventFromTransaction(
             tx.transactionHash,
@@ -278,8 +280,8 @@ coins.forEach(
 
           should.exist(depositEvent);
           depositEvent.from.should.eql(accounts[0]);
-          depositEvent.value.should.eql(web3.utils.toWei("30", "ether"));
-          depositEvent.data.should.eql("0xabcd");
+          depositEvent.value.should.eql(web3.utils.toWei('30', 'ether'));
+          depositEvent.data.should.eql('0xabcd');
         });
       });
 
@@ -395,7 +397,7 @@ coins.forEach(
 
         assert(params.toAddress);
         assert(params.amount);
-        assert(params.data === "" || params.data);
+        assert(params.data === '' || params.data);
         assert(params.expireTime);
         assert(params.sequenceId);
 
@@ -408,7 +410,7 @@ coins.forEach(
         const operationHash = helpers.getSha3ForConfirmationTx(
           params.prefix || nativePrefix,
           otherSignerArgs.toAddress.toLowerCase(),
-          web3.utils.toWei(otherSignerArgs.amount.toString(), "ether"),
+          web3.utils.toWei(otherSignerArgs.amount.toString(), 'ether'),
           otherSignerArgs.data,
           otherSignerArgs.expireTime,
           otherSignerArgs.sequenceId
@@ -420,7 +422,7 @@ coins.forEach(
 
         await params.wallet.sendMultiSig(
           msgSenderArgs.toAddress.toLowerCase(),
-          web3.utils.toWei(web3.utils.toBN(msgSenderArgs.amount), "ether"),
+          web3.utils.toWei(web3.utils.toBN(msgSenderArgs.amount), 'ether'),
           util.addHexPrefix(msgSenderArgs.data),
           msgSenderArgs.expireTime,
           msgSenderArgs.sequenceId,
@@ -444,7 +446,7 @@ coins.forEach(
         const destinationEndBalance = await web3.eth.getBalance(
           params.toAddress
         );
-        const weiAmount = web3.utils.toWei(params.amount.toString(), "ether");
+        const weiAmount = web3.utils.toWei(params.amount.toString(), 'ether');
         new BigNumber(destinationStartBalance)
           .plus(weiAmount)
           .eq(destinationEndBalance)
@@ -471,7 +473,7 @@ coins.forEach(
 
         try {
           await sendMultiSigTestHelper(params);
-          throw new Error("should not have sent successfully");
+          throw new Error('should not have sent successfully');
         } catch (err) {
           assertVMException(err);
         }
@@ -487,7 +489,7 @@ coins.forEach(
         walletStartBalance.should.eql(walletEndBalance);
       };
 
-      describe("Transaction sending using sendMultiSig", function () {
+      describe('Transaction sending using sendMultiSig', function () {
         before(async function () {
           // Create and fund the wallet
           wallet = await createWallet(accounts[0], [
@@ -495,7 +497,7 @@ coins.forEach(
             accounts[1],
             accounts[2]
           ]);
-          const amount = web3.utils.toWei("200000", "ether");
+          const amount = web3.utils.toWei('200000', 'ether');
           await web3.eth.sendTransaction({
             from: accounts[0],
             to: wallet.address,
@@ -513,12 +515,12 @@ coins.forEach(
           sequenceId = parseInt(sequenceIdString);
         });
 
-        it("Send out 50 ether with sendMultiSig", async function () {
+        it('Send out 50 ether with sendMultiSig', async function () {
           // We are not using the helper here because we want to check the operation hash in events
           const destinationAccount = accounts[5];
-          const amount = web3.utils.toWei("50", "ether");
+          const amount = web3.utils.toWei('50', 'ether');
           const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
-          const data = "0xabcde35f1234";
+          const data = '0xabcde35f1234';
 
           const destinationStartBalance = await web3.eth.getBalance(
             destinationAccount
@@ -569,23 +571,23 @@ coins.forEach(
           transactedEvent.msgSender.should.eql(accounts[0]);
           transactedEvent.otherSigner.should.eql(accounts[1]);
           transactedEvent.operation.should.eql(
-            util.addHexPrefix(operationHash.toString("hex"))
+            util.addHexPrefix(operationHash.toString('hex'))
           );
           transactedEvent.value.should.eql(amount);
           transactedEvent.toAddress.should.eql(destinationAccount);
           transactedEvent.data.should.eql(data);
         });
 
-        it("Stress test: 20 rounds of sendMultiSig", async function () {
+        it('Stress test: 20 rounds of sendMultiSig', async function () {
           for (let round = 0; round < 20; round++) {
             const destinationAccount = accounts[2];
             const amount = web3.utils.toWei(
               web3.utils.toBN(_.random(1, 9)),
-              "ether"
+              'ether'
             );
             const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
             const data = util.addHexPrefix(
-              crypto.randomBytes(20).toString("hex")
+              crypto.randomBytes(20).toString('hex')
             );
 
             const operationHash = helpers.getSha3ForConfirmationTx(
@@ -602,15 +604,15 @@ coins.forEach(
             );
 
             console.log(
-              "ExpectSuccess " +
+              'ExpectSuccess ' +
                 round +
-                ": " +
+                ': ' +
                 amount +
-                "ETH, seqId: " +
+                'ETH, seqId: ' +
                 sequenceId +
-                ", operationHash: " +
-                operationHash.toString("hex") +
-                ", sig: " +
+                ', operationHash: ' +
+                operationHash.toString('hex') +
+                ', sig: ' +
                 helpers.serializeSignature(sig)
             );
 
@@ -652,7 +654,7 @@ coins.forEach(
           }
         });
 
-        it("Stress test: 10 rounds of attempting to reuse sequence ids - should fail", async function () {
+        it('Stress test: 10 rounds of attempting to reuse sequence ids - should fail', async function () {
           sequenceId -= 10; // these sequence ids already used
           for (let round = 0; round < 10; round++) {
             const destinationAccount = accounts[2];
@@ -674,15 +676,15 @@ coins.forEach(
             );
 
             console.log(
-              "ExpectFail " +
+              'ExpectFail ' +
                 round +
-                ": " +
+                ': ' +
                 amount +
-                "ETH, seqId: " +
+                'ETH, seqId: ' +
                 sequenceId +
-                ", operationHash: " +
-                operationHash.toString("hex") +
-                ", sig: " +
+                ', operationHash: ' +
+                operationHash.toString('hex') +
+                ', sig: ' +
                 helpers.serializeSignature(sig)
             );
 
@@ -720,7 +722,7 @@ coins.forEach(
           }
         });
 
-        it("Stress test: 20 rounds of confirming in a single tx from an incorrect sender - should fail", async function () {
+        it('Stress test: 20 rounds of confirming in a single tx from an incorrect sender - should fail', async function () {
           const sequenceIdString = await wallet.getNextSequenceId.call();
           sequenceId = parseInt(sequenceIdString);
 
@@ -744,15 +746,15 @@ coins.forEach(
             );
 
             console.log(
-              "ExpectFail " +
+              'ExpectFail ' +
                 round +
-                ": " +
+                ': ' +
                 amount +
-                "ETH, seqId: " +
+                'ETH, seqId: ' +
                 sequenceId +
-                ", operationHash: " +
-                operationHash.toString("hex") +
-                ", sig: " +
+                ', operationHash: ' +
+                operationHash.toString('hex') +
+                ', sig: ' +
                 helpers.serializeSignature(sig)
             );
             const destinationStartBalance = await web3.eth.getBalance(
@@ -772,7 +774,7 @@ coins.forEach(
                 helpers.serializeSignature(sig),
                 { from: accounts[1] }
               );
-              throw new Error("should not be here");
+              throw new Error('should not be here');
             } catch (err) {
               assertVMException(err);
             }
@@ -796,14 +798,14 @@ coins.forEach(
           }
         });
 
-        it("Msg sender changing the amount should fail", async function () {
+        it('Msg sender changing the amount should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
             wallet: wallet,
             toAddress: accounts[8],
             amount: 15,
-            data: "",
+            data: '',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -816,14 +818,14 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Msg sender changing the destination account should fail", async function () {
+        it('Msg sender changing the destination account should fail', async function () {
           const params = {
             msgSenderAddress: accounts[1],
             otherSignerAddress: accounts[0],
             wallet: wallet,
             toAddress: accounts[5],
             amount: 25,
-            data: "001122ee",
+            data: '001122ee',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -836,34 +838,34 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Msg sender changing the data should fail", async function () {
+        it('Msg sender changing the data should fail', async function () {
           const params = {
             msgSenderAddress: accounts[1],
             otherSignerAddress: accounts[2],
             wallet: wallet,
             toAddress: accounts[0],
             amount: 30,
-            data: "abcdef",
+            data: 'abcdef',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
 
           // override with different amount
           params.msgSenderArgs = {
-            data: "12bcde"
+            data: '12bcde'
           };
 
           await expectFailSendMultiSig(params);
         });
 
-        it("Msg sender changing the expire time should fail", async function () {
+        it('Msg sender changing the expire time should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
             wallet: wallet,
             toAddress: accounts[2],
             amount: 50,
-            data: "abcdef",
+            data: 'abcdef',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -876,14 +878,14 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Same owner signing twice should fail", async function () {
+        it('Same owner signing twice should fail', async function () {
           const params = {
             msgSenderAddress: accounts[2],
             otherSignerAddress: accounts[2],
             wallet: wallet,
             toAddress: accounts[9],
             amount: 51,
-            data: "abcdef",
+            data: 'abcdef',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -891,14 +893,14 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Sending from an unauthorized signer (but valid other signature) should fail", async function () {
+        it('Sending from an unauthorized signer (but valid other signature) should fail', async function () {
           const params = {
             msgSenderAddress: accounts[7],
             otherSignerAddress: accounts[2],
             wallet: wallet,
             toAddress: accounts[1],
             amount: 52,
-            data: "",
+            data: '',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -906,14 +908,14 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Sending from an authorized signer (but unauthorized other signer) should fail", async function () {
+        it('Sending from an authorized signer (but unauthorized other signer) should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[6],
             wallet: wallet,
             toAddress: accounts[6],
             amount: 53,
-            data: "ab1234",
+            data: 'ab1234',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -922,14 +924,14 @@ coins.forEach(
         });
 
         let usedSequenceId;
-        it("Sending with expireTime very far out should work", async function () {
+        it('Sending with expireTime very far out should work', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
             wallet: wallet,
             toAddress: accounts[5],
             amount: 60,
-            data: "",
+            data: '',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -938,14 +940,14 @@ coins.forEach(
           usedSequenceId = sequenceId;
         });
 
-        it("Sending with expireTime in the past should fail", async function () {
+        it('Sending with expireTime in the past should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[2],
             wallet: wallet,
             toAddress: accounts[2],
             amount: 55,
-            data: "aa",
+            data: 'aa',
             expireTime: Math.floor(new Date().getTime() / 1000) - 100,
             sequenceId: sequenceId
           };
@@ -953,7 +955,7 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Can send with a sequence ID that is not sequential but higher than previous", async function () {
+        it('Can send with a sequence ID that is not sequential but higher than previous', async function () {
           sequenceId = 1000;
           const params = {
             msgSenderAddress: accounts[1],
@@ -961,7 +963,7 @@ coins.forEach(
             wallet: wallet,
             toAddress: accounts[5],
             amount: 60,
-            data: "abcde35f1230",
+            data: 'abcde35f1230',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -969,7 +971,7 @@ coins.forEach(
           await expectSuccessfulSendMultiSig(params);
         });
 
-        it("Can not send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)", async function () {
+        it('Can not send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)', async function () {
           sequenceId = 200;
           const params = {
             msgSenderAddress: accounts[0],
@@ -977,7 +979,7 @@ coins.forEach(
             wallet: wallet,
             toAddress: accounts[5],
             amount: 61,
-            data: "100135f123",
+            data: '100135f123',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -985,13 +987,13 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Should fail with an invalid signature", async function () {
+        it('Should fail with an invalid signature', async function () {
           sequenceId = sequenceId + 1;
           const msgSenderAddress = accounts[0];
           const otherSignerAddress = accounts[5];
           const toAddress = accounts[6];
-          const amount = "60";
-          const data = "";
+          const amount = '60';
+          const data = '';
           const expireTime = Math.floor(new Date().getTime() / 1000) + 60;
 
           const destinationStartBalance = await web3.eth.getBalance(toAddress);
@@ -1001,7 +1003,7 @@ coins.forEach(
           const operationHash = helpers.getSha3ForConfirmationTx(
             nativePrefix,
             toAddress.toLowerCase(),
-            web3.utils.toWei(amount, "ether"),
+            web3.utils.toWei(amount, 'ether'),
             data,
             expireTime,
             sequenceId
@@ -1017,19 +1019,19 @@ coins.forEach(
           try {
             await wallet.sendMultiSig(
               toAddress.toLowerCase(),
-              web3.utils.toWei(web3.utils.toBN(amount), "ether"),
-              "0x" + data,
+              web3.utils.toWei(web3.utils.toBN(amount), 'ether'),
+              '0x' + data,
               expireTime,
               sequenceId,
               helpers.serializeSignature(sig),
               { from: msgSenderAddress }
             );
           } catch (e) {
-            assertVMException(e, "Invalid signer");
+            assertVMException(e, 'Invalid signer');
           }
         });
 
-        it("Send with a sequence ID that has been previously used should fail", async function () {
+        it('Send with a sequence ID that has been previously used should fail', async function () {
           sequenceId = usedSequenceId || sequenceId - 1;
           const params = {
             msgSenderAddress: accounts[2],
@@ -1037,7 +1039,7 @@ coins.forEach(
             wallet: wallet,
             toAddress: accounts[5],
             amount: 62,
-            data: "",
+            data: '',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -1045,7 +1047,7 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Send with a sequence ID that is used many transactions ago (lower than previous 10) should fail", async function () {
+        it('Send with a sequence ID that is used many transactions ago (lower than previous 10) should fail', async function () {
           sequenceId = 1;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1053,7 +1055,7 @@ coins.forEach(
             wallet: wallet,
             toAddress: accounts[5],
             amount: 63,
-            data: "5566abfe",
+            data: '5566abfe',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId
           };
@@ -1061,7 +1063,7 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Sign with incorrect operation hash prefix should fail", async function () {
+        it('Sign with incorrect operation hash prefix should fail', async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1069,10 +1071,10 @@ coins.forEach(
             wallet: wallet,
             toAddress: accounts[5],
             amount: 63,
-            data: "5566abfe",
+            data: '5566abfe',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId,
-            prefix: "Invalid"
+            prefix: 'Invalid'
           };
 
           await expectFailSendMultiSig(params);
@@ -1101,7 +1103,7 @@ coins.forEach(
             recipient.toLowerCase()
           ),
           otherSignerArgs.values.map((value) =>
-            web3.utils.toWei(value.toString(), "ether")
+            web3.utils.toWei(value.toString(), 'ether')
           ),
           otherSignerArgs.expireTime,
           otherSignerArgs.sequenceId
@@ -1114,7 +1116,7 @@ coins.forEach(
         await params.wallet.sendMultiSigBatch(
           msgSenderArgs.recipients,
           msgSenderArgs.values.map((value) =>
-            web3.utils.toWei(value.toString(), "ether")
+            web3.utils.toWei(value.toString(), 'ether')
           ),
           msgSenderArgs.expireTime,
           msgSenderArgs.sequenceId,
@@ -1134,7 +1136,7 @@ coins.forEach(
             recipientValueMap[recipient] = new BigNumber(0);
           }
           recipientValueMap[recipient] = recipientValueMap[recipient].plus(
-            web3.utils.toWei(params.values[i].toString(), "ether")
+            web3.utils.toWei(params.values[i].toString(), 'ether')
           );
         }
 
@@ -1152,7 +1154,7 @@ coins.forEach(
 
         // Check the post-transaction balances
         const weiValues = params.values.map((value) =>
-          web3.utils.toWei(value.toString(), "ether")
+          web3.utils.toWei(value.toString(), 'ether')
         );
         let totalValue = new BigNumber(0);
         for (const recipient of uniqueRecipients) {
@@ -1192,7 +1194,7 @@ coins.forEach(
 
         try {
           await sendMultiSigBatchTestHelper(params);
-          throw new Error("should not have sent successfully");
+          throw new Error('should not have sent successfully');
         } catch (err) {
           assertVMException(err, expectedErrMsg);
         }
@@ -1212,7 +1214,7 @@ coins.forEach(
         walletStartBalance.should.eql(walletEndBalance);
       };
 
-      describe("Batch Transaction sending using sendMultiSigBatch", function () {
+      describe('Batch Transaction sending using sendMultiSigBatch', function () {
         let gasGuzzlerInstance;
         let failInstance;
         let gasHeavyInstance;
@@ -1224,7 +1226,7 @@ coins.forEach(
             accounts[1],
             accounts[2]
           ]);
-          const amount = web3.utils.toWei("200000", "ether");
+          const amount = web3.utils.toWei('200000', 'ether');
           await web3.eth.sendTransaction({
             from: accounts[0],
             to: wallet.address,
@@ -1245,7 +1247,7 @@ coins.forEach(
           sequenceId = parseInt(sequenceIdString);
         });
 
-        it("Batch to two recipients", async function () {
+        it('Batch to two recipients', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1259,7 +1261,7 @@ coins.forEach(
           await expectSuccessfulSendMultiSigBatch(params);
         });
 
-        it("Batch to ten recipients, all the same", async function () {
+        it('Batch to ten recipients, all the same', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1273,7 +1275,7 @@ coins.forEach(
           await expectSuccessfulSendMultiSigBatch(params);
         });
 
-        it("Batch with sum greater than balance should fail", async function () {
+        it('Batch with sum greater than balance should fail', async function () {
           const walletBalance = await web3.eth.getBalance(accounts[0]);
           const halfBalance = new BigNumber(walletBalance).div(2).toFixed();
 
@@ -1287,10 +1289,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Insufficient funds");
+          await expectFailSendMultiSigBatch(params, 'Insufficient funds');
         });
 
-        it("Sending to 0 recipients should fail", async function () {
+        it('Sending to 0 recipients should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1301,10 +1303,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Not enough recipients");
+          await expectFailSendMultiSigBatch(params, 'Not enough recipients');
         });
 
-        it("Sending with differing number of recipients and values should fail", async function () {
+        it('Sending with differing number of recipients and values should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1317,11 +1319,11 @@ coins.forEach(
 
           await expectFailSendMultiSigBatch(
             params,
-            "Unequal recipients and values"
+            'Unequal recipients and values'
           );
         });
 
-        it("Sending to too many recipients", async function () {
+        it('Sending to too many recipients', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1332,10 +1334,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Too many recipients");
+          await expectFailSendMultiSigBatch(params, 'Too many recipients');
         });
 
-        it("Msg sender changing the amount should fail", async function () {
+        it('Msg sender changing the amount should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1351,10 +1353,10 @@ coins.forEach(
             values: [20]
           };
 
-          await expectFailSendMultiSigBatch(params, "Invalid signer");
+          await expectFailSendMultiSigBatch(params, 'Invalid signer');
         });
 
-        it("Msg sender changing the destination account should fail", async function () {
+        it('Msg sender changing the destination account should fail', async function () {
           const params = {
             msgSenderAddress: accounts[1],
             otherSignerAddress: accounts[0],
@@ -1370,10 +1372,10 @@ coins.forEach(
             recipients: [accounts[6]]
           };
 
-          await expectFailSendMultiSigBatch(params, "Invalid signer");
+          await expectFailSendMultiSigBatch(params, 'Invalid signer');
         });
 
-        it("Msg sender changing the expire time should fail", async function () {
+        it('Msg sender changing the expire time should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1389,10 +1391,10 @@ coins.forEach(
             expireTime: Math.floor(new Date().getTime() / 1000) + 1000
           };
 
-          await expectFailSendMultiSigBatch(params, "Invalid signer");
+          await expectFailSendMultiSigBatch(params, 'Invalid signer');
         });
 
-        it("Same owner signing twice should fail", async function () {
+        it('Same owner signing twice should fail', async function () {
           const params = {
             msgSenderAddress: accounts[2],
             otherSignerAddress: accounts[2],
@@ -1403,10 +1405,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Signers cannot be equal.");
+          await expectFailSendMultiSigBatch(params, 'Signers cannot be equal.');
         });
 
-        it("Sending from an unauthorized signer (but valid other signature) should fail", async function () {
+        it('Sending from an unauthorized signer (but valid other signature) should fail', async function () {
           const params = {
             msgSenderAddress: accounts[7],
             otherSignerAddress: accounts[2],
@@ -1419,11 +1421,11 @@ coins.forEach(
 
           await expectFailSendMultiSigBatch(
             params,
-            "Non-signer in onlySigner method."
+            'Non-signer in onlySigner method.'
           );
         });
 
-        it("Sending from an authorized signer (but unauthorized other signer) should fail", async function () {
+        it('Sending from an authorized signer (but unauthorized other signer) should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[6],
@@ -1434,11 +1436,11 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Invalid signer");
+          await expectFailSendMultiSigBatch(params, 'Invalid signer');
         });
 
         let usedSequenceId;
-        it("Sending with expireTime very far out should work", async function () {
+        it('Sending with expireTime very far out should work', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[1],
@@ -1453,7 +1455,7 @@ coins.forEach(
           usedSequenceId = sequenceId;
         });
 
-        it("Sending with expireTime in the past should fail", async function () {
+        it('Sending with expireTime in the past should fail', async function () {
           const params = {
             msgSenderAddress: accounts[0],
             otherSignerAddress: accounts[2],
@@ -1464,10 +1466,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Transaction expired.");
+          await expectFailSendMultiSigBatch(params, 'Transaction expired.');
         });
 
-        it("Can send with a sequence ID that is not sequential but higher than previous", async function () {
+        it('Can send with a sequence ID that is not sequential but higher than previous', async function () {
           sequenceId = 1000;
           const params = {
             msgSenderAddress: accounts[1],
@@ -1482,7 +1484,7 @@ coins.forEach(
           await expectSuccessfulSendMultiSigBatch(params);
         });
 
-        it("Can not send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)", async function () {
+        it('Can not send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)', async function () {
           sequenceId = 200;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1494,10 +1496,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "sequenceId is too low");
+          await expectFailSendMultiSigBatch(params, 'sequenceId is too low');
         });
 
-        it("Send with a sequence ID that has been previously used should fail", async function () {
+        it('Send with a sequence ID that has been previously used should fail', async function () {
           sequenceId = usedSequenceId || sequenceId - 1;
           const params = {
             msgSenderAddress: accounts[2],
@@ -1509,10 +1511,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "sequenceId is too low");
+          await expectFailSendMultiSigBatch(params, 'sequenceId is too low');
         });
 
-        it("Send with a sequence ID that is used many transactions ago (lower than previous 10) should fail", async function () {
+        it('Send with a sequence ID that is used many transactions ago (lower than previous 10) should fail', async function () {
           sequenceId = 1;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1524,10 +1526,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "sequenceId is too low");
+          await expectFailSendMultiSigBatch(params, 'sequenceId is too low');
         });
 
-        it("Sign with incorrect operation hash prefix should fail", async function () {
+        it('Sign with incorrect operation hash prefix should fail', async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1537,13 +1539,13 @@ coins.forEach(
             values: [63],
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: sequenceId,
-            prefix: "Invalid"
+            prefix: 'Invalid'
           };
 
-          await expectFailSendMultiSigBatch(params, "Invalid signer");
+          await expectFailSendMultiSigBatch(params, 'Invalid signer');
         });
 
-        it("Fails all transfers when one recipient eats all of the gas", async function () {
+        it('Fails all transfers when one recipient eats all of the gas', async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1555,10 +1557,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Call failed");
+          await expectFailSendMultiSigBatch(params, 'Call failed');
         });
 
-        it("Fails all transfers when one recipient fails", async function () {
+        it('Fails all transfers when one recipient fails', async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1570,10 +1572,10 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, "Call failed");
+          await expectFailSendMultiSigBatch(params, 'Call failed');
         });
 
-        it("Doesn't fail if one contract uses a lot of gas but doesn't run out", async function () {
+        it('Doesn\'t fail if one contract uses a lot of gas but doesn\'t run out', async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1585,11 +1587,11 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectSuccessfulSendMultiSigBatch(params, "Call failed");
+          await expectSuccessfulSendMultiSigBatch(params, 'Call failed');
         });
       });
 
-      describe("Safe mode", function () {
+      describe('Safe mode', function () {
         before(async function () {
           // Create and fund the wallet
           wallet = await createWallet(accounts[0], [
@@ -1600,11 +1602,11 @@ coins.forEach(
           await web3.eth.sendTransaction({
             from: accounts[0],
             to: wallet.address,
-            value: web3.utils.toWei("50000", "ether")
+            value: web3.utils.toWei('50000', 'ether')
           });
         });
 
-        it("Cannot be activated by unauthorized user", async function () {
+        it('Cannot be activated by unauthorized user', async function () {
           await truffleAssert.reverts(
             wallet.activateSafeMode({ from: accounts[5] })
           );
@@ -1612,7 +1614,7 @@ coins.forEach(
           isSafeMode.should.eql(false);
         });
 
-        it("Can be activated by any authorized signer", async function () {
+        it('Can be activated by any authorized signer', async function () {
           for (let i = 0; i < 3; i++) {
             const wallet = await createWallet(accounts[0], [
               accounts[0],
@@ -1625,7 +1627,7 @@ coins.forEach(
           }
         });
 
-        it("Cannot send transactions to external addresses in safe mode", async function () {
+        it('Cannot send transactions to external addresses in safe mode', async function () {
           let isSafeMode = await wallet.safeMode.call();
           isSafeMode.should.eql(false);
           const tx = await wallet.activateSafeMode.sendTransaction({
@@ -1647,7 +1649,7 @@ coins.forEach(
             wallet: wallet,
             toAddress: accounts[8],
             amount: 22,
-            data: "100135f123",
+            data: '100135f123',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: 10001
           };
@@ -1655,14 +1657,14 @@ coins.forEach(
           await expectFailSendMultiSig(params);
         });
 
-        it("Can send transactions to signer addresses in safe mode", async function () {
+        it('Can send transactions to signer addresses in safe mode', async function () {
           const params = {
             msgSenderAddress: accounts[2],
             otherSignerAddress: accounts[1],
             wallet: wallet,
             toAddress: accounts[0],
             amount: 28,
-            data: "100135f123",
+            data: '100135f123',
             expireTime: Math.floor(new Date().getTime() / 1000) + 60,
             sequenceId: 9000
           };
@@ -1671,27 +1673,27 @@ coins.forEach(
         });
       });
 
-      describe("Forwarder addresses", function () {
+      describe('Forwarder addresses', function () {
         const forwardAbi = [
           {
             constant: false,
             inputs: [],
-            name: "flush",
+            name: 'flush',
             outputs: [],
-            type: "function"
+            type: 'function'
           },
           {
             constant: true,
             inputs: [],
-            name: "destinationAddress",
-            outputs: [{ name: "", type: "address" }],
-            type: "function"
+            name: 'destinationAddress',
+            outputs: [{ name: '', type: 'address' }],
+            type: 'function'
           },
-          { inputs: [], type: "constructor" }
+          { inputs: [], type: 'constructor' }
         ];
         const forwardContract = new web3.eth.Contract(forwardAbi);
 
-        it("Create and forward", async function () {
+        it('Create and forward', async function () {
           const wallet = await createWallet(accounts[0], [
             accounts[0],
             accounts[1],
@@ -1701,25 +1703,25 @@ coins.forEach(
             await createForwarderFromWallet(wallet)
           ).create();
           const forwarderBalance = await web3.eth.getBalance(forwarder.address);
-          web3.utils.fromWei(forwarderBalance, "ether").should.eql("0");
+          web3.utils.fromWei(forwarderBalance, 'ether').should.eql('0');
 
           await web3.eth.sendTransaction({
             from: accounts[1],
             to: forwarder.address,
-            value: web3.utils.toWei("200", "ether")
+            value: web3.utils.toWei('200', 'ether')
           });
 
           // Verify funds forwarded
           const endForwarderBalance = await web3.eth.getBalance(
             forwarder.address
           );
-          web3.utils.fromWei(endForwarderBalance, "ether").should.eql("0");
+          web3.utils.fromWei(endForwarderBalance, 'ether').should.eql('0');
 
           const endWalletBalance = await web3.eth.getBalance(wallet.address);
-          web3.utils.fromWei(endWalletBalance, "ether").should.eql("200");
+          web3.utils.fromWei(endWalletBalance, 'ether').should.eql('200');
         });
 
-        it("Forwards value, not call data", async function () {
+        it('Forwards value, not call data', async function () {
           // When calling a nonexistent method on forwarder, transfer call value to target address and emit event on success.
           // Don't call a method on target contract.
           //
@@ -1749,7 +1751,7 @@ coins.forEach(
 
             // calls without value do not emit deposited event and don't get forwarded
             const tx = await forwarderAsTarget.setData(newData, setDataReturn);
-            (await forwarderTarget.data.call()).toString().should.eql("0");
+            (await forwarderTarget.data.call()).toString().should.eql('0');
 
             const depositedEvent = await helpers.getEventFromTransaction(
               tx.receipt.transactionHash,
@@ -1769,7 +1771,7 @@ coins.forEach(
                 value: 100
               }
             );
-            (await forwarderTarget.data.call()).toString().should.eql("0");
+            (await forwarderTarget.data.call()).toString().should.eql('0');
             const newBalance = await web3.eth.getBalance(
               forwarderTarget.address
             );
@@ -1783,7 +1785,7 @@ coins.forEach(
           }
         });
 
-        it("Multiple forward contracts", async function () {
+        it('Multiple forward contracts', async function () {
           const numForwardAddresses = 10;
           const etherEachSend = 4;
           const wallet = await createWallet(accounts[2], [
@@ -1800,20 +1802,20 @@ coins.forEach(
             await web3.eth.sendTransaction({
               from: accounts[1],
               to: forwarder.address,
-              value: web3.utils.toWei(web3.utils.toBN(etherEachSend), "ether")
+              value: web3.utils.toWei(web3.utils.toBN(etherEachSend), 'ether')
             });
           }
 
           // Verify all the forwarding is complete
           const balance = await web3.eth.getBalance(wallet.address);
           web3.utils
-            .fromWei(balance, "ether")
+            .fromWei(balance, 'ether')
             .should.eql(
               web3.utils.toBN(etherEachSend * numForwardAddresses).toString()
             );
         });
 
-        it("Send before create, then flush", async function () {
+        it('Send before create, then flush', async function () {
           const wallet = await createWallet(accounts[3], [
             accounts[3],
             accounts[4],
@@ -1827,17 +1829,17 @@ coins.forEach(
           await web3.eth.sendTransaction({
             from: accounts[1],
             to: forwarderContractAddress,
-            value: web3.utils.toWei("300", "ether")
+            value: web3.utils.toWei('300', 'ether')
           });
           const forwarderBalance = await web3.eth.getBalance(
             forwarderContractAddress
           );
           web3.utils
-            .fromWei(forwarderBalance, "ether")
+            .fromWei(forwarderBalance, 'ether')
             .should.eql(web3.utils.toBN(300).toString());
           const walletBalance = await web3.eth.getBalance(wallet.address);
           web3.utils
-            .fromWei(walletBalance, "ether")
+            .fromWei(walletBalance, 'ether')
             .should.eql(web3.utils.toBN(0).toString());
 
           const forwarder = await create();
@@ -1848,15 +1850,15 @@ coins.forEach(
             forwarderContractAddress
           );
           web3.utils
-            .fromWei(endForwarderBalance, "ether")
+            .fromWei(endForwarderBalance, 'ether')
             .should.eql(web3.utils.toBN(0).toString());
           const endWalletBalance = await web3.eth.getBalance(wallet.address);
           web3.utils
-            .fromWei(endWalletBalance, "ether")
+            .fromWei(endWalletBalance, 'ether')
             .should.eql(web3.utils.toBN(300).toString());
         });
 
-        it("Flush sent from external account", async function () {
+        it('Flush sent from external account', async function () {
           const wallet = await createWallet(accounts[4], [
             accounts[4],
             accounts[5],
@@ -1870,17 +1872,17 @@ coins.forEach(
           await web3.eth.sendTransaction({
             from: accounts[1],
             to: forwarderContractAddress,
-            value: web3.utils.toWei("300", "ether")
+            value: web3.utils.toWei('300', 'ether')
           });
           const forwarderBalance = await web3.eth.getBalance(
             forwarderContractAddress
           );
           web3.utils
-            .fromWei(forwarderBalance, "ether")
+            .fromWei(forwarderBalance, 'ether')
             .should.eql(web3.utils.toBN(300).toString());
           const walletBalance = await web3.eth.getBalance(wallet.address);
           web3.utils
-            .fromWei(walletBalance, "ether")
+            .fromWei(walletBalance, 'ether')
             .should.eql(web3.utils.toBN(0).toString());
 
           const forwarder = await create();
@@ -1891,16 +1893,16 @@ coins.forEach(
             forwarderContractAddress
           );
           web3.utils
-            .fromWei(endForwarderBalance, "ether")
+            .fromWei(endForwarderBalance, 'ether')
             .should.eql(web3.utils.toBN(0).toString());
           const endWalletBalance = await web3.eth.getBalance(wallet.address);
           web3.utils
-            .fromWei(endWalletBalance, "ether")
+            .fromWei(endWalletBalance, 'ether')
             .should.eql(web3.utils.toBN(300).toString());
         });
       });
 
-      describe("ERC20 token transfers", function () {
+      describe('ERC20 token transfers', function () {
         let fixedSupplyTokenContract;
         let tetherTokenContract;
         before(async function () {
@@ -1916,17 +1918,17 @@ coins.forEach(
           const balance = await fixedSupplyTokenContract.balanceOf.call(
             accounts[0]
           );
-          balance.toString().should.eql("1000000");
-          tetherTokenContract = await Tether.new("1000000", "USDT", "USDT", 6, {
+          balance.toString().should.eql('1000000');
+          tetherTokenContract = await Tether.new('1000000', 'USDT', 'USDT', 6, {
             from: accounts[0]
           });
           const tetherBalance = await tetherTokenContract.balanceOf.call(
             accounts[0]
           );
-          tetherBalance.toString().should.eql("1000000");
+          tetherBalance.toString().should.eql('1000000');
         });
 
-        it("Receive and Send tokens from main wallet contract", async function () {
+        it('Receive and Send tokens from main wallet contract', async function () {
           await fixedSupplyTokenContract.transfer(wallet.address, 100, {
             from: accounts[0]
           });
@@ -1993,7 +1995,7 @@ coins.forEach(
             .should.be.true();
         });
 
-        it("Flush from Forwarder contract", async function () {
+        it('Flush from Forwarder contract', async function () {
           const forwarder = await (
             await createForwarderFromWallet(wallet)
           ).create();
@@ -2036,16 +2038,14 @@ coins.forEach(
            */
         });
 
-        it("Flush Tether from Forwarder contract", async function () {
+        it('Flush Tether from Forwarder contract', async function () {
           const forwarder = await (
             await createForwarderFromWallet(wallet)
           ).create();
           await tetherTokenContract.transfer(forwarder.address, 100, {
             from: accounts[0]
           });
-          const balance = await tetherTokenContract.balanceOf.call(
-            accounts[0]
-          );
+          const balance = await tetherTokenContract.balanceOf.call(accounts[0]);
           balance.should.eql(web3.utils.toBN(1000000 - 100));
 
           const forwarderContractStartTokens = await tetherTokenContract.balanceOf.call(

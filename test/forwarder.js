@@ -1,10 +1,10 @@
-const should = require("should");
+const should = require('should');
 
-const truffleAssert = require("truffle-assertions");
-const helpers = require("./helpers");
-const BigNumber = require("bignumber.js");
+const truffleAssert = require('truffle-assertions');
+const helpers = require('./helpers');
+const BigNumber = require('bignumber.js');
 
-const Forwarder = artifacts.require("./Forwarder.sol");
+const Forwarder = artifacts.require('./Forwarder.sol');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
@@ -16,13 +16,13 @@ const getBalanceInWei = async (address) => {
   return new BigNumber(await web3.eth.getBalance(address));
 };
 
-const FORWARDER_DEPOSITED_EVENT = "ForwarderDeposited";
+const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
 
-contract("Forwarder", function (accounts) {
-  it("Basic forwarding test", async function () {
+contract('Forwarder', function (accounts) {
+  it('Basic forwarding test', async function () {
     const forwarder = await createForwarder(accounts[0], accounts[0]);
     const startBalance = await getBalanceInWei(accounts[0]);
-    const amount = web3.utils.toWei("2", "ether");
+    const amount = web3.utils.toWei('2', 'ether');
 
     const tx = await web3.eth.sendTransaction({
       from: accounts[1],
@@ -42,9 +42,9 @@ contract("Forwarder", function (accounts) {
     forwardedEvent.value.should.equal(amount);
   });
 
-  it("Flush on initialization", async function () {
+  it('Flush on initialization', async function () {
     // determine the forwarder contract address
-    const amount = web3.utils.toWei("5", "ether");
+    const amount = web3.utils.toWei('5', 'ether');
     const baseAddress = accounts[3];
     const senderAddress = accounts[0];
     const forwarderAddress = await helpers.getNextContractAddress(
@@ -84,23 +84,23 @@ contract("Forwarder", function (accounts) {
     forwardedEvent.value.should.equal(amount);
   });
 
-  it("Should forward with data passed", async function () {
+  it('Should forward with data passed', async function () {
     const forwarder = await createForwarder(accounts[0], accounts[0]);
     const startBalance = await getBalanceInWei(accounts[0]);
-    const amount = web3.utils.toWei("2", "ether");
+    const amount = web3.utils.toWei('2', 'ether');
 
     await web3.eth.sendTransaction({
       from: accounts[1],
       to: forwarder.address,
       value: amount,
-      data: "0x1234abcd"
+      data: '0x1234abcd'
     });
 
     const endBalance = await getBalanceInWei(accounts[0]);
     startBalance.plus(amount).eq(endBalance).should.be.true();
   });
 
-  it("Should not init twice", async function () {
+  it('Should not init twice', async function () {
     const baseAddress = accounts[3];
     const forwarder = await createForwarder(baseAddress, baseAddress);
 
