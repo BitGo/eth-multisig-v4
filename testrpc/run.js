@@ -1,17 +1,17 @@
 #!/bin/env node
 
-const TestRPC = require("ganache-cli");
+const TestRPC = require('ganache-cli');
 
-const accounts = require("./accounts");
+const accounts = require('./accounts');
 
-const defaultBalance = "200000000000000000000000000";
+const defaultBalance = '200000000000000000000000000';
 
-const defaultPort = "8545";
+const defaultPort = '8545';
 const defaultHostname = undefined;
 
 const options = {
   accounts: accounts.accounts.map(({ privkey }) => ({
-    secretKey: "0x" + privkey.toString("hex"),
+    secretKey: '0x' + privkey.toString('hex'),
     balance: defaultBalance
   }))
 };

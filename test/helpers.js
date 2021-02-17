@@ -1,11 +1,11 @@
-const abi = require("ethereumjs-abi");
-const util = require("ethereumjs-util");
-const BN = require("bn.js");
-const Promise = require("bluebird");
-const Forwarder = artifacts.require("./Forwarder.sol");
-const ForwarderFactory = artifacts.require("./ForwarderFactory.sol");
-const WalletFactory = artifacts.require("./WalletFactory.sol");
-const WalletSimple = artifacts.require("./WalletSimple.sol");
+const abi = require('ethereumjs-abi');
+const util = require('ethereumjs-util');
+const BN = require('bn.js');
+const Promise = require('bluebird');
+const Forwarder = artifacts.require('./Forwarder.sol');
+const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
+const WalletFactory = artifacts.require('./WalletFactory.sol');
+const WalletSimple = artifacts.require('./WalletSimple.sol');
 
 const abis = [
   Forwarder.abi,
@@ -19,9 +19,9 @@ exports.showBalances = function () {
   for (let i = 0; i < accounts.length; i++) {
     console.log(
       accounts[i] +
-        ": " +
-        web3.utils.fromWei(web3.eth.getBalance(accounts[i]), "ether"),
-      "ether"
+        ': ' +
+        web3.utils.fromWei(web3.eth.getBalance(accounts[i]), 'ether'),
+      'ether'
     );
   }
 };
@@ -41,7 +41,7 @@ exports.waitForEvents = function (eventsArray, numEvents) {
     }
     if (numTries >= 100) {
       if (eventsArray.length == 0) {
-        console.log("Timed out waiting for events!");
+        console.log('Timed out waiting for events!');
       }
       return;
     }
@@ -60,12 +60,12 @@ exports.getSha3ForConfirmationTx = function (
   sequenceId
 ) {
   return abi.soliditySHA3(
-    ["string", "address", "uint", "bytes", "uint", "uint"],
+    ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
     [
       prefix,
-      new BN(toAddress.replace("0x", ""), 16),
+      new BN(toAddress.replace('0x', ''), 16),
       amount,
-      Buffer.from(data.replace("0x", ""), "hex"),
+      Buffer.from(data.replace('0x', ''), 'hex'),
       expireTime,
       sequenceId
     ]
@@ -81,7 +81,7 @@ exports.getSha3ForBatchTx = function (
   sequenceId
 ) {
   return abi.soliditySHA3(
-    ["string", "address[]", "uint[]", "uint", "uint"],
+    ['string', 'address[]', 'uint[]', 'uint', 'uint'],
     [prefix, recipients, values, expireTime, sequenceId]
   );
 };
@@ -96,12 +96,12 @@ exports.getSha3ForConfirmationTokenTx = function (
   sequenceId
 ) {
   return abi.soliditySHA3(
-    ["string", "address", "uint", "address", "uint", "uint"],
+    ['string', 'address', 'uint', 'address', 'uint', 'uint'],
     [
       prefix,
-      new BN(toAddress.replace("0x", ""), 16),
+      new BN(toAddress.replace('0x', ''), 16),
       value,
-      new BN(tokenContractAddress.replace("0x", ""), 16),
+      new BN(tokenContractAddress.replace('0x', ''), 16),
       expireTime,
       sequenceId
     ]
@@ -110,7 +110,7 @@ exports.getSha3ForConfirmationTokenTx = function (
 
 // Serialize signature into format understood by our recoverAddress function
 exports.serializeSignature = ({ r, s, v }) =>
-  "0x" + Buffer.concat([r, s, Buffer.from([v])]).toString("hex");
+  '0x' + Buffer.concat([r, s, Buffer.from([v])]).toString('hex');
 
 /**
  * Returns the address a contract will have when created from the provided address
@@ -118,7 +118,7 @@ exports.serializeSignature = ({ r, s, v }) =>
  * @return address
  */
 exports.getNextContractAddress = async (address) => {
-  const addressBuffer = Buffer.from(util.stripHexPrefix(address), "hex");
+  const addressBuffer = Buffer.from(util.stripHexPrefix(address), 'hex');
   const nonce = await web3.eth.getTransactionCount(address);
   return util.toChecksumAddress(
     util.bufferToHex(util.generateAddress(addressBuffer, util.toBuffer(nonce)))
@@ -126,8 +126,8 @@ exports.getNextContractAddress = async (address) => {
 };
 
 exports.getNextContractAddressCreate2 = (address, salt, initCode) => {
-  const addressBuffer = Buffer.from(util.stripHexPrefix(address), "hex");
-  const initCodeBuffer = Buffer.from(util.stripHexPrefix(initCode), "hex");
+  const addressBuffer = Buffer.from(util.stripHexPrefix(address), 'hex');
+  const initCodeBuffer = Buffer.from(util.stripHexPrefix(initCode), 'hex');
   return util.toChecksumAddress(
     util.bufferToHex(util.generateAddress2(addressBuffer, salt, initCodeBuffer))
   );
@@ -138,7 +138,7 @@ exports.assertVMException = async (fn) => {
   try {
     await fn();
   } catch (err) {
-    err.message.toString().should.containEql("VM Exception");
+    err.message.toString().should.containEql('VM Exception');
     failed = true;
   }
 
@@ -148,7 +148,7 @@ exports.assertVMException = async (fn) => {
 exports.getInitCode = (targetAddress) => {
   const target = util
     .stripHexPrefix(targetAddress.toLowerCase())
-    .padStart(40, "0");
+    .padStart(40, '0');
   return `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${target}5af43d82803e903d91602b57fd5bf3`;
 };
 

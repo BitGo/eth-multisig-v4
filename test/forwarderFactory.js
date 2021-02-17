@@ -1,13 +1,13 @@
-require("should");
+require('should');
 
-const truffleAssert = require("truffle-assertions");
-const helpers = require("./helpers");
-const util = require("ethereumjs-util");
-const abi = require("ethereumjs-abi");
-const BigNumber = require("bignumber.js");
+const truffleAssert = require('truffle-assertions');
+const helpers = require('./helpers');
+const util = require('ethereumjs-util');
+const abi = require('ethereumjs-abi');
+const BigNumber = require('bignumber.js');
 
-const Forwarder = artifacts.require("./Forwarder.sol");
-const ForwarderFactory = artifacts.require("./ForwarderFactory.sol");
+const Forwarder = artifacts.require('./Forwarder.sol');
+const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 
 const createForwarderFactory = async () => {
   const forwarderContract = await Forwarder.new([], {});
@@ -32,11 +32,11 @@ const createForwarder = async (
   sender
 ) => {
   const inputSalt = util.setLengthLeft(
-    Buffer.from(util.stripHexPrefix(salt), "hex"),
+    Buffer.from(util.stripHexPrefix(salt), 'hex'),
     32
   );
   const calculationSalt = abi.soliditySHA3(
-    ["address", "bytes32"],
+    ['address', 'bytes32'],
     [parent, inputSalt]
   );
   const initCode = helpers.getInitCode(
@@ -53,12 +53,12 @@ const createForwarder = async (
   return forwarderAddress;
 };
 
-contract("ForwarderFactory", function (accounts) {
-  it("Should create a functional forwarder using the factory", async function () {
+contract('ForwarderFactory', function (accounts) {
+  it('Should create a functional forwarder using the factory', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
 
     const parent = accounts[0];
-    const salt = "0x1234";
+    const salt = '0x1234';
     const forwarderAddress = await createForwarder(
       factory,
       implementationAddress,
@@ -69,7 +69,7 @@ contract("ForwarderFactory", function (accounts) {
     const startBalance = await getBalanceInWei(parent);
     const startForwarderBalance = await getBalanceInWei(forwarderAddress);
 
-    const amount = web3.utils.toWei("2", "ether");
+    const amount = web3.utils.toWei('2', 'ether');
     await web3.eth.sendTransaction({
       from: accounts[1],
       to: forwarderAddress,
@@ -82,11 +82,11 @@ contract("ForwarderFactory", function (accounts) {
     endForwarderBalance.eq(startForwarderBalance).should.be.true();
   });
 
-  it("Different salt should create at different addresses", async function () {
+  it('Different salt should create at different addresses', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
 
     const parent = accounts[0];
-    const salt = "0x1234";
+    const salt = '0x1234';
     const forwarderAddress = await createForwarder(
       factory,
       implementationAddress,
@@ -95,7 +95,7 @@ contract("ForwarderFactory", function (accounts) {
       accounts[1]
     );
 
-    const salt2 = "0x12345678";
+    const salt2 = '0x12345678';
     const forwarderAddress2 = await createForwarder(
       factory,
       implementationAddress,
@@ -107,7 +107,7 @@ contract("ForwarderFactory", function (accounts) {
     forwarderAddress.should.not.equal(forwarderAddress2);
   });
 
-  it("Different creators should create at different addresses", async function () {
+  it('Different creators should create at different addresses', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
     const {
       factory: factory2,
@@ -115,7 +115,7 @@ contract("ForwarderFactory", function (accounts) {
     } = await createForwarderFactory();
 
     const parent = accounts[0];
-    const salt = "0x1234";
+    const salt = '0x1234';
     const forwarderAddress = await createForwarder(
       factory,
       implementationAddress,
@@ -134,11 +134,11 @@ contract("ForwarderFactory", function (accounts) {
     forwarderAddress.should.not.equal(forwarderAddress2);
   });
 
-  it("Different parents should create at different addresses", async function () {
+  it('Different parents should create at different addresses', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
 
     const parent = accounts[0];
-    const salt = "0x1234";
+    const salt = '0x1234';
     const forwarderAddress = await createForwarder(
       factory,
       implementationAddress,
@@ -159,11 +159,11 @@ contract("ForwarderFactory", function (accounts) {
     forwarderAddress.should.not.equal(forwarderAddress2);
   });
 
-  it("Should fail to create two contracts with the same inputs", async function () {
+  it('Should fail to create two contracts with the same inputs', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
 
     const parent = accounts[0];
-    const salt = "0x1234";
+    const salt = '0x1234';
     const forwarderAddress = await createForwarder(
       factory,
       implementationAddress,

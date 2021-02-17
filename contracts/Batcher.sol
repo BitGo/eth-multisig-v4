@@ -1,5 +1,4 @@
 pragma solidity 0.7.5;
-
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -30,7 +29,7 @@ contract Batcher {
         lockCounter = 1;
         owner = msg.sender;
         emit OwnerChange(address(0), owner);
-        transferGasLimit = 10000;
+        transferGasLimit = 20000;
         emit TransferGasLimitChange(0, transferGasLimit);
     }
 
@@ -49,7 +48,7 @@ contract Batcher {
     /**
      * Transfer funds in a batch to each of recipients
      * @param recipients The list of recipients to send to
-     * @param values The list of values to send to recipients. 
+     * @param values The list of values to send to recipients.
      *  The recipient with index i in recipients array will be sent values[i].
      *  Thus, recipients and values must be the same length
      */
@@ -66,11 +65,6 @@ contract Batcher {
             require(success, "Send failed");
             emit BatchTransfer(msg.sender, recipients[i], values[i]);
         }
-
-        if (address(this).balance > 0) {
-            (bool success,) = msg.sender.call{value: address(this).balance, gas: transferGasLimit}("");
-            require(success, "Sender refund failed");
-        }
     }
 
     /**
@@ -81,7 +75,6 @@ contract Batcher {
      */
     function recover(address to, uint256 value, bytes calldata data) external onlyOwner returns (bytes memory) {
         (bool success, bytes memory returnData) = to.call{value: value}(data);
-        require(success, "Call was not successful");
         return returnData;
     }
 
@@ -96,9 +89,9 @@ contract Batcher {
     }
 
     /**
-     * Change the gas limit that is sent along with batched transfers. 
+     * Change the gas limit that is sent along with batched transfers.
      * This is intended to protect against any EVM level changes that would require
-     * a new amount of gas for an internal send to complete. 
+     * a new amount of gas for an internal send to complete.
      * @param newTransferGasLimit The new gas limit to send along with batched transfers
      */
     function changeTransferGasLimit(uint256 newTransferGasLimit) external onlyOwner {
@@ -110,7 +103,7 @@ contract Batcher {
     fallback() external payable {
         revert("Invalid fallback");
     }
-    
+
     receive() external payable {
         revert("Invalid receive");
     }
