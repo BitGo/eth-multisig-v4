@@ -58,8 +58,9 @@ contract WalletSimple {
   bool public initialized = false; // True if the contract has been initialized
 
   // Internal fields
-  uint256 private lastSequenceId;
   uint256 private constant MAX_SEQUENCE_ID_INCREASE = 10000;
+  uint256 constant SEQUENCE_ID_WINDOW_SIZE = 10;
+  uint256[10] recentSequenceIds;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
@@ -361,7 +362,7 @@ contract WalletSimple {
     require(expireTime >= block.timestamp, 'Transaction expired');
 
     // Try to insert the sequence ID. Will revert if the sequence id was invalid
-    tryUpdateSequenceId(sequenceId);
+    tryInsertSequenceId(sequenceId);
 
     require(isSigner(otherSigner), 'Invalid signer');
 
@@ -421,28 +422,51 @@ contract WalletSimple {
   }
 
   /**
-   * Verify that the sequence id is greater than the currently stored value and updates the stored value.
-   * By requiring sequence IDs to always increase, we ensure that the same signature can't be used twice.
-   * @param sequenceId The new sequenceId to use
+   * Verify that the sequence id has not been used before and inserts it. Throws if the sequence ID was not accepted.
+   * We collect a window of up to 10 recent sequence ids, and allow any sequence id that is not in the window and
+   * greater than the minimum element in the window.
+   * @param sequenceId to insert into array of stored ids
    */
-  function tryUpdateSequenceId(uint256 sequenceId) private onlySigner {
-    require(sequenceId > lastSequenceId, 'sequenceId is too low');
+  function tryInsertSequenceId(uint256 sequenceId) private onlySigner {
+    // Keep a pointer to the lowest value element in the window
+    uint256 lowestValueIndex = 0;
+    for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
+      require(recentSequenceIds[i] != sequenceId, 'Sequence ID already used');
 
-    // Block sequence IDs which are much higher than the current
-    // This prevents people blocking the contract by using very large sequence IDs quickly
+      if (recentSequenceIds[i] < recentSequenceIds[lowestValueIndex]) {
+        lowestValueIndex = i;
+      }
+    }
+
+    // The sequence ID being used is lower than the lowest value in the window
+    // so we cannot accept it as it may have been used before
     require(
-      sequenceId <= lastSequenceId + MAX_SEQUENCE_ID_INCREASE,
-      'sequenceId is too high'
+      sequenceId > recentSequenceIds[lowestValueIndex],
+      'Sequence ID below window'
     );
 
-    lastSequenceId = sequenceId;
+    // Block sequence IDs which are much higher than the lowest value
+    // This prevents people blocking the contract by using very large sequence IDs quickly
+    require(
+      sequenceId <=
+        (recentSequenceIds[lowestValueIndex] + MAX_SEQUENCE_ID_INCREASE),
+      'Sequence ID above maximum'
+    );
+
+    recentSequenceIds[lowestValueIndex] = sequenceId;
   }
 
   /**
    * Gets the next available sequence ID for signing when using executeAndConfirm
-   * returns the sequenceId one higher than the one currently stored
+   * returns the sequenceId one higher than the highest currently stored
    */
-  function getNextSequenceId() external view returns (uint256) {
-    return lastSequenceId + 1;
+  function getNextSequenceId() public view returns (uint256) {
+    uint256 highestSequenceId = 0;
+    for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
+      if (recentSequenceIds[i] > highestSequenceId) {
+        highestSequenceId = recentSequenceIds[i];
+      }
+    }
+    return highestSequenceId + 1;
   }
 }

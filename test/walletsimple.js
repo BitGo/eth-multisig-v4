@@ -286,7 +286,7 @@ coins.forEach(
       });
 
       /*
-  Commented out because tryUpdateSequenceId and recoverAddressFromSignature is private. Uncomment the private and tests to test this.
+  Commented out because tryInsertSequenceId and recoverAddressFromSignature is private. Uncomment the private and tests to test this.
   Functionality is also tested in the sendMultiSig tests.
 
   describe('Recover address from signature', function() {
@@ -336,7 +336,7 @@ coins.forEach(
     it('Authorized signer can request and insert an id', async function() {
       let sequenceId = await getSequenceId();
       sequenceId.should.eql(1);
-      await wallet.tryUpdateSequenceId(sequenceId, { from: accounts[0] });
+      await wallet.tryInsertSequenceId(sequenceId, { from: accounts[0] });
       sequenceId = await getSequenceId();
       sequenceId.should.eql(2);
     });
@@ -345,7 +345,7 @@ coins.forEach(
       const sequenceId = await getSequenceId();
 
       try {
-        await wallet.tryUpdateSequenceId(sequenceId, { from: accounts[8] });
+        await wallet.tryInsertSequenceId(sequenceId, { from: accounts[8] });
         throw new Error('should not have inserted successfully');
       } catch(err) {
         assertVMException(err);
@@ -361,7 +361,7 @@ coins.forEach(
         let sequenceId = await getSequenceId();
         // Increase by 100 each time to test for big numbers (there will be holes, this is ok)
         sequenceId += 100;
-        await wallet.tryUpdateSequenceId(sequenceId, { from: accounts[0] });
+        await wallet.tryInsertSequenceId(sequenceId, { from: accounts[0] });
         const newSequenceId = await getSequenceId();
         newSequenceId.should.eql(sequenceId + 1);
       }
@@ -371,7 +371,7 @@ coins.forEach(
       let sequenceId = await getSequenceId();
       sequenceId -= 50; // we used this in the previous test
       try {
-        await wallet.tryUpdateSequenceId(sequenceId, { from: accounts[8] });
+        await wallet.tryInsertSequenceId(sequenceId, { from: accounts[8] });
         throw new Error('should not have inserted successfully');
       } catch(err) {
         assertVMException(err);
@@ -380,7 +380,7 @@ coins.forEach(
 
     it('Cannot request lower used sequence id outside the window', async function() {
       try {
-        await wallet.tryUpdateSequenceId(1, { from: accounts[8] });
+        await wallet.tryInsertSequenceId(1, { from: accounts[8] });
         throw new Error('should not have inserted successfully');
       } catch(err) {
         assertVMException(err);
@@ -971,7 +971,7 @@ coins.forEach(
           await expectSuccessfulSendMultiSig(params);
         });
 
-        it('Can not send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)', async function () {
+        it('Can send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)', async function () {
           sequenceId = 200;
           const params = {
             msgSenderAddress: accounts[0],
@@ -984,7 +984,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSig(params);
+          await expectSuccessfulSendMultiSig(params);
         });
 
         it('Should fail with an invalid signature', async function () {
@@ -1044,7 +1044,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSig(params);
+          await expectFailSendMultiSig(params, 'Sequence ID already used');
         });
 
         it('Send with a sequence ID that is used many transactions ago (lower than previous 10) should fail', async function () {
@@ -1060,7 +1060,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSig(params);
+          await expectFailSendMultiSig(params, 'Sequence ID already used');
         });
 
         it('Sign with incorrect operation hash prefix should fail', async function () {
@@ -1484,7 +1484,7 @@ coins.forEach(
           await expectSuccessfulSendMultiSigBatch(params);
         });
 
-        it('Can not send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)', async function () {
+        it('Can send with a sequence ID that is unused but lower than the previous (not strictly monotonic increase)', async function () {
           sequenceId = 200;
           const params = {
             msgSenderAddress: accounts[0],
@@ -1496,7 +1496,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, 'sequenceId is too low');
+          await expectSuccessfulSendMultiSigBatch(params);
         });
 
         it('Send with a sequence ID that has been previously used should fail', async function () {
@@ -1511,7 +1511,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, 'sequenceId is too low');
+          await expectFailSendMultiSigBatch(params, 'Sequence ID already used');
         });
 
         it('Send with a sequence ID that is used many transactions ago (lower than previous 10) should fail', async function () {
@@ -1526,7 +1526,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, 'sequenceId is too low');
+          await expectFailSendMultiSigBatch(params, 'Sequence ID already used');
         });
 
         it('Sign with incorrect operation hash prefix should fail', async function () {
@@ -1575,7 +1575,7 @@ coins.forEach(
           await expectFailSendMultiSigBatch(params, 'Call failed');
         });
 
-        it("Doesn't fail if one contract uses a lot of gas but doesn't run out", async function () {
+        it('Doesnt fail if one contract uses a lot of gas but doesnt run out', async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],
