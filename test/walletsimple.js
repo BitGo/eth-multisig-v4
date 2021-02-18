@@ -1575,7 +1575,7 @@ coins.forEach(
           await expectFailSendMultiSigBatch(params, 'Call failed');
         });
 
-        it('Doesn\'t fail if one contract uses a lot of gas but doesn\'t run out', async function () {
+        it("Doesn't fail if one contract uses a lot of gas but doesn't run out", async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],

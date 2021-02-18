@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.5;
-import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
-import "./Forwarder.sol";
-import "./ERC20Interface.sol";
+import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
+import './Forwarder.sol';
+import './ERC20Interface.sol';
 
 /**
  *
@@ -70,10 +70,10 @@ contract WalletSimple {
    * @param allowedSigners An array of signers on the wallet
    */
   function init(address[] calldata allowedSigners) external onlyUninitialized {
-    require(allowedSigners.length == 3, "Invalid number of signers");
+    require(allowedSigners.length == 3, 'Invalid number of signers');
 
     for (uint8 i = 0; i < allowedSigners.length; i++) {
-      require(allowedSigners[i] != address(0), "Invalid signer");
+      require(allowedSigners[i] != address(0), 'Invalid signer');
       signers[allowedSigners[i]] = true;
     }
     initialized = true;
@@ -88,7 +88,7 @@ contract WalletSimple {
    *    not pick up on state variables
    */
   function getNetworkId() internal virtual pure returns (string memory) {
-    return "ETHER";
+    return 'ETHER';
   }
 
   /**
@@ -100,7 +100,7 @@ contract WalletSimple {
    *    not pick up on state variables
    */
   function getTokenNetworkId() internal virtual pure returns (string memory) {
-    return "ERC20";
+    return 'ERC20';
   }
 
   /**
@@ -112,7 +112,7 @@ contract WalletSimple {
    *    not pick up on state variables
    */
   function getBatchNetworkId() internal virtual pure returns (string memory) {
-    return "ETHER-Batch";
+    return 'ETHER-Batch';
   }
 
   /**
@@ -128,7 +128,7 @@ contract WalletSimple {
    * Modifier that will execute internal code block only if the sender is an authorized signer on this wallet
    */
   modifier onlySigner {
-    require(isSigner(msg.sender), "Non-signer in onlySigner method");
+    require(isSigner(msg.sender), 'Non-signer in onlySigner method');
     _;
   }
 
@@ -136,7 +136,7 @@ contract WalletSimple {
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
   modifier onlyUninitialized {
-    require(!initialized, "Contract already initialized");
+    require(!initialized, 'Contract already initialized');
     _;
   }
 
@@ -201,7 +201,7 @@ contract WalletSimple {
 
     // Success, send the transaction
     (bool success, ) = toAddress.call{ value: value }(data);
-    require(success, "Call execution failed");
+    require(success, 'Call execution failed');
 
     emit Transacted(
       msg.sender,
@@ -231,12 +231,12 @@ contract WalletSimple {
     uint256 sequenceId,
     bytes calldata signature
   ) external onlySigner {
-    require(recipients.length != 0, "Not enough recipients");
+    require(recipients.length != 0, 'Not enough recipients');
     require(
       recipients.length == values.length,
-      "Unequal recipients and values"
+      'Unequal recipients and values'
     );
-    require(recipients.length < 256, "Too many recipients, max 255");
+    require(recipients.length < 256, 'Too many recipients, max 255');
 
     // Verify the other signer
     bytes32 operationHash = keccak256(
@@ -251,7 +251,7 @@ contract WalletSimple {
 
     // the first parameter (toAddress) is used to ensure transactions in safe mode only go to a signer
     // if in safe mode, we should use normal sendMultiSig to recover, so this check will always fail if in safe mode
-    require(!safeMode, "Batch in safe mode");
+    require(!safeMode, 'Batch in safe mode');
     address otherSigner = verifyMultiSig(
       address(0x0),
       operationHash,
@@ -276,10 +276,10 @@ contract WalletSimple {
     uint256[] calldata values
   ) internal {
     for (uint256 i = 0; i < recipients.length; i++) {
-      require(address(this).balance >= values[i], "Insufficient funds");
+      require(address(this).balance >= values[i], 'Insufficient funds');
 
-      (bool success, ) = recipients[i].call{ value: values[i] }("");
-      require(success, "Call failed");
+      (bool success, ) = recipients[i].call{ value: values[i] }('');
+      require(success, 'Call failed');
 
       emit BatchTransfer(msg.sender, recipients[i], values[i]);
     }
@@ -316,13 +316,7 @@ contract WalletSimple {
       )
     );
 
-    verifyMultiSig(
-      toAddress,
-      operationHash,
-      signature,
-      expireTime,
-      sequenceId
-    );
+    verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
 
     TransferHelper.safeTransfer(tokenContractAddress, toAddress, value);
   }
@@ -361,17 +355,17 @@ contract WalletSimple {
     address otherSigner = recoverAddressFromSignature(operationHash, signature);
 
     // Verify if we are in safe mode. In safe mode, the wallet can only send to signers
-    require(!safeMode || isSigner(toAddress), "External transfer in safe mode");
+    require(!safeMode || isSigner(toAddress), 'External transfer in safe mode');
 
     // Verify that the transaction has not expired
-    require(expireTime >= block.timestamp, "Transaction expired");
+    require(expireTime >= block.timestamp, 'Transaction expired');
 
     // Try to insert the sequence ID. Will revert if the sequence id was invalid
     tryUpdateSequenceId(sequenceId);
 
-    require(isSigner(otherSigner), "Invalid signer");
+    require(isSigner(otherSigner), 'Invalid signer');
 
-    require(otherSigner != msg.sender, "Signers cannot be equal");
+    require(otherSigner != msg.sender, 'Signers cannot be equal');
 
     return otherSigner;
   }
@@ -394,7 +388,7 @@ contract WalletSimple {
     bytes32 operationHash,
     bytes memory signature
   ) private pure returns (address) {
-    require(signature.length == 65, "Invalid signature - wrong length");
+    require(signature.length == 65, 'Invalid signature - wrong length');
 
     // We need to unpack the signature, which is given as an array of 65 bytes (like eth.sign)
     bytes32 r;
@@ -414,7 +408,11 @@ contract WalletSimple {
     // protect against signature malleability
     // S value must be in the lower half orader
     // reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/051d340171a93a3d401aaaea46b4b62fa81e5d7c/contracts/cryptography/ECDSA.sol#L53
-    require(uint256(s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0, "ECDSA: invalid signature 's' value");
+    require(
+      uint256(s) <=
+        0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
+      "ECDSA: invalid signature 's' value"
+    );
 
     // note that this returns 0 if the signature is invalid
     // Since 0x0 can never be a signer, when the recovered signer address
@@ -428,13 +426,13 @@ contract WalletSimple {
    * @param sequenceId The new sequenceId to use
    */
   function tryUpdateSequenceId(uint256 sequenceId) private onlySigner {
-    require(sequenceId > lastSequenceId, "sequenceId is too low");
+    require(sequenceId > lastSequenceId, 'sequenceId is too low');
 
     // Block sequence IDs which are much higher than the current
     // This prevents people blocking the contract by using very large sequence IDs quickly
     require(
       sequenceId <= lastSequenceId + MAX_SEQUENCE_ID_INCREASE,
-      "sequenceId is too high"
+      'sequenceId is too high'
     );
 
     lastSequenceId = sequenceId;
