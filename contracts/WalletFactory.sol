@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.5;
-import "./WalletSimple.sol";
-import "./CloneFactory.sol";
+import './WalletSimple.sol';
+import './CloneFactory.sol';
 
 contract WalletFactory is CloneFactory {
   address public implementationAddress;

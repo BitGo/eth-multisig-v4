@@ -8,7 +8,7 @@ const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
 
 const BatcherTransferEvent =
-    '0xc42fa155158786a1dd6ccc3a785f35845467353c3cc700e0e31a79f90e22227d';
+  '0xc42fa155158786a1dd6ccc3a785f35845467353c3cc700e0e31a79f90e22227d';
 
 const { getBalance, abi: ethAbi } = web3.eth;
 const { toBN } = web3.utils;
@@ -52,11 +52,11 @@ const assertVMException = async (promise, expectedExceptionMsg) => {
     assert.strictEqual(
       err.reason || '',
       expectedExceptionMsg,
-      'Didn\'t receive expected VM exception'
+      "Didn't receive expected VM exception"
     );
   }
   if (badSucceed) {
-    assert.fail('Didn\'t throw any exception');
+    assert.fail("Didn't throw any exception");
   }
 };
 
@@ -126,7 +126,7 @@ contract('Batcher', (accounts) => {
       const value = toBN('0x' + data.slice(130)).toString();
       if (
         recipients[i] !== reentryInstance.address &&
-          recipients[i] !== failInstance.address
+        recipients[i] !== failInstance.address
       ) {
         assert(
           recipients.find((elem) => recipientAddress === elem.toLowerCase()),
@@ -205,14 +205,14 @@ contract('Batcher', (accounts) => {
           startBalance,
           endBalance,
           0,
-          'Address that shouldn\'t have received funds did'
+          "Address that shouldn't have received funds did"
         );
       } else {
         assertBalanceDiff(
           startBalance,
           endBalance,
           value,
-          'Valid account didn\'t receive funds'
+          "Valid account didn't receive funds"
         );
       }
     }
@@ -281,7 +281,7 @@ contract('Batcher', (accounts) => {
       const params = {
         recipients: accounts.slice(1, 4),
         values: createRandIntArr(3),
-        extraValue: 50,
+        extraValue: 50
       };
       await runTestBatcherDriver(params);
     });
@@ -312,7 +312,7 @@ contract('Batcher', (accounts) => {
           accounts[4]
         ],
         values: createRandIntArr(6),
-        extraValue: 100,
+        extraValue: 100
       };
       await runTestBatcherDriver(params);
     });
@@ -348,7 +348,6 @@ contract('Batcher', (accounts) => {
   });
 
   describe('Failed transactions', () => {
-
     it('Correctly fails whole transaction with one reentrant contract', async () => {
       const params = {
         recipients: [reentryInstance.address, accounts[1], accounts[2]],
@@ -425,7 +424,6 @@ contract('Batcher', (accounts) => {
       };
       await runTestBatcherDriver(params);
     });
-
 
     it('Fails with empty recipients and values', async () => {
       const params = {
@@ -628,12 +626,12 @@ contract('Batcher', (accounts) => {
         assert.strictEqual(
           prevOwner,
           oldBatcherOwner,
-          'Log emitted for ownership change doesn\'t reflect old owner'
+          "Log emitted for ownership change doesn't reflect old owner"
         );
         assert.strictEqual(
           newOwner,
           newBatcherOwner,
-          'Log emitted for ownership change doesn\'t reflect new owner'
+          "Log emitted for ownership change doesn't reflect new owner"
         );
       };
 
@@ -651,7 +649,7 @@ contract('Batcher', (accounts) => {
         assert.strictEqual(
           newTransferGasLimit.toNumber(),
           newGasLimit,
-          'Log emitted for transfer gas limit change doesn\'t reflect new limit'
+          "Log emitted for transfer gas limit change doesn't reflect new limit"
         );
       };
 
@@ -733,7 +731,6 @@ contract('Batcher', (accounts) => {
         );
       };
 
-
       const getTokenTransferData = (address, value) => {
         return ethAbi.encodeFunctionCall(
           {
@@ -756,7 +753,12 @@ contract('Batcher', (accounts) => {
 
       const getUSDTTokenTransferData = (address, value) => {
         const methodId = '0xa9059cbb';
-        return methodId + ethAbi.encodeParameters(['address','uint'],[address, value]).substring(2);
+        return (
+          methodId +
+          ethAbi
+            .encodeParameters(['address', 'uint'], [address, value])
+            .substring(2)
+        );
       };
 
       beforeEach(async () => {
@@ -771,10 +773,16 @@ contract('Batcher', (accounts) => {
         await checkBalance(batcherInstance.address, 5);
       });
 
-      it('Correctly recover USDT tokens' , async () => {
-        const tetherTokenContract = await Tether.new('1000000', 'USDT', 'USDT', 6, {
-          from: batcherOwner
-        });
+      it('Correctly recover USDT tokens', async () => {
+        const tetherTokenContract = await Tether.new(
+          '1000000',
+          'USDT',
+          'USDT',
+          6,
+          {
+            from: batcherOwner
+          }
+        );
 
         await tetherTokenContract.transfer(batcherInstance.address, 100, {
           from: batcherOwner
@@ -789,8 +797,12 @@ contract('Batcher', (accounts) => {
           { from: batcherOwner }
         );
 
-        const batcherBalance = await tetherTokenContract.balanceOf.call(batcherInstance.address);
-        const senderBalance = await tetherTokenContract.balanceOf.call(batcherOwner);
+        const batcherBalance = await tetherTokenContract.balanceOf.call(
+          batcherInstance.address
+        );
+        const senderBalance = await tetherTokenContract.balanceOf.call(
+          batcherOwner
+        );
 
         assert.strictEqual(
           batcherBalance.toString(),
@@ -815,7 +827,7 @@ contract('Batcher', (accounts) => {
         await checkBalance(tokenContractOwner, totalSupply);
       });
 
-      it('Doesn\'t allow an address other than the owner to transfer tokens', async () => {
+      it("Doesn't allow an address other than the owner to transfer tokens", async () => {
         const tokenTransferData = getTokenTransferData(accounts[1], 5);
         await assertVMException(
           batcherInstance.recover(tokenContract.address, 0, tokenTransferData, {
@@ -836,7 +848,7 @@ contract('Batcher', (accounts) => {
         assert.strictEqual(
           ethAbi.decodeParameter('bool', res),
           false,
-          'Token transfer shouldn\'t have been successful'
+          "Token transfer shouldn't have been successful"
         );
         await checkBalance(tokenContractOwner, totalSupply - 5);
       });

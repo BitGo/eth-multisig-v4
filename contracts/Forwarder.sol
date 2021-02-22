@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.5;
-import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
-import "./ERC20Interface.sol";
+import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
+import './ERC20Interface.sol';
 
 /**
  * Contract that will forward any incoming Ether to the creator of the contract
@@ -23,10 +23,10 @@ contract Forwarder {
       return;
     }
 
-    (bool success, ) = parentAddress.call{ value: value }("");
-    require(success, "Flush failed");
-    // NOTE: since we are forwarding on initialization, 
-    // we don't have the context of the original sender. 
+    (bool success, ) = parentAddress.call{ value: value }('');
+    require(success, 'Flush failed');
+    // NOTE: since we are forwarding on initialization,
+    // we don't have the context of the original sender.
     // We still emit an event about the forwarding but set
     // the sender to the forwarder itself
     emit ForwarderDeposited(address(this), value, msg.data);
@@ -36,7 +36,7 @@ contract Forwarder {
    * Modifier that will execute internal code block only if the sender is the parent address
    */
   modifier onlyParent {
-    require(msg.sender == parentAddress, "Only Parent");
+    require(msg.sender == parentAddress, 'Only Parent');
     _;
   }
 
@@ -44,7 +44,7 @@ contract Forwarder {
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
   modifier onlyUninitialized {
-    require(parentAddress == address(0x0), "Already initialized");
+    require(parentAddress == address(0x0), 'Already initialized');
     _;
   }
 
@@ -74,7 +74,11 @@ contract Forwarder {
       return;
     }
 
-    TransferHelper.safeTransfer(tokenContractAddress, parentAddress, forwarderBalance);
+    TransferHelper.safeTransfer(
+      tokenContractAddress,
+      parentAddress,
+      forwarderBalance
+    );
   }
 
   /**
@@ -87,8 +91,8 @@ contract Forwarder {
       return;
     }
 
-    (bool success, ) = parentAddress.call{ value: value }("");
-    require(success, "Flush failed");
+    (bool success, ) = parentAddress.call{ value: value }('');
+    require(success, 'Flush failed');
     emit ForwarderDeposited(msg.sender, value, msg.data);
   }
 }
