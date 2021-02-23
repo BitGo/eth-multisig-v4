@@ -11,9 +11,8 @@ pragma solidity 0.7.5;
  * funnel off those funds to the correct accounts in a single transaction. This is useful for saving on gas when a
  * bunch of funds need to be transferred to different accounts.
  *
- * This contract will return any excess funds in a batch back to the sender. It should never store any ETH on it.
+ * If more ETH is sent to `batch` than it is instructed to transfer, contact the contract owner in order to recover the excess.
  * If any tokens are accidentally transferred to this account, contact the contract owner in order to recover them.
- *
  *
  */
 
