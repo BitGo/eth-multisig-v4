@@ -73,7 +73,7 @@ contract WalletSimple {
   function init(address[] calldata allowedSigners) external onlyUninitialized {
     require(allowedSigners.length == 3, 'Invalid number of signers');
 
-    for (uint8 i = 0; i < allowedSigners.length; i++) {
+    for (uint256 i = 0; i < allowedSigners.length; i++) {
       require(allowedSigners[i] != address(0), 'Invalid signer');
       signers[allowedSigners[i]] = true;
     }
