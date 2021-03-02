@@ -12,6 +12,7 @@
     "truffle-testrpc": "node ./testrpc/run.js",
     "mocha-test": "./node_modules/mocha/bin/mocha mocha-test",
     "truffle-test": "./node_modules/truffle/build/cli.bundled.js test",
+    "truffle-test-coverage": "node --max-old-space-size=8096 ./node_modules/truffle/build/cli.bundled.js run coverage --network development",
     "compile": "./node_modules/truffle/build/cli.bundled.js compile",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
     "prettier": "./node_modules/.bin/prettier --config .prettierrc --write './**/*.js'",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "prettier": "^2.1.2",
     "prettier-plugin-solidity": "^1.0.0-alpha.58",
-    "solhint-plugin-prettier": "0.0.5"
+    "solhint-plugin-prettier": "0.0.5",
+    "solidity-coverage": "^0.7.15"
   }
 }

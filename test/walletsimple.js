@@ -1545,7 +1545,8 @@ coins.forEach(
           await expectFailSendMultiSigBatch(params, 'Invalid signer');
         });
 
-        it('Fails all transfers when one recipient eats all of the gas', async function () {
+        //solidity-coverage hangs here
+        it('Fails all transfers when one recipient eats all of the gas [ @skip-on-coverage ]', async function () {
           sequenceId = 1001;
           const params = {
             msgSenderAddress: accounts[0],
@@ -2078,6 +2079,39 @@ coins.forEach(
           /* TODO Barath - Get event testing for forwarder contract token send to work
            */
         });
+
+        it('Flush forwarder with 0 token balance', async function() {
+          const forwarder = await (
+            await createForwarderFromWallet(wallet)
+          ).create();
+
+          const forwarderContractStartTokens = await fixedSupplyTokenContract.balanceOf.call(
+            forwarder.address
+          );
+          forwarderContractStartTokens.should.eql(web3.utils.toBN(0));
+          const walletContractStartTokens = await fixedSupplyTokenContract.balanceOf.call(
+            wallet.address
+          );
+
+          await wallet.flushForwarderTokens(
+            forwarder.address,
+            fixedSupplyTokenContract.address,
+            { from: accounts[5] }
+          );
+
+          const forwarderAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
+            forwarder.address
+          );
+          forwarderAccountEndTokens.should.eql(web3.utils.toBN(0));
+
+          // Check wallet balance
+          const walletContractEndTokens = await fixedSupplyTokenContract.balanceOf.call(
+            wallet.address
+          );
+          walletContractStartTokens
+            .eq(walletContractEndTokens)
+            .should.be.true();
+        })
       });
     });
   }
