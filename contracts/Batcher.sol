@@ -62,7 +62,7 @@ contract Batcher is ReentrancyGuard {
 
     // Try to send all given amounts to all given recipients
     // Revert everything if any transfer fails
-    for (uint8 i = 0; i < recipients.length; i++) {
+    for (uint256 i = 0; i < recipients.length; i++) {
       require(recipients[i] != address(0), 'Invalid recipient address');
       (bool success, ) = recipients[i].call{
         value: values[i],
