@@ -112,12 +112,4 @@ contract Batcher is ReentrancyGuard {
     emit TransferGasLimitChange(transferGasLimit, newTransferGasLimit);
     transferGasLimit = newTransferGasLimit;
   }
-
-  fallback() external payable {
-    revert('Invalid fallback');
-  }
-
-  receive() external payable {
-    revert('Invalid receive');
-  }
 }
