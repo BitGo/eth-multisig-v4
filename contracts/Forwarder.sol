@@ -17,6 +17,7 @@ contract Forwarder {
    */
   function init(address _parentAddress) external onlyUninitialized {
     parentAddress = _parentAddress;
+    require(parentAddress != address(0x0), 'Parent address cannot be 0x0');
     uint256 value = address(this).balance;
 
     if (value == 0) {
