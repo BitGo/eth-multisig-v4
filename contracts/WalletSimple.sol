@@ -412,7 +412,7 @@ contract WalletSimple {
     require(
       uint256(s) <=
         0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
-      "ECDSA: invalid signature 's' value"
+      "ECDSA: invalid signature"
     );
 
     // note that this returns 0 if the signature is invalid
