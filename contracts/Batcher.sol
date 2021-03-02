@@ -1,5 +1,7 @@
 pragma solidity 0.7.5;
 
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -16,7 +18,7 @@ pragma solidity 0.7.5;
  *
  */
 
-contract Batcher {
+contract Batcher is ReentrancyGuard {
   event BatchTransfer(address sender, address recipient, uint256 value);
   event OwnerChange(address prevOwner, address newOwner);
   event TransferGasLimitChange(
@@ -25,22 +27,13 @@ contract Batcher {
   );
 
   address public owner;
-  uint256 public lockCounter;
   uint256 public transferGasLimit;
 
   constructor() {
-    lockCounter = 1;
     owner = msg.sender;
     emit OwnerChange(address(0), owner);
     transferGasLimit = 20000;
     emit TransferGasLimitChange(0, transferGasLimit);
-  }
-
-  modifier lockCall() {
-    lockCounter++;
-    uint256 localCounter = lockCounter;
-    _;
-    require(localCounter == lockCounter, 'Reentrancy attempt detected');
   }
 
   modifier onlyOwner() {
@@ -58,7 +51,7 @@ contract Batcher {
   function batch(address[] calldata recipients, uint256[] calldata values)
     external
     payable
-    lockCall
+    nonReentrant
   {
     require(recipients.length != 0, 'Must send to at least one person');
     require(
