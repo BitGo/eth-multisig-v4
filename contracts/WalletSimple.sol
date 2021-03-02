@@ -59,8 +59,8 @@ contract WalletSimple {
 
   // Internal fields
   uint256 private constant MAX_SEQUENCE_ID_INCREASE = 10000;
-  uint256 constant SEQUENCE_ID_WINDOW_SIZE = 10;
-  uint256[10] recentSequenceIds;
+  uint256 private constant SEQUENCE_ID_WINDOW_SIZE = 10;
+  uint256[10] private recentSequenceIds;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
