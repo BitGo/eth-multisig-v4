@@ -60,7 +60,7 @@ contract WalletSimple {
   // Internal fields
   uint256 private constant MAX_SEQUENCE_ID_INCREASE = 10000;
   uint256 constant SEQUENCE_ID_WINDOW_SIZE = 10;
-  uint256[10] recentSequenceIds;
+  uint256[SEQUENCE_ID_WINDOW_SIZE] recentSequenceIds;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
@@ -430,10 +430,12 @@ contract WalletSimple {
   function tryInsertSequenceId(uint256 sequenceId) private onlySigner {
     // Keep a pointer to the lowest value element in the window
     uint256 lowestValueIndex = 0;
+    // fetch recentSequenceIds into memory for function context to avoid unnecessary sloads
+    uint256[SEQUENCE_ID_WINDOW_SIZE] memory _recentSequenceIds = recentSequenceIds;
     for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
-      require(recentSequenceIds[i] != sequenceId, 'Sequence ID already used');
+      require(_recentSequenceIds[i] != sequenceId, 'Sequence ID already used');
 
-      if (recentSequenceIds[i] < recentSequenceIds[lowestValueIndex]) {
+      if (_recentSequenceIds[i] < _recentSequenceIds[lowestValueIndex]) {
         lowestValueIndex = i;
       }
     }
@@ -441,7 +443,7 @@ contract WalletSimple {
     // The sequence ID being used is lower than the lowest value in the window
     // so we cannot accept it as it may have been used before
     require(
-      sequenceId > recentSequenceIds[lowestValueIndex],
+      sequenceId > _recentSequenceIds[lowestValueIndex],
       'Sequence ID below window'
     );
 
@@ -449,7 +451,7 @@ contract WalletSimple {
     // This prevents people blocking the contract by using very large sequence IDs quickly
     require(
       sequenceId <=
-        (recentSequenceIds[lowestValueIndex] + MAX_SEQUENCE_ID_INCREASE),
+        (_recentSequenceIds[lowestValueIndex] + MAX_SEQUENCE_ID_INCREASE),
       'Sequence ID above maximum'
     );
 
