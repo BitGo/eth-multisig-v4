@@ -50,6 +50,10 @@ const createAndGetWallet = async (creator, signers) => {
 
 const checkGasUsed = (expected, actual) => {
     const diff = Math.abs(actual - expected);
+    if (diff >= GAS_DIFF_THRESHOLD) {
+        // log so the user knows the values
+        console.log(`Gas differs from expected. Expected: ${expected}, Actual: ${actual}`);
+    }
     diff.should.be.lessThan(GAS_DIFF_THRESHOLD);
 }
 
@@ -112,7 +116,7 @@ contract(`Wallet Operations Gas Usage`, function (accounts) {
             .eq(destinationEndBalance)
             .should.be.true();
 
-        checkGasUsed(92330, transaction.receipt.gasUsed);
+        checkGasUsed(75886, transaction.receipt.gasUsed);
     });
 
     const sendBatchHelper = async (batchSize) => {
