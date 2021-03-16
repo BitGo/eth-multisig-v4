@@ -13,5 +13,6 @@ module.exports = {
     solc: {
       version: '0.7.5'
     }
-  }
+  },
+  plugins: ["solidity-coverage"]
 };
