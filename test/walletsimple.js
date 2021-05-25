@@ -2080,6 +2080,82 @@ coins.forEach(
            */
         });
 
+        it('Flush Tether from WalletSimple contract', async function () {
+
+          const wallet = await createWallet(accounts[4], [
+            accounts[4],
+            accounts[5],
+            accounts[6]
+          ]);
+
+          await tetherTokenContract.transfer(wallet.address, 100, {
+            from: accounts[0]
+          });
+          const balance = await tetherTokenContract.balanceOf.call(
+            accounts[0]
+          );
+          balance.should.eql(web3.utils.toBN(1000000 - 200));
+          const msigWalletStartTokens = await tetherTokenContract.balanceOf.call(
+            wallet.address
+          );
+
+          msigWalletStartTokens.should.eql(web3.utils.toBN(100));
+
+          const sequenceIdString = await wallet.getNextSequenceId.call();
+          const sequenceId = parseInt(sequenceIdString);
+
+          const destinationAccount = accounts[5];
+          const amount = 50;
+          const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
+
+          const destinationAccountStartTokens = await tetherTokenContract.balanceOf.call(
+            accounts[5]
+          );
+          destinationAccountStartTokens.should.eql(web3.utils.toBN(0));
+
+          const operationHash = helpers.getSha3ForConfirmationTokenTx(
+            tokenPrefix,
+            destinationAccount,
+            amount,
+            tetherTokenContract.address,
+            expireTime,
+            sequenceId
+          );
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(accounts[4])
+          );
+
+          await wallet.sendMultiSigToken(
+            destinationAccount,
+            amount,
+            tetherTokenContract.address,
+            expireTime,
+            sequenceId,
+            helpers.serializeSignature(sig),
+            { from: accounts[5] }
+          );
+
+          const destinationAccountEndTokens = await tetherTokenContract.balanceOf.call(
+            destinationAccount
+          );
+          destinationAccountStartTokens
+            .add(web3.utils.toBN(amount))
+            .eq(destinationAccountEndTokens)
+            .should.be.true();
+
+          // Check wallet balance
+          const msigWalletEndTokens = await tetherTokenContract.balanceOf.call(
+            wallet.address
+          );
+          web3.utils
+            .toBN(msigWalletStartTokens)
+            .sub(web3.utils.toBN(amount))
+            .eq(msigWalletEndTokens)
+            .should.be.true();
+        });
+
+
         it('Flush forwarder with 0 token balance', async function() {
           const forwarder = await (
             await createForwarderFromWallet(wallet)
