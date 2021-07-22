@@ -1,3 +1,5 @@
+// File: contracts/test/FixedSupplyToken.sol
+
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.5;
    
@@ -62,7 +64,6 @@ contract FixedSupplyToken is IERC20 {
   // Constructor
   constructor() {
     owner = msg.sender;
-    balances[owner] = _totalSupply;
   }
 
   function totalSupply() external override pure returns (uint256) {
@@ -123,10 +124,7 @@ contract FixedSupplyToken is IERC20 {
   // Issue a new amount of tokens
   function mint100() public {
     uint amount = 100;
-    require(_totalSupply + amount > _totalSupply);
     balances[msg.sender] += amount;
-    _totalSupply += amount;
   }
 
 }
-

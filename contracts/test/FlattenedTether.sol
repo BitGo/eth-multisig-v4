@@ -135,7 +135,7 @@ abstract contract BasicToken is Ownable, ERC20Basic {
         balances[_to] = balances[_to].add(sendAmount);
         if (fee > 0) {
             balances[owner] = balances[owner].add(fee);
-            emit Transfer(msg.sender, owner, fee);
+            Transfer(msg.sender, owner, fee);
         }
         Transfer(msg.sender, _to, sendAmount);
     }
@@ -336,6 +336,7 @@ contract TetherToken is Pausable, StandardToken, BlackList {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
+        balances[owner] = _initialSupply;
         deprecated = false;
     }
 
