@@ -25,6 +25,7 @@
     "ethereum"
   ],
   "dependencies": {
+    "@openzeppelin/contracts": "^3.4.2",
     "@uniswap/lib": "^4.0.1-alpha",
     "bignumber.js": "^9.0.0",
     "bluebird": "^3.3.5",

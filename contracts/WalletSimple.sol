@@ -3,7 +3,7 @@ pragma solidity 0.7.5;
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import './Forwarder.sol';
 import './ERC20Interface.sol';
-
+import '@openzeppelin/contracts/token/ERC721/ERC721Holder.sol';
 /**
  *
  * WalletSimple
@@ -30,7 +30,7 @@ import './ERC20Interface.sol';
  *
  *
  */
-contract WalletSimple {
+contract WalletSimple is ERC721Holder{
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -471,4 +471,5 @@ contract WalletSimple {
     }
     return highestSequenceId + 1;
   }
+  
 }

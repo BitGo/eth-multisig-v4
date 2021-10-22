@@ -2189,6 +2189,30 @@ coins.forEach(
             .should.be.true();
         })
       });
+
+      describe('NFT Support', function () {
+        before(async function () {
+          wallet = await createWallet(accounts[0], [
+            accounts[0],
+            accounts[1],
+            accounts[2]
+          ]);
+        });
+
+        it('Should support NFT safeTransferFrom function', async function () {
+          const operator=accounts[0];
+          const from=accounts[1];
+          const tokenId='1';
+          const data=0x00;
+          const methodId= await wallet.onERC721Received.call(operator,
+            from,tokenId,data);
+          methodId.should.eql('0x150b7a02');
+        });
+
+        
+
+       
+      });
     });
   }
 );
