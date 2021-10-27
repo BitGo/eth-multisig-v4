@@ -26,7 +26,7 @@ const ForwarderTarget = artifacts.require('./ForwarderTarget.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
-
+const ERC721 = artifacts.require('./MockERC721');
 const assertVMException = (err, expectedErrMsg) => {
   err.message.toString().should.containEql('VM Exception');
   if (expectedErrMsg) {
@@ -2081,7 +2081,6 @@ coins.forEach(
         });
 
         it('Flush Tether from WalletSimple contract', async function () {
-
           const wallet = await createWallet(accounts[4], [
             accounts[4],
             accounts[5],
@@ -2091,9 +2090,7 @@ coins.forEach(
           await tetherTokenContract.transfer(wallet.address, 100, {
             from: accounts[0]
           });
-          const balance = await tetherTokenContract.balanceOf.call(
-            accounts[0]
-          );
+          const balance = await tetherTokenContract.balanceOf.call(accounts[0]);
           balance.should.eql(web3.utils.toBN(1000000 - 200));
           const msigWalletStartTokens = await tetherTokenContract.balanceOf.call(
             wallet.address
@@ -2155,8 +2152,7 @@ coins.forEach(
             .should.be.true();
         });
 
-
-        it('Flush forwarder with 0 token balance', async function() {
+        it('Flush forwarder with 0 token balance', async function () {
           const forwarder = await (
             await createForwarderFromWallet(wallet)
           ).create();
@@ -2187,31 +2183,56 @@ coins.forEach(
           walletContractStartTokens
             .eq(walletContractEndTokens)
             .should.be.true();
-        })
+        });
       });
 
       describe('NFT Support', function () {
+        const name = 'Non Fungible Token';
+        const symbol = 'NFT';
+        let token;
+        let tokenId = 0;
         before(async function () {
           wallet = await createWallet(accounts[0], [
             accounts[0],
             accounts[1],
             accounts[2]
           ]);
+          token = await ERC721.new(name, symbol);
         });
 
         it('Should support NFT safeTransferFrom function', async function () {
-          const operator=accounts[0];
-          const from=accounts[1];
-          const tokenId='1';
-          const data=0x00;
-          const methodId= await wallet.onERC721Received.call(operator,
-            from,tokenId,data);
+          const operator = accounts[0];
+          const from = accounts[1];
+          tokenId = tokenId + 1;
+          const data = 0x00;
+          const methodId = await wallet.onERC721Received.call(
+            operator,
+            from,
+            tokenId,
+            data
+          );
           methodId.should.eql('0x150b7a02');
         });
 
-        
+        it('Should receive with safeTransferFrom function', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[0];
+          await token.mint(owner, tokenId);
+          await token.safeTransferFrom(owner, wallet.address, tokenId, {
+            from: owner
+          });
+          expect(await token.ownerOf(tokenId)).to.be.equal(wallet.address);
+        });
 
-       
+        it('Should receive with transferFrom function', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[0];
+          await token.mint(owner, tokenId);
+          await token.transferFrom(owner, wallet.address, tokenId, {
+            from: owner
+          });
+          expect(await token.ownerOf(tokenId)).to.be.equal(wallet.address);
+        });
       });
     });
   }

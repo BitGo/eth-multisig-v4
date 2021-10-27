@@ -30,7 +30,7 @@ import '@openzeppelin/contracts/token/ERC721/ERC721Holder.sol';
  *
  *
  */
-contract WalletSimple is ERC721Holder{
+contract WalletSimple is ERC721Holder {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
