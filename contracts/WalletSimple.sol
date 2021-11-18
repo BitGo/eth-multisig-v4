@@ -372,6 +372,18 @@ contract WalletSimple {
   }
 
   /**
+   * ERC721 standard callback function for when a ERC721 is transfered.
+   *
+   * @param _operator The address of the nft contract
+   * @param _from The address of the sender
+   * @param _tokenId The token id of the nft
+   * @param _data Additional data with no specified format, sent in call to `_to`
+   */
+  function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) public virtual override returns (bytes4) {
+    return this.onERC721Received.selector;
+  }
+
+  /**
    * Irrevocably puts contract into safe mode. When in this mode, transactions may only be sent to signing addresses.
    */
   function activateSafeMode() external onlySigner {
