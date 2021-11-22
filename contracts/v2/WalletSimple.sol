@@ -5,8 +5,7 @@ import './Forwarder.sol';
 import './ERC20Interface.sol';
 
 /** ERC721, ERC1155 imports */
-import '@openzeppelin/contracts/token/ERC721/IERC721Holder.sol';
-
+import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 /**
  *
  * WalletSimple
@@ -33,7 +32,7 @@ import '@openzeppelin/contracts/token/ERC721/IERC721Holder.sol';
  *
  *
  */
-contract WalletSimple is IERC721Holder {
+contract WalletSimple is IERC721Receiver {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -105,18 +104,6 @@ contract WalletSimple is IERC721Holder {
    */
   function getTokenNetworkId() internal virtual pure returns (string memory) {
     return 'ERC20';
-  }
-
-  /**
-   * Get the network identifier that signers must sign over for token transfers
-   * This provides protection signatures being replayed on other chains
-   * This must be a virtual function because chain-specific contracts will need
-   *    to override with their own network ids. It also can't be a field
-   *    to allow this contract to be used by proxy with delegatecall, which will
-   *    not pick up on state variables
-   */
-  function get721TokenNetworkId() internal virtual pure returns (string memory) {
-    return 'ERC721';
   }
 
   /**
@@ -337,38 +324,6 @@ contract WalletSimple is IERC721Holder {
     TransferHelper.safeTransfer(tokenContractAddress, toAddress, value);
   }
 
-  /**
-   * TODO: cleanup
-   */
-  function sendMultiSig721Token(
-    address toAddress,
-    uint256 tokenId,
-    address tokenContractAddress,
-    uint256 expireTime,
-    uint256 sequenceId,
-    bytes memory data,
-    bytes calldata signature
-  ) external onlySigner {
-    // Verify the other signer
-    bytes32 operationHash = keccak256(
-      abi.encodePacked(
-        get721TokenNetworkId(),
-        toAddress,
-        tokenId,
-        tokenContractAddress,
-        expireTime,
-        data,
-        sequenceId
-      )
-    );
-
-    verifyMultiSig(toAddress, operationHash, signature, expireTime, sequenceId);
-
-    // TODO: add some sanity checks and research on what's the "safest" way in the market to transfer ERC721
-    // hint: check https://github.com/ProjectOpenSea/opensea-creatures
-
-    IERC721(tokenContractAddress).safeTransferFrom(address(this), toAddress, tokenId, data);
-  }
 
   /**
    * Execute a token flush from one of the forwarder addresses. This transfer needs only a single signature and can be done by any signer
