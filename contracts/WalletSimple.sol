@@ -4,6 +4,8 @@ import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import './Forwarder.sol';
 import './ERC20Interface.sol';
 
+/** ERC721, ERC1155 imports */
+import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 /**
  *
  * WalletSimple
@@ -30,7 +32,7 @@ import './ERC20Interface.sol';
  *
  *
  */
-contract WalletSimple {
+contract WalletSimple is IERC721Receiver {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -322,6 +324,7 @@ contract WalletSimple {
     TransferHelper.safeTransfer(tokenContractAddress, toAddress, value);
   }
 
+
   /**
    * Execute a token flush from one of the forwarder addresses. This transfer needs only a single signature and can be done by any signer
    *
@@ -471,4 +474,12 @@ contract WalletSimple {
     }
     return highestSequenceId + 1;
   }
+
+  function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
+    // TODO: whether to emit an event indicating recieves or not
+    // highly dependent on indexer processing
+
+    return this.onERC721Received.selector;
+  }
+
 }
