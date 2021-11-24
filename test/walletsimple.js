@@ -26,6 +26,7 @@ const ForwarderTarget = artifacts.require('./ForwarderTarget.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
+const ERC721 = artifacts.require('./MockERC721');
 
 const assertVMException = (err, expectedErrMsg) => {
   err.message.toString().should.containEql('VM Exception');
@@ -389,6 +390,63 @@ coins.forEach(
   });
 
   */
+      const getMethodData = async function (types, values, methodName) {
+        const id = abi.methodID(methodName, types).toString('hex');
+        const data = util.addHexPrefix(
+          id + abi.rawEncode(types, values).toString('hex')
+        );
+        return data;
+      };
+      const sendMultiSig721TokenHelper = async function (params) {
+        assert(params.msgSenderAddress);
+        assert(params.otherSignerAddress);
+        assert(params.wallet);
+        assert(params.destinationAccount);
+        assert(params.tokenId);
+        assert(params.toAddress);
+        assert(params.data === '' || params.data);
+        assert(params.expireTime);
+        assert(params.sequenceId);
+
+        const operationHash = helpers.getSha3ForConfirmationTx(
+          nativePrefix,
+          params.destinationAccount.toLowerCase(),
+          web3.utils.toWei(params.amount.toString(), 'ether'),
+          params.data,
+          params.expireTime,
+          params.sequenceId
+        );
+        const sig = util.ecsign(
+          operationHash,
+          privateKeyForAccount(params.otherSignerAddress)
+        );
+        await wallet.sendMultiSig(
+          params.destinationAccount,
+          params.amount,
+          params.data,
+          params.expireTime,
+          params.sequenceId,
+          helpers.serializeSignature(sig),
+          { from: params.msgSenderAddress }
+        );
+      };
+
+      const expectSuccessfulSendMultiSig721Token = async function (params) {
+        await sendMultiSig721TokenHelper(params);
+
+        const toAddress = params.toAddress.toLowerCase();
+        expect(
+          (await params.token721.ownerOf(params.tokenId)).toLowerCase()
+        ).to.be.equal(toAddress);
+      };
+
+      const expectFailSendMultiSig721Token = async function (params) {
+        try {
+          await sendMultiSig721TokenHelper(params);
+        } catch (err) {
+          assertVMException(err);
+        }
+      };
       // Helper to get the operation hash, sign it, and then send it using sendMultiSig
       const sendMultiSigTestHelper = async function (params) {
         assert(params.msgSenderAddress);
@@ -2081,7 +2139,6 @@ coins.forEach(
         });
 
         it('Flush Tether from WalletSimple contract', async function () {
-
           const wallet = await createWallet(accounts[4], [
             accounts[4],
             accounts[5],
@@ -2091,9 +2148,7 @@ coins.forEach(
           await tetherTokenContract.transfer(wallet.address, 100, {
             from: accounts[0]
           });
-          const balance = await tetherTokenContract.balanceOf.call(
-            accounts[0]
-          );
+          const balance = await tetherTokenContract.balanceOf.call(accounts[0]);
           balance.should.eql(web3.utils.toBN(1000000 - 200));
           const msigWalletStartTokens = await tetherTokenContract.balanceOf.call(
             wallet.address
@@ -2155,8 +2210,7 @@ coins.forEach(
             .should.be.true();
         });
 
-
-        it('Flush forwarder with 0 token balance', async function() {
+        it('Flush forwarder with 0 token balance', async function () {
           const forwarder = await (
             await createForwarderFromWallet(wallet)
           ).create();
@@ -2187,7 +2241,210 @@ coins.forEach(
           walletContractStartTokens
             .eq(walletContractEndTokens)
             .should.be.true();
-        })
+        });
+      });
+
+      describe('NFT Support', function () {
+        const name = 'Non Fungible Token';
+        const symbol = 'NFT';
+        let token721;
+        let tokenId = 0;
+        let sequenceId;
+        before(async function () {
+          wallet = await createWallet(accounts[0], [
+            accounts[0],
+            accounts[1],
+            accounts[2]
+          ]);
+
+          const amount = web3.utils.toWei('200000', 'ether');
+          await web3.eth.sendTransaction({
+            from: accounts[0],
+            to: wallet.address,
+            value: amount
+          });
+
+          token721 = await ERC721.new(name, symbol);
+        });
+        beforeEach(async function () {
+          // Run before each test. Sets the sequence ID up to be used in the tests
+          const sequenceIdString = await wallet.getNextSequenceId.call();
+          sequenceId = parseInt(sequenceIdString);
+        });
+
+        it('Should support NFT safeTransferFrom function', async function () {
+          const operator = accounts[0];
+          const from = accounts[1];
+          tokenId = tokenId + 1;
+          const data = 0x00;
+          const methodId = await wallet.onERC721Received.call(
+            operator,
+            from,
+            tokenId,
+            data
+          );
+          methodId.should.eql('0x150b7a02');
+        });
+
+        it('Should receive with safeTransferFrom function', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[0];
+          const data = 0x00;
+          await token721.mint(owner, tokenId);
+          await token721.safeTransferFrom(owner, wallet.address, tokenId, data);
+          expect(await token721.ownerOf(tokenId)).to.be.equal(wallet.address);
+        });
+
+        it('Should receive with transferFrom function', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[0];
+          await token721.mint(owner, tokenId);
+          await token721.transferFrom(owner, wallet.address, tokenId, {
+            from: owner
+          });
+          expect(await token721.ownerOf(tokenId)).to.be.equal(wallet.address);
+        });
+
+        it('Should send ERC721 token with safeTransferFrom function via sendMultiSig', async function () {
+          tokenId = tokenId + 1;
+          const owner = wallet.address;
+          await token721.mint(owner, tokenId);
+          const toAddress = accounts[5];
+          const types = ['address', 'address', 'uint256', 'bytes'];
+          const values = [owner, toAddress, tokenId, ''];
+          const params = {
+            msgSenderAddress: accounts[1],
+            otherSignerAddress: accounts[2],
+            wallet: wallet,
+            token721: token721,
+            tokenId,
+            destinationAccount: token721.address,
+            toAddress,
+            amount: 0,
+            data: await getMethodData(types, values, 'safeTransferFrom'),
+            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            sequenceId
+          };
+          await expectSuccessfulSendMultiSig721Token(params);
+        });
+
+        it('Should fail to send ERC721 token when wallet is not approved', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[4];
+          await token721.mint(owner, tokenId);
+          const toAddress = accounts[5];
+          const types = ['address', 'address', 'uint256', 'bytes'];
+          const values = [owner, toAddress, tokenId, ''];
+          const params = {
+            msgSenderAddress: accounts[1],
+            otherSignerAddress: accounts[2],
+            wallet: wallet,
+            token721: token721,
+            tokenId,
+            destinationAccount: token721.address,
+            toAddress,
+            amount: 0,
+            data: await getMethodData(types, values, 'safeTransferFrom'),
+            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            sequenceId
+          };
+
+          await expectFailSendMultiSig721Token(params);
+        });
+
+        it('Should fail to send ERC721 token when owner is incorrect', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[4];
+          await token721.mint(owner, tokenId);
+          await token721.approve(wallet.address, tokenId, { from: owner });
+          const toAddress = accounts[5];
+          const types = ['address', 'address', 'uint256', 'bytes'];
+          const values = [accounts[5], toAddress, tokenId, ''];
+          const params = {
+            msgSenderAddress: accounts[1],
+            otherSignerAddress: accounts[2],
+            wallet: wallet,
+            token721: token721,
+            tokenId,
+            destinationAccount: token721.address,
+            toAddress,
+            amount: 0,
+            data: await getMethodData(types, values, 'safeTransferFrom'),
+            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            sequenceId
+          };
+          await expectFailSendMultiSig721Token(params);
+        });
+        it('Should send ERC721 token with safeTransferFrom function with approved addr', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[5];
+          await token721.mint(owner, tokenId);
+          await token721.approve(wallet.address, tokenId, { from: owner });
+          const toAddress = accounts[6];
+          const types = ['address', 'address', 'uint256', 'bytes'];
+          const values = [owner, toAddress, tokenId, ''];
+          const params = {
+            msgSenderAddress: accounts[1],
+            otherSignerAddress: accounts[2],
+            wallet: wallet,
+            token721: token721,
+            tokenId,
+            destinationAccount: token721.address,
+            toAddress,
+            amount: 0,
+            data: await getMethodData(types, values, 'safeTransferFrom'),
+            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            sequenceId
+          };
+          await expectSuccessfulSendMultiSig721Token(params);
+        });
+
+        it('Should send ERC721 token with transferFrom function via sendMultiSig', async function () {
+          tokenId = tokenId + 1;
+          const owner = wallet.address;
+          await token721.mint(owner, tokenId);
+          const toAddress = accounts[5];
+          const types = ['address', 'address', 'uint256'];
+          const values = [owner, toAddress, tokenId];
+          const params = {
+            msgSenderAddress: accounts[1],
+            otherSignerAddress: accounts[2],
+            wallet: wallet,
+            token721: token721,
+            tokenId,
+            destinationAccount: token721.address,
+            toAddress,
+            amount: 0,
+            data: await getMethodData(types, values, 'safeTransferFrom'),
+            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            sequenceId
+          };
+          await expectSuccessfulSendMultiSig721Token(params);
+        });
+
+        it('Should send ERC721 token with transferFrom function with approved addr', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[6];
+          await token721.mint(owner, tokenId);
+          await token721.approve(wallet.address, tokenId, { from: owner });
+          const toAddress = accounts[7];
+          const types = ['address', 'address', 'uint256'];
+          const values = [owner, toAddress, tokenId];
+          const params = {
+            msgSenderAddress: accounts[1],
+            otherSignerAddress: accounts[2],
+            wallet: wallet,
+            token721: token721,
+            tokenId,
+            destinationAccount: token721.address,
+            toAddress,
+            amount: 0,
+            data: await getMethodData(types, values, 'safeTransferFrom'),
+            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            sequenceId
+          };
+          await expectSuccessfulSendMultiSig721Token(params);
+        });
       });
     });
   }
