@@ -2,20 +2,24 @@
 pragma solidity 0.7.5;
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import './ERC20Interface.sol';
+import './ReentracyGuard.sol';
+import './ERC721Interface.sol'
 
 /**
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder {
+contract Forwarder is ReentrancyGuard {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
+  bool public autoFlush721 = true;
+
   event ForwarderDeposited(address from, uint256 value, bytes data);
 
   /**
    * Initialize the contract, and sets the destination address to that of the creator
    */
-  function init(address _parentAddress) external onlyUninitialized {
+  function init(address _parentAddress, bool _autoFlush721) external onlyUninitialized {
     parentAddress = _parentAddress;
     uint256 value = address(this).balance;
 
@@ -25,6 +29,10 @@ contract Forwarder {
 
     (bool success, ) = parentAddress.call{ value: value }('');
     require(success, 'Flush failed');
+
+    // set whether we want to automatically flush erc721 tokens or not
+    autoFlush721 = _autoFlush721;
+
     // NOTE: since we are forwarding on initialization,
     // we don't have the context of the original sender.
     // We still emit an event about the forwarding but set
@@ -63,6 +71,28 @@ contract Forwarder {
   }
 
   /**
+   * ERC721 standard callback function for when a ERC721 is transfered. The forwarder will send the nft
+   * to the base wallet once the nft contract invokes this method after transfering the nft.
+   *
+   * @param _operator The address of the nft contract
+   * @param _from The address of the sender
+   * @param _tokenId The token id of the nft
+   * @param _data Additional data with no specified format, sent in call to `_to`
+   */
+  function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data) public virtual override nonReentrant returns (bytes4) {
+    if(autoFlush721){
+      ERC721 instance = ERC721(_operator);
+
+      require(instance.supportsInterface(0x80ac58cd), "The caller does not support the ERC721 interface");
+      require(msg.sender == operator, "The caller must be the ERC721 token contract");
+
+      // this won't work for ERC721 re-entrancy
+      instance.safeTransferFrom(address(this), parentAddress, tokenId);
+    }
+    return this.onERC721Received.selector;
+  }
+
+  /**
    * Execute a token transfer of the full balance from the forwarder token to the parent address
    * @param tokenContractAddress the address of the erc20 token contract
    */
@@ -79,6 +109,25 @@ contract Forwarder {
       parentAddress,
       forwarderBalance
     );
+  }
+
+  /**
+   * Execute a nft transfer from the forwarder to the parent address
+   * @param tokenContractAddress the address of the ERC721 NFT contract
+   * @param tokenId The token id of the nft
+   */
+  function flushERC721Tokens(address tokenContractAddress, uint256 tokenId) external onlyParent {
+    ERC721 instance = ERC721(tokenContractAddress);
+    address forwarderAddress = address(this);
+    uint256 ownerAddress = instance.ownerOf(tokenId);
+
+    require(forwarderAddress == ownerAddress, "Not the owner of the ERC721 token");
+
+    try {
+      instance.safeTransferFrom(forwarderAddress, parentAddress, tokenId);
+    } catch {
+      instance.transferFrom(forwarderAddress, parentAddress, tokenId);
+    }
   }
 
   /**
