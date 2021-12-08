@@ -3,8 +3,7 @@ pragma solidity 0.7.5;
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import './ERC20Interface.sol';
 import './ReentracyGuard.sol';
-import './ERC721Interface.sol'
-
+import './ERC721Interface.sol';
 /**
  * Contract that will forward any incoming Ether to the creator of the contract
  *

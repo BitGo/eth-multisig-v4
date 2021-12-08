@@ -6,6 +6,7 @@ import './ERC20Interface.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 /**
  *
  * WalletSimple
@@ -386,6 +387,7 @@ contract WalletSimple is IERC721Receiver {
     return this.onERC721Received.selector;
   }
 
+
   /**
    * Irrevocably puts contract into safe mode. When in this mode, transactions may only be sent to signing addresses.
    */
@@ -485,13 +487,6 @@ contract WalletSimple is IERC721Receiver {
       }
     }
     return highestSequenceId + 1;
-  }
-
-  function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
-    // TODO: whether to emit an event indicating recieves or not
-    // highly dependent on indexer processing
-
-    return this.onERC721Received.selector;
   }
 
 }
