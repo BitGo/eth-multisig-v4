@@ -6,6 +6,8 @@ import './ERC20Interface.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import './ReentracyGuard.sol';
+
 /**
  *
  * WalletSimple
@@ -32,7 +34,7 @@ import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
  *
  *
  */
-contract WalletSimple is IERC721Receiver {
+contract WalletSimple is ReentrancyGuard, IERC721Receiver {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -181,7 +183,7 @@ contract WalletSimple is IERC721Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external onlySigner {
+  ) external nonReentrant onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(
@@ -233,7 +235,7 @@ contract WalletSimple is IERC721Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external onlySigner {
+  ) external nonReentrant onlySigner {
     require(recipients.length != 0, 'Not enough recipients');
     require(
       recipients.length == values.length,
@@ -277,7 +279,7 @@ contract WalletSimple is IERC721Receiver {
   function batchTransfer(
     address[] calldata recipients,
     uint256[] calldata values
-  ) internal {
+  ) nonReentrant internal {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], 'Insufficient funds');
 
@@ -306,7 +308,7 @@ contract WalletSimple is IERC721Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external onlySigner {
+  ) external nonReentrant onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(
@@ -372,18 +374,6 @@ contract WalletSimple is IERC721Receiver {
     require(otherSigner != msg.sender, 'Signers cannot be equal');
 
     return otherSigner;
-  }
-
-  /**
-   * ERC721 standard callback function for when a ERC721 is transfered.
-   *
-   * @param _operator The address of the nft contract
-   * @param _from The address of the sender
-   * @param _tokenId The token id of the nft
-   * @param _data Additional data with no specified format, sent in call to `_to`
-   */
-  function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) public virtual override returns (bytes4) {
-    return this.onERC721Received.selector;
   }
 
   /**

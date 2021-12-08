@@ -93,6 +93,11 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver {
     return this.onERC721Received.selector;
   }
 
+  function callFromParent(address target, uint256 value, bytes calldata data) external nonReentrant onlyParent {
+    (bool success, ) = target.call{ value: value }(data);
+    require(success, 'Parent call execution failed');
+  }
+
   /**
    * Execute a token transfer of the full balance from the forwarder token to the parent address
    * @param tokenContractAddress the address of the erc20 token contract
