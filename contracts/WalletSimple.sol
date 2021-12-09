@@ -486,12 +486,4 @@ contract WalletSimple is IERC721Receiver {
     }
     return highestSequenceId + 1;
   }
-
-  function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
-    // TODO: whether to emit an event indicating recieves or not
-    // highly dependent on indexer processing
-
-    return this.onERC721Received.selector;
-  }
-
 }

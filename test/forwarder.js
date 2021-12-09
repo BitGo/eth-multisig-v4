@@ -8,7 +8,7 @@ const Forwarder = artifacts.require('./Forwarder.sol');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
-  await forwarderContract.init(parent);
+  await forwarderContract.init(parent, true);
   return forwarderContract;
 };
 
@@ -65,7 +65,7 @@ contract('Forwarder', function (accounts) {
     (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
 
     const forwarder = await Forwarder.new([], { from: senderAddress });
-    const tx = await forwarder.init(baseAddress);
+    const tx = await forwarder.init(baseAddress, true);
     forwarder.address.should.eql(forwarderAddress);
 
     // Check that the ether was automatically flushed to the base address
@@ -105,7 +105,7 @@ contract('Forwarder', function (accounts) {
     const forwarder = await createForwarder(baseAddress, baseAddress);
 
     await truffleAssert.reverts(
-      forwarder.init(baseAddress, { from: baseAddress })
+      forwarder.init(baseAddress, true, { from: baseAddress })
     );
   });
 });
