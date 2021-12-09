@@ -3,13 +3,14 @@ pragma solidity 0.7.5;
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import './ERC20Interface.sol';
 import './ReentracyGuard.sol';
-import './ERC721Interface.sol'
+import './ERC721Interface.sol';
+import './ERC721ReceiverInterface.sol';
 
 /**
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder is ReentrancyGuard {
+contract Forwarder is ReentrancyGuard, ERC721TokenReceiver {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   bool public autoFlush721 = true;
@@ -79,15 +80,15 @@ contract Forwarder is ReentrancyGuard {
    * @param _tokenId The token id of the nft
    * @param _data Additional data with no specified format, sent in call to `_to`
    */
-  function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data) public virtual override nonReentrant returns (bytes4) {
+  function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) public virtual override nonReentrant returns (bytes4) {
     if(autoFlush721){
       ERC721 instance = ERC721(_operator);
 
       require(instance.supportsInterface(0x80ac58cd), "The caller does not support the ERC721 interface");
-      require(msg.sender == operator, "The caller must be the ERC721 token contract");
+      require(msg.sender == _operator, "The caller must be the ERC721 token contract");
 
       // this won't work for ERC721 re-entrancy
-      instance.safeTransferFrom(address(this), parentAddress, tokenId);
+      instance.safeTransferFrom(address(this), parentAddress, _tokenId);
     }
     return this.onERC721Received.selector;
   }
@@ -119,15 +120,11 @@ contract Forwarder is ReentrancyGuard {
   function flushERC721Tokens(address tokenContractAddress, uint256 tokenId) external onlyParent {
     ERC721 instance = ERC721(tokenContractAddress);
     address forwarderAddress = address(this);
-    uint256 ownerAddress = instance.ownerOf(tokenId);
+    address ownerAddress = instance.ownerOf(tokenId);
 
     require(forwarderAddress == ownerAddress, "Not the owner of the ERC721 token");
 
-    try {
-      instance.safeTransferFrom(forwarderAddress, parentAddress, tokenId);
-    } catch {
-      instance.transferFrom(forwarderAddress, parentAddress, tokenId);
-    }
+    instance.transferFrom(forwarderAddress, parentAddress, tokenId);
   }
 
   /**
