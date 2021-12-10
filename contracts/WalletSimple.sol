@@ -279,7 +279,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver {
   function batchTransfer(
     address[] calldata recipients,
     uint256[] calldata values
-  ) nonReentrant internal {
+  ) internal {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], 'Insufficient funds');
 
@@ -374,6 +374,18 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver {
     require(otherSigner != msg.sender, 'Signers cannot be equal');
 
     return otherSigner;
+  }
+
+  /**
+   * ERC721 standard callback function for when a ERC721 is transfered.
+   *
+   * @param _operator The address of the nft contract
+   * @param _from The address of the sender
+   * @param _tokenId The token id of the nft
+   * @param _data Additional data with no specified format, sent in call to `_to`
+   */
+  function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) public virtual override returns (bytes4) {
+    return this.onERC721Received.selector;
   }
 
   /**
