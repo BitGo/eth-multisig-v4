@@ -2250,6 +2250,7 @@ coins.forEach(
         let token721;
         let tokenId = 0;
         let sequenceId;
+        let forwarder;
         before(async function () {
           wallet = await createWallet(accounts[0], [
             accounts[0],
@@ -2265,6 +2266,7 @@ coins.forEach(
           });
 
           token721 = await ERC721.new(name, symbol);
+          forwarder = await (await createForwarderFromWallet(wallet)).create();
         });
         beforeEach(async function () {
           // Run before each test. Sets the sequence ID up to be used in the tests
@@ -2288,10 +2290,11 @@ coins.forEach(
 
         it('Should receive with safeTransferFrom function', async function () {
           tokenId = tokenId + 1;
-          const owner = accounts[0];
-          const data = 0x00;
+          const owner = accounts[5];
           await token721.mint(owner, tokenId);
-          await token721.safeTransferFrom(owner, wallet.address, tokenId, data);
+          await token721.safeTransferFrom(owner, wallet.address, tokenId, {
+            from: owner
+          });
           expect(await token721.ownerOf(tokenId)).to.be.equal(wallet.address);
         });
 
@@ -2444,6 +2447,50 @@ coins.forEach(
             sequenceId
           };
           await expectSuccessfulSendMultiSig721Token(params);
+        });
+
+        it('Should flush ERC721 tokens when forwarder is owner', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[5];
+          await token721.mint(owner, tokenId);
+          await token721.transferFrom(owner, forwarder.address, tokenId, {
+            from: owner
+          });
+          await wallet.flushERC721ForwarderTokens(
+            forwarder.address,
+            token721.address,
+            tokenId,
+            { from: accounts[0] }
+          );
+          expect(await token721.ownerOf(tokenId)).to.be.equal(wallet.address);
+        });
+        it('Should flush ERC721 tokens when forwarder is approved', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[6];
+          await token721.mint(owner, tokenId);
+          await token721.approve(forwarder.address, tokenId, { from: owner });
+          await wallet.flushERC721ForwarderTokens(
+            forwarder.address,
+            token721.address,
+            tokenId,
+            { from: accounts[0] }
+          );
+          expect(await token721.ownerOf(tokenId)).to.be.equal(wallet.address);
+        });
+        it('Should fail flush ERC721 tokens when forwarder is not owner', async function () {
+          tokenId = tokenId + 1;
+          const owner = accounts[5];
+          await token721.mint(owner, tokenId);
+          try {
+            await wallet.flushERC721ForwarderTokens(
+              forwarder.address,
+              token721.address,
+              tokenId,
+              { from: accounts[0] }
+            );
+          } catch (err) {
+            assertVMException(err);
+          }
         });
       });
     });

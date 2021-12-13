@@ -5,6 +5,7 @@ const helpers = require('./helpers');
 const BigNumber = require('bignumber.js');
 
 const Forwarder = artifacts.require('./Forwarder.sol');
+const ERC721 = artifacts.require('./MockERC721');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
@@ -14,6 +15,13 @@ const createForwarder = async (creator, parent) => {
 
 const getBalanceInWei = async (address) => {
   return new BigNumber(await web3.eth.getBalance(address));
+};
+
+const assertVMException = (err, expectedErrMsg) => {
+  err.message.toString().should.containEql('VM Exception');
+  if (expectedErrMsg) {
+    err.message.toString().should.containEql(expectedErrMsg);
+  }
 };
 
 const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
@@ -107,5 +115,132 @@ contract('Forwarder', function (accounts) {
     await truffleAssert.reverts(
       forwarder.init(baseAddress, true, { from: baseAddress })
     );
+  });
+
+  describe('NFT Support', function () {
+    let token721;
+    let tokenId = 0;
+    let baseAddress;
+    before(async function () {
+      const name = 'Non Fungible Token';
+      const symbol = 'NFT';
+      token721 = await ERC721.new(name, symbol);
+      baseAddress = accounts[0];
+      autoFlushForwarder = await createForwarder(baseAddress, baseAddress);
+      noAutoFlushForwarder = await Forwarder.new([], { from: accounts[1] });
+      await noAutoFlushForwarder.init(baseAddress, false);
+    });
+
+    it('Should support NFT safeTransferFrom function', async function () {
+      const operator = accounts[0];
+      const from = accounts[1];
+      tokenId = tokenId + 1;
+      const data = 0x00;
+      const methodId = await noAutoFlushForwarder.onERC721Received.call(
+        operator,
+        from,
+        tokenId,
+        data
+      );
+      methodId.should.eql('0x150b7a02');
+    });
+
+    it('Should receive with safeTransferFrom function with auto flush', async function () {
+      tokenId = tokenId + 1;
+      const owner = accounts[5];
+      await token721.mint(owner, tokenId);
+      await token721.safeTransferFrom(
+        owner,
+        autoFlushForwarder.address,
+        tokenId,
+        { from: owner }
+      );
+      expect(await token721.ownerOf(tokenId)).to.be.equal(baseAddress);
+    });
+
+    it('Should receive with transferFrom function with auto flush', async function () {
+      tokenId = tokenId + 1;
+      const owner = accounts[5];
+      await token721.mint(owner, tokenId);
+      await token721.transferFrom(owner, autoFlushForwarder.address, tokenId, {
+        from: owner
+      });
+      expect(await token721.ownerOf(tokenId)).to.be.equal(autoFlushForwarder.address);
+    });
+
+    it('Should receive with safeTransferFrom function with no auto flush', async function () {
+      tokenId = tokenId + 1;
+      const owner = accounts[4];
+      await token721.mint(owner, tokenId);
+      await token721.safeTransferFrom(
+        owner,
+        noAutoFlushForwarder.address,
+        tokenId,
+        { from: owner }
+      );
+      expect(await token721.ownerOf(tokenId)).to.be.equal(
+        noAutoFlushForwarder.address
+      );
+    });
+
+    it('Should receive with transferFrom function with no auto flush', async function () {
+      tokenId = tokenId + 1;
+      const owner = accounts[4];
+      await token721.mint(owner, tokenId);
+      await token721.transferFrom(
+        owner,
+        noAutoFlushForwarder.address,
+        tokenId,
+        { from: owner }
+      );
+      expect(await token721.ownerOf(tokenId)).to.be.equal(
+        noAutoFlushForwarder.address
+      );
+    });
+
+    it('Should be to able to flush ERC721 tokens when forwarder is owner', async function () {
+      tokenId = tokenId + 1;
+      const owner = accounts[4];
+      await token721.mint(owner, tokenId);
+      await token721.safeTransferFrom(
+        owner,
+        noAutoFlushForwarder.address,
+        tokenId,
+        { from: owner }
+      );
+      expect(await token721.ownerOf(tokenId)).to.be.equal(
+        noAutoFlushForwarder.address
+      );
+
+      await noAutoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {from: baseAddress});
+      expect(await token721.ownerOf(tokenId)).to.be.equal(baseAddress);
+    });
+
+    it('Should be to able to flush ERC721 tokens when forwarder is approved', async function () {
+      tokenId = tokenId + 1;
+      const owner = accounts[5];
+      await token721.mint(owner, tokenId);
+      await token721.approve(autoFlushForwarder.address, tokenId, {
+        from: owner
+      });
+      expect(await token721.getApproved(tokenId)).to.be.equal(
+        autoFlushForwarder.address
+      );
+
+      await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {from: baseAddress});
+      expect(await token721.ownerOf(tokenId)).to.be.equal(baseAddress);
+    });
+
+    it('Should fail to flush ERC721 tokens when forwarder is not owner or approved', async function () {
+      tokenId = tokenId + 1;
+      const owner = accounts[4];
+      await token721.mint(owner, tokenId);
+
+      try {
+        await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {from: baseAddress});
+      } catch (err) {
+        assertVMException(err);
+      }
+    });
   });
 });
