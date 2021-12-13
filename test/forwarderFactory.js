@@ -9,6 +9,8 @@ const BigNumber = require('bignumber.js');
 const Forwarder = artifacts.require('./Forwarder.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 
+const ForwarderABI = require('../ABIs/Forwarder.json');
+
 const createForwarderFactory = async () => {
   const forwarderContract = await Forwarder.new([], {});
   const forwarderFactory = await ForwarderFactory.new(
@@ -29,6 +31,7 @@ const createForwarder = async (
   implementationAddress,
   parent,
   salt,
+  shouldAutoFlushERC721 = true,
   sender
 ) => {
   const inputSalt = util.setLengthLeft(
@@ -48,7 +51,9 @@ const createForwarder = async (
     initCode
   );
 
-  await factory.createForwarder(parent, inputSalt, { from: sender });
+  await factory.createForwarder(parent, inputSalt, shouldAutoFlushERC721, {
+    from: sender
+  });
 
   return forwarderAddress;
 };
@@ -64,6 +69,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt,
+      undefined,
       accounts[1]
     );
     const startBalance = await getBalanceInWei(parent);
@@ -92,6 +98,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt,
+      undefined,
       accounts[1]
     );
 
@@ -101,6 +108,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt2,
+      undefined,
       accounts[1]
     );
 
@@ -121,6 +129,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt,
+      undefined,
       accounts[1]
     );
     const forwarderAddress2 = await createForwarder(
@@ -128,6 +137,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress2,
       parent,
       salt,
+      undefined,
       accounts[1]
     );
 
@@ -144,6 +154,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt,
+      undefined,
       accounts[1]
     );
 
@@ -153,10 +164,41 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent2,
       salt,
+      undefined,
       accounts[1]
     );
 
     forwarderAddress.should.not.equal(forwarderAddress2);
+  });
+
+  [
+    [true, 'true'],
+    [false, 'false']
+  ].map(([shouldAutoFlushERC721, label]) => {
+    it(`should assign the create a forwarder with ${label} autoflush params`, async () => {
+      const { factory, implementationAddress } = await createForwarderFactory();
+
+      const parent = accounts[0];
+      const salt = '0x1234';
+      const forwarderAddress = await createForwarder(
+        factory,
+        implementationAddress,
+        parent,
+        salt,
+        shouldAutoFlushERC721,
+        accounts[1]
+      );
+
+      const forwarderContract = new web3.eth.Contract(
+        ForwarderABI,
+        forwarderAddress
+      );
+      const autoFlush721 = await forwarderContract.methods
+        .autoFlush721()
+        .call();
+
+      autoFlush721.should.equal(shouldAutoFlushERC721);
+    });
   });
 
   it('Should fail to create two contracts with the same inputs', async function () {
@@ -169,6 +211,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt,
+      undefined,
       accounts[1]
     );
     await helpers.assertVMException(
@@ -178,6 +221,7 @@ contract('ForwarderFactory', function (accounts) {
           implementationAddress,
           parent,
           salt,
+          undefined,
           accounts[1]
         )
     );
