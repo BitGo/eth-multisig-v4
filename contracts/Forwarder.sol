@@ -72,6 +72,10 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver {
     flush();
   }
 
+  function toggleAutoFlush721() external onlyParent {
+    autoFlush721 = !autoFlush721;
+  }
+
   /**
    * ERC721 standard callback function for when a ERC721 is transfered. The forwarder will send the nft
    * to the base wallet once the nft contract invokes this method after transfering the nft.
