@@ -117,6 +117,26 @@ contract('Forwarder', function (accounts) {
     );
   });
 
+  it('should toggle autoFlush721 when calling toggleAutoFlush721', async () => {
+    const baseAddress = accounts[3];
+    const forwarder = await createForwarder(baseAddress, baseAddress);
+
+    const initialState = await forwarder.autoFlush721();
+    await forwarder.toggleAutoFlush721({ from: baseAddress });
+
+    const newState = await forwarder.autoFlush721();
+    initialState.should.equal(!newState);
+  });
+
+  it('should fail to toggle autoFlush721 if caller is not parent', async () => {
+    const baseAddress = accounts[3];
+    const forwarder = await createForwarder(baseAddress, baseAddress);
+
+    await truffleAssert.reverts(
+      forwarder.toggleAutoFlush721({ from: accounts[4] })
+    );
+  });
+
   describe('NFT Support', function () {
     let token721;
     let tokenId = 0;
