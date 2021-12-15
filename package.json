@@ -44,6 +44,7 @@
     "truffle-assertions": "^0.9.2"
   },
   "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.15",
     "@types/mocha": "^9.0.0",
     "prettier": "^2.1.2",
     "prettier-plugin-solidity": "^1.0.0-alpha.58",

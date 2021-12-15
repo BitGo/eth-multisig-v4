@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.5;
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
+import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
+import '@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol';
 import './ERC20Interface.sol';
 import './ReentracyGuard.sol';
 import './ERC721Interface.sol';
@@ -10,7 +12,7 @@ import './ERC721ReceiverInterface.sol';
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder is ReentrancyGuard, ERC721TokenReceiver {
+contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   bool public autoFlush721 = true;
@@ -98,6 +100,52 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver {
   function callFromParent(address target, uint256 value, bytes calldata data) external nonReentrant onlyParent {
     (bool success, ) = target.call{ value: value }(data);
     require(success, 'Parent call execution failed');
+  }
+
+  function onERC1155Received(
+    address _operator,
+    address _from,
+    uint256 id,
+    uint256 value,
+    bytes calldata data
+  ) external virtual override nonReentrant returns (bytes4) {
+    IERC1155 instance = IERC1155(msg.sender);
+    require(
+      instance.supportsInterface(type(IERC1155).interfaceId),
+      'The caller does not support the IERC1155 interface'
+    );
+
+    if (autoFlush721) {
+      instance.safeTransferFrom(address(this), parentAddress, id, value, data);
+    }
+
+    return this.onERC1155Received.selector;
+  }
+
+  function onERC1155BatchReceived(
+    address _operator,
+    address _from,
+    uint256[] calldata ids,
+    uint256[] calldata values,
+    bytes calldata data
+  ) external virtual override nonReentrant returns (bytes4) {
+    IERC1155 instance = IERC1155(msg.sender);
+    require(
+      instance.supportsInterface(type(IERC1155).interfaceId),
+      'The caller does not support the IERC1155 interface'
+    );
+
+    if (autoFlush721) {
+      instance.safeBatchTransferFrom(
+        address(this),
+        parentAddress,
+        ids,
+        values,
+        data
+      );
+    }
+
+    return this.onERC1155BatchReceived.selector;
   }
 
   /**

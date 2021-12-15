@@ -3,9 +3,11 @@ const should = require('should');
 const truffleAssert = require('truffle-assertions');
 const helpers = require('./helpers');
 const BigNumber = require('bignumber.js');
+const { makeInterfaceId } = require('@openzeppelin/test-helpers');
 
 const Forwarder = artifacts.require('./Forwarder.sol');
 const ERC721 = artifacts.require('./MockERC721');
+const ERC1155 = artifacts.require('./MockERC1155');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
@@ -141,6 +143,9 @@ contract('Forwarder', function (accounts) {
     let token721;
     let tokenId = 0;
     let baseAddress;
+    let autoFlushForwarder;
+    let noAutoFlushForwarder;
+
     before(async function () {
       const name = 'Non Fungible Token';
       const symbol = 'NFT';
@@ -261,6 +266,185 @@ contract('Forwarder', function (accounts) {
       } catch (err) {
         assertVMException(err);
       }
+    });
+
+    describe('ERC1155Receiver', () => {
+      let owner;
+      let token1155;
+
+      beforeEach(async function () {
+        owner = baseAddress;
+        token1155 = await ERC1155.new({ from: owner });
+      });
+
+      const mint = async (to, tokenId, amount) => {
+        await token1155.mint(to, tokenId, amount, [], { from: owner });
+      };
+
+      const transferERC1155 = async (from, to, tokenId, amount) => {
+        await token1155.safeTransferFrom(from, to, tokenId, amount, [], {
+          from
+        });
+      };
+
+      const transferBatchERC1155 = async (from, to, tokenIds, amounts) => {
+        await token1155.safeBatchTransferFrom(from, to, tokenIds, amounts, [], {
+          from
+        });
+      };
+
+      const assertBalances = async (tokenId, accounts, balances) => {
+        accounts.length.should.equal(balances.length);
+        for (let i = 0; i < accounts.length; i++) {
+          const balance = await token1155.balanceOf(accounts[i], tokenId);
+          balance.toNumber().should.equal(balances[i]);
+        }
+      };
+
+      it('should receive erc1155 tokens with autoflush off', async function () {
+        const erc1155TokenId = 1;
+
+        const sender = accounts[1];
+        await mint(sender, erc1155TokenId, 100);
+
+        await transferERC1155(
+          sender,
+          noAutoFlushForwarder.address,
+          erc1155TokenId,
+          10
+        );
+
+        await assertBalances(
+          erc1155TokenId,
+          [owner, sender, noAutoFlushForwarder.address],
+          [0, 90, 10]
+        );
+      });
+
+      it('should receive erc1155 tokens with autoflush on', async function () {
+        const erc1155TokenId = 1;
+
+        const sender = accounts[1];
+        await mint(sender, erc1155TokenId, 100);
+
+        await transferERC1155(
+          sender,
+          autoFlushForwarder.address,
+          erc1155TokenId,
+          10
+        );
+
+        await assertBalances(
+          erc1155TokenId,
+          [owner, sender, autoFlushForwarder.address],
+          [10, 90, 0]
+        );
+      });
+
+      it('should receive batch erc1155 tokens with autoflush off', async function () {
+        const erc1155TokenId1 = 1;
+        const erc1155TokenId2 = 2;
+
+        const sender = accounts[1];
+        await mint(sender, erc1155TokenId1, 100);
+        await mint(sender, erc1155TokenId2, 50);
+
+        await transferBatchERC1155(
+          sender,
+          noAutoFlushForwarder.address,
+          [erc1155TokenId1, erc1155TokenId2],
+          [10, 20]
+        );
+
+        await assertBalances(
+          erc1155TokenId1,
+          [owner, sender, noAutoFlushForwarder.address],
+          [0, 90, 10]
+        );
+
+        await assertBalances(
+          erc1155TokenId2,
+          [owner, sender, noAutoFlushForwarder.address],
+          [0, 30, 20]
+        );
+      });
+
+      it('should receive batch erc1155 tokens with autoflush on', async function () {
+        const erc1155TokenId1 = 1;
+        const erc1155TokenId2 = 2;
+
+        const sender = accounts[1];
+        await mint(sender, erc1155TokenId1, 100);
+        await mint(sender, erc1155TokenId2, 50);
+
+        await transferBatchERC1155(
+          sender,
+          autoFlushForwarder.address,
+          [erc1155TokenId1, erc1155TokenId2],
+          [10, 20]
+        );
+
+        await assertBalances(
+          erc1155TokenId1,
+          [owner, sender, autoFlushForwarder.address],
+          [10, 90, 0]
+        );
+
+        await assertBalances(
+          erc1155TokenId2,
+          [owner, sender, autoFlushForwarder.address],
+          [20, 30, 0]
+        );
+      });
+
+      it('should revert if msg.sender does not support IERC1155', async () => {
+        await truffleAssert.reverts(
+          noAutoFlushForwarder.onERC1155Received(
+            accounts[0],
+            accounts[1],
+            0,
+            0,
+            [],
+            {
+              from: accounts[0]
+            }
+          )
+        );
+
+        await truffleAssert.reverts(
+          noAutoFlushForwarder.onERC1155BatchReceived(
+            accounts[0],
+            accounts[1],
+            [],
+            [],
+            [],
+            {
+              from: accounts[0]
+            }
+          )
+        );
+      });
+    });
+  });
+
+  describe('ERC165', function () {
+    const INTERFACE_IDS = {
+      IERC1155Receiver: makeInterfaceId.ERC165([
+        'onERC1155Received(address,address,uint256,uint256,bytes)',
+        'onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)'
+      ])
+    };
+
+    Object.entries(INTERFACE_IDS).map(([eipInterface, interfaceId]) => {
+      it(`should support ${eipInterface}`, async function () {
+        const baseAddress = accounts[3];
+        const forwarder = await createForwarder(baseAddress, baseAddress);
+
+        const supportsInterface = await forwarder.supportsInterface(
+          interfaceId
+        );
+        supportsInterface.should.equal(true);
+      });
     });
   });
 });
