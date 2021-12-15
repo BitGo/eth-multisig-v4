@@ -6,6 +6,8 @@ import './ERC20Interface.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import './ReentracyGuard.sol';
+
 /**
  *
  * WalletSimple
@@ -32,7 +34,7 @@ import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
  *
  *
  */
-contract WalletSimple is IERC721Receiver {
+contract WalletSimple is ReentrancyGuard, IERC721Receiver {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -181,7 +183,7 @@ contract WalletSimple is IERC721Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external onlySigner {
+  ) external nonReentrant onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(
@@ -233,7 +235,7 @@ contract WalletSimple is IERC721Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external onlySigner {
+  ) external nonReentrant onlySigner {
     require(recipients.length != 0, 'Not enough recipients');
     require(
       recipients.length == values.length,
@@ -306,7 +308,7 @@ contract WalletSimple is IERC721Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external onlySigner {
+  ) external nonReentrant onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(
