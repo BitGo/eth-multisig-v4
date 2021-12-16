@@ -11,7 +11,7 @@ const ERC1155 = artifacts.require('./MockERC1155');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
-  await forwarderContract.init(parent, true);
+  await forwarderContract.init(parent, true, true);
   return forwarderContract;
 };
 
@@ -75,7 +75,7 @@ contract('Forwarder', function (accounts) {
     (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
 
     const forwarder = await Forwarder.new([], { from: senderAddress });
-    const tx = await forwarder.init(baseAddress, true);
+    const tx = await forwarder.init(baseAddress, true, true);
     forwarder.address.should.eql(forwarderAddress);
 
     // Check that the ether was automatically flushed to the base address
@@ -139,6 +139,26 @@ contract('Forwarder', function (accounts) {
     );
   });
 
+  it('should toggle autoFlush1155 when calling toggleAutoFlush1155', async () => {
+    const baseAddress = accounts[3];
+    const forwarder = await createForwarder(baseAddress, baseAddress);
+
+    const initialState = await forwarder.autoFlush1155();
+    await forwarder.toggleAutoFlush1155({ from: baseAddress });
+
+    const newState = await forwarder.autoFlush1155();
+    initialState.should.equal(!newState);
+  });
+
+  it('should fail to toggle autoFlush1155 if caller is not parent', async () => {
+    const baseAddress = accounts[3];
+    const forwarder = await createForwarder(baseAddress, baseAddress);
+
+    await truffleAssert.reverts(
+      forwarder.toggleAutoFlush1155({ from: accounts[4] })
+    );
+  });
+
   describe('NFT Support', function () {
     let token721;
     let tokenId = 0;
@@ -153,7 +173,7 @@ contract('Forwarder', function (accounts) {
       baseAddress = accounts[0];
       autoFlushForwarder = await createForwarder(baseAddress, baseAddress);
       noAutoFlushForwarder = await Forwarder.new([], { from: accounts[1] });
-      await noAutoFlushForwarder.init(baseAddress, false);
+      await noAutoFlushForwarder.init(baseAddress, false, false);
     });
 
     it('Should support NFT safeTransferFrom function', async function () {

@@ -16,18 +16,20 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   bool public autoFlush721 = true;
+  bool public autoFlush1155 = true;
 
   event ForwarderDeposited(address from, uint256 value, bytes data);
 
   /**
    * Initialize the contract, and sets the destination address to that of the creator
    */
-  function init(address _parentAddress, bool _autoFlush721) external onlyUninitialized {
+  function init(address _parentAddress, bool _autoFlush721, bool _autoFlush1155) external onlyUninitialized {
     parentAddress = _parentAddress;
     uint256 value = address(this).balance;
 
-    // set whether we want to automatically flush erc721 tokens or not
+    // set whether we want to automatically flush erc721/erc1155 tokens or not
     autoFlush721 = _autoFlush721;
+    autoFlush1155 = _autoFlush1155;
     
     if (value == 0) {
       return;
@@ -78,6 +80,10 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
     autoFlush721 = !autoFlush721;
   }
 
+    function toggleAutoFlush1155() external onlyParent {
+    autoFlush1155 = !autoFlush1155;
+  }
+
   /**
    * ERC721 standard callback function for when a ERC721 is transfered. The forwarder will send the nft
    * to the base wallet once the nft contract invokes this method after transfering the nft.
@@ -115,7 +121,7 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
       'The caller does not support the IERC1155 interface'
     );
 
-    if (autoFlush721) {
+    if (autoFlush1155) {
       instance.safeTransferFrom(address(this), parentAddress, id, value, data);
     }
 
@@ -135,7 +141,7 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
       'The caller does not support the IERC1155 interface'
     );
 
-    if (autoFlush721) {
+    if (autoFlush1155) {
       instance.safeBatchTransferFrom(
         address(this),
         parentAddress,

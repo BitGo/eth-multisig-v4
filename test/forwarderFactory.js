@@ -32,6 +32,7 @@ const createForwarder = async (
   parent,
   salt,
   shouldAutoFlushERC721 = true,
+  shouldAutoFlushERC1155 = true,
   sender
 ) => {
   const inputSalt = util.setLengthLeft(
@@ -51,7 +52,7 @@ const createForwarder = async (
     initCode
   );
 
-  await factory.createForwarder(parent, inputSalt, shouldAutoFlushERC721, {
+  await factory.createForwarder(parent, inputSalt, shouldAutoFlushERC721, shouldAutoFlushERC1155, {
     from: sender
   });
 
@@ -69,6 +70,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt,
+      undefined,
       undefined,
       accounts[1]
     );
@@ -99,6 +101,7 @@ contract('ForwarderFactory', function (accounts) {
       parent,
       salt,
       undefined,
+      undefined,
       accounts[1]
     );
 
@@ -108,6 +111,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress,
       parent,
       salt2,
+      undefined,
       undefined,
       accounts[1]
     );
@@ -130,6 +134,7 @@ contract('ForwarderFactory', function (accounts) {
       parent,
       salt,
       undefined,
+      undefined,
       accounts[1]
     );
     const forwarderAddress2 = await createForwarder(
@@ -137,6 +142,7 @@ contract('ForwarderFactory', function (accounts) {
       implementationAddress2,
       parent,
       salt,
+      undefined,
       undefined,
       accounts[1]
     );
@@ -155,6 +161,7 @@ contract('ForwarderFactory', function (accounts) {
       parent,
       salt,
       undefined,
+      undefined,
       accounts[1]
     );
 
@@ -165,6 +172,7 @@ contract('ForwarderFactory', function (accounts) {
       parent2,
       salt,
       undefined,
+      undefined,
       accounts[1]
     );
 
@@ -174,8 +182,8 @@ contract('ForwarderFactory', function (accounts) {
   [
     [true, 'true'],
     [false, 'false']
-  ].map(([shouldAutoFlushERC721, label]) => {
-    it(`should assign the create a forwarder with ${label} autoflush params`, async () => {
+  ].map(([shouldAutoFlush, label]) => {
+    it(`should assign the create a forwarder with ${label} autoflush721 params`, async () => {
       const { factory, implementationAddress } = await createForwarderFactory();
 
       const parent = accounts[0];
@@ -185,7 +193,8 @@ contract('ForwarderFactory', function (accounts) {
         implementationAddress,
         parent,
         salt,
-        shouldAutoFlushERC721,
+        shouldAutoFlush,
+        undefined,
         accounts[1]
       );
 
@@ -197,7 +206,33 @@ contract('ForwarderFactory', function (accounts) {
         .autoFlush721()
         .call();
 
-      autoFlush721.should.equal(shouldAutoFlushERC721);
+      autoFlush721.should.equal(shouldAutoFlush);
+    });
+
+    it(`should assign the create a forwarder with ${label} autoflush1155 params`, async () => {
+      const { factory, implementationAddress } = await createForwarderFactory();
+
+      const parent = accounts[0];
+      const salt = '0x1234';
+      const forwarderAddress = await createForwarder(
+        factory,
+        implementationAddress,
+        parent,
+        salt,
+        undefined,
+        shouldAutoFlush,
+        accounts[1]
+      );
+
+      const forwarderContract = new web3.eth.Contract(
+        ForwarderABI,
+        forwarderAddress
+      );
+      const autoFlush1155 = await forwarderContract.methods
+        .autoFlush1155()
+        .call();
+
+      autoFlush1155.should.equal(shouldAutoFlush);
     });
   });
 
@@ -212,6 +247,7 @@ contract('ForwarderFactory', function (accounts) {
       parent,
       salt,
       undefined,
+      undefined,
       accounts[1]
     );
     await helpers.assertVMException(
@@ -221,6 +257,7 @@ contract('ForwarderFactory', function (accounts) {
           implementationAddress,
           parent,
           salt,
+          undefined,
           undefined,
           accounts[1]
         )
