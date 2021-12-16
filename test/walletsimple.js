@@ -1,6 +1,7 @@
 require('assert');
 const should = require('should');
 const truffleAssert = require('truffle-assertions');
+const { makeInterfaceId } = require('@openzeppelin/test-helpers');
 const BigNumber = require('bignumber.js');
 const Promise = require('bluebird');
 const _ = require('lodash');
@@ -2491,6 +2492,28 @@ coins.forEach(
           } catch (err) {
             assertVMException(err);
           }
+        });
+      });
+
+      describe('ERC165', function () {
+        const INTERFACE_IDS = {
+          IERC1155Receiver: makeInterfaceId.ERC165([
+            'onERC1155Received(address,address,uint256,uint256,bytes)',
+            'onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)'
+          ])
+        };
+
+        Object.entries(INTERFACE_IDS).map(([eipInterface, interfaceId]) => {
+          it(`should support ${eipInterface}`, async function () {
+            const wallet = await createWallet(accounts[0], [
+              accounts[0],
+              accounts[1],
+              accounts[2]
+            ]);
+
+            const supportsInterface = await wallet.supportsInterface(interfaceId);
+            supportsInterface.should.equal(true);
+          });
         });
       });
     });

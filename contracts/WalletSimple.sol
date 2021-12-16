@@ -6,6 +6,8 @@ import './ERC20Interface.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
+import '@openzeppelin/contracts/introspection/ERC165.sol';
 import './ReentracyGuard.sol';
 
 /**
@@ -34,7 +36,12 @@ import './ReentracyGuard.sol';
  *
  *
  */
-contract WalletSimple is ReentrancyGuard, IERC721Receiver {
+contract WalletSimple is
+  ReentrancyGuard,
+  IERC721Receiver,
+  ERC165,
+  IERC1155Receiver
+{
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -81,6 +88,12 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver {
       require(allowedSigners[i] != address(0), 'Invalid signer');
       signers[allowedSigners[i]] = true;
     }
+
+    _registerInterface(
+      ERC1155Receiver(address(0)).onERC1155Received.selector ^
+        ERC1155Receiver(address(0)).onERC1155BatchReceived.selector
+    );
+
     initialized = true;
   }
 
@@ -401,6 +414,32 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver {
    */
   function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) public virtual override returns (bytes4) {
     return this.onERC721Received.selector;
+  }
+
+  /**
+   * @inheritdoc IERC1155Receiver
+   */
+  function onERC1155Received(
+    address _operator,
+    address _from,
+    uint256 id,
+    uint256 value,
+    bytes calldata data
+  ) external virtual override nonReentrant returns (bytes4) {
+    return this.onERC1155Received.selector;
+  }
+
+  /**
+   * @inheritdoc IERC1155Receiver
+   */
+  function onERC1155BatchReceived(
+    address _operator,
+    address _from,
+    uint256[] calldata ids,
+    uint256[] calldata values,
+    bytes calldata data
+  ) external virtual override nonReentrant returns (bytes4) {
+    return this.onERC1155BatchReceived.selector;
   }
 
   /**
