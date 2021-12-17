@@ -2,17 +2,17 @@
 pragma solidity 0.7.5;
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
+import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol';
 import './ERC20Interface.sol';
 import './ReentracyGuard.sol';
-import './ERC721Interface.sol';
-import './ERC721ReceiverInterface.sol';
 
 /**
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
+contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   bool public autoFlush721 = true;
@@ -93,13 +93,22 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
    * @param _tokenId The token id of the nft
    * @param _data Additional data with no specified format, sent in call to `_to`
    */
-  function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) public virtual override nonReentrant returns (bytes4) {
-    if(autoFlush721){
-      ERC721 instance = ERC721(msg.sender);
-      require(instance.supportsInterface(0x80ac58cd), "The caller does not support the ERC721 interface");
+  function onERC721Received(
+    address _operator,
+    address _from,
+    uint256 _tokenId,
+    bytes memory _data
+  ) public virtual override nonReentrant returns (bytes4) {
+    if (autoFlush721) {
+      IERC721 instance = IERC721(msg.sender);
+      require(
+        instance.supportsInterface(type(IERC721).interfaceId),
+        'The caller does not support the ERC721 interface'
+      );
       // this won't work for ERC721 re-entrancy
       instance.safeTransferFrom(address(this), parentAddress, _tokenId);
     }
+
     return this.onERC721Received.selector;
   }
 
@@ -178,8 +187,16 @@ contract Forwarder is ReentrancyGuard, ERC721TokenReceiver, ERC1155Receiver {
    * @param tokenContractAddress the address of the ERC721 NFT contract
    * @param tokenId The token id of the nft
    */
-  function flushERC721Tokens(address tokenContractAddress, uint256 tokenId) external onlyParent {
-    ERC721 instance = ERC721(tokenContractAddress);
+  function flushERC721Tokens(address tokenContractAddress, uint256 tokenId)
+    external
+    onlyParent
+  {
+    IERC721 instance = IERC721(tokenContractAddress);
+    require(
+      instance.supportsInterface(type(IERC721).interfaceId),
+      'The tokenContractAddress does not support the ERC721 interface'
+    );
+
     address forwarderAddress = address(this);
     address ownerAddress = instance.ownerOf(tokenId);
     address approvedAddress=instance.getApproved(tokenId);
