@@ -28,6 +28,7 @@ const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
 const ERC721 = artifacts.require('./MockERC721');
+const ERC1155 = artifacts.require('./MockERC1155');
 
 const assertVMException = (err, expectedErrMsg) => {
   err.message.toString().should.containEql('VM Exception');
@@ -36,7 +37,7 @@ const assertVMException = (err, expectedErrMsg) => {
   }
 };
 
-const createForwarderFromWallet = async (wallet) => {
+const createForwarderFromWallet = async (wallet, autoFlush = true) => {
   const parent = wallet.address;
   const salt = util.bufferToHex(crypto.randomBytes(20));
   const inputSalt = util.setLengthLeft(
@@ -68,7 +69,8 @@ const createForwarderFromWallet = async (wallet) => {
         calculationSalt,
         inputSalt,
         initCode,
-        parent
+        parent,
+        autoFlush
       )
   };
 };
@@ -78,7 +80,8 @@ const executeCreateForwarder = async (
   calculationSalt,
   inputSalt,
   initCode,
-  parent
+  parent,
+  autoFlush = true
 ) => {
   const forwarderAddress = helpers.getNextContractAddressCreate2(
     factory.address,
@@ -86,7 +89,7 @@ const executeCreateForwarder = async (
     initCode
   );
 
-  await factory.createForwarder(parent, inputSalt);
+  await factory.createForwarder(parent, inputSalt, autoFlush, autoFlush);
   return Forwarder.at(forwarderAddress);
 };
 
@@ -2492,6 +2495,68 @@ coins.forEach(
           } catch (err) {
             assertVMException(err);
           }
+        });
+
+        describe('ERC1155', async function () {
+          const owner = accounts[0];
+          const signers = [accounts[0], accounts[1], accounts[2]];
+          let token1155;
+
+          beforeEach(async () => {
+            token1155 = await ERC1155.new({ from: owner });
+          });
+
+          signers
+            .map((signer, i) => [signer, i])
+            .map(([signer, signerNum]) => {
+              it(`should flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
+                const erc1155TokenId = 1;
+                const amount = 100;
+
+                const forwarder = await (
+                  await createForwarderFromWallet(wallet, false)
+                ).create();
+
+                await token1155.mint(
+                  forwarder.address,
+                  erc1155TokenId,
+                  amount,
+                  [],
+                  { from: owner }
+                );
+
+                const forwarderBalancePreFlush = await token1155.balanceOf(
+                  forwarder.address,
+                  erc1155TokenId
+                );
+                forwarderBalancePreFlush.toNumber().should.equal(amount);
+
+                const walletBalancePreFlush = await token1155.balanceOf(
+                  wallet.address,
+                  erc1155TokenId
+                );
+                walletBalancePreFlush.toNumber().should.equal(0);
+
+                await wallet.flushERC1155ForwarderTokens(
+                  forwarder.address,
+                  token1155.address,
+                  erc1155TokenId,
+                  { from: signer }
+                );
+
+                const forwarderBalancePostFlush = await token1155.balanceOf(
+                  forwarder.address,
+                  erc1155TokenId
+                );
+                forwarderBalancePostFlush.toNumber().should.equal(0);
+
+                const walletBalancePostFlush = await token1155.balanceOf(
+                  wallet.address,
+                  erc1155TokenId
+                );
+                walletBalancePostFlush.toNumber().should.equal(amount);
+              });
+            });
         });
       });
 

@@ -305,7 +305,7 @@ contract('Forwarder', function (accounts) {
       }
     });
 
-    describe('ERC1155Receiver', () => {
+    describe('ERC1155', () => {
       let owner;
       let token1155;
 
@@ -338,128 +338,170 @@ contract('Forwarder', function (accounts) {
         }
       };
 
-      it('should receive erc1155 tokens with autoflush off', async function () {
-        const erc1155TokenId = 1;
+      describe('Flush', () => {
+        it('should flush erc1155 tokens back to parent address when caller is parent', async () => {
+          const erc1155TokenId = 1;
+          const amount = 10;
+          await mint(noAutoFlushForwarder.address, erc1155TokenId, amount);
 
-        const sender = accounts[1];
-        await mint(sender, erc1155TokenId, 100);
+          const forwarderBalancePreFlush = await token1155.balanceOf(
+            noAutoFlushForwarder.address,
+            erc1155TokenId
+          );
+          forwarderBalancePreFlush.toNumber().should.equal(amount);
 
-        await transferERC1155(
-          sender,
-          noAutoFlushForwarder.address,
-          erc1155TokenId,
-          10
-        );
+          await noAutoFlushForwarder.flushERC1155Tokens(
+            token1155.address,
+            erc1155TokenId,
+            { from: owner }
+          );
 
-        await assertBalances(
-          erc1155TokenId,
-          [owner, sender, noAutoFlushForwarder.address],
-          [0, 90, 10]
-        );
+          const forwarderBalancePostFlush = await token1155.balanceOf(
+            noAutoFlushForwarder.address,
+            erc1155TokenId
+          );
+          forwarderBalancePostFlush.toNumber().should.equal(0);
+        });
+
+        it('should fail to flush erc1155 tokens when caller is not parent', async () => {
+          const owner = baseAddress;
+          const token1155 = await ERC1155.new({ from: owner });
+
+          const erc1155TokenId = 1;
+          await truffleAssert.reverts(
+            noAutoFlushForwarder.flushERC1155Tokens(
+              token1155.address,
+              erc1155TokenId,
+              { from: accounts[2] }
+            )
+          );
+        });
       });
 
-      it('should receive erc1155 tokens with autoflush on', async function () {
-        const erc1155TokenId = 1;
+      describe('ERC1155Receiver', () => {
+        it('should receive erc1155 tokens with autoflush off', async function () {
+          const erc1155TokenId = 1;
 
-        const sender = accounts[1];
-        await mint(sender, erc1155TokenId, 100);
+          const sender = accounts[1];
+          await mint(sender, erc1155TokenId, 100);
 
-        await transferERC1155(
-          sender,
-          autoFlushForwarder.address,
-          erc1155TokenId,
-          10
-        );
+          await transferERC1155(
+            sender,
+            noAutoFlushForwarder.address,
+            erc1155TokenId,
+            10
+          );
 
-        await assertBalances(
-          erc1155TokenId,
-          [owner, sender, autoFlushForwarder.address],
-          [10, 90, 0]
-        );
-      });
+          await assertBalances(
+            erc1155TokenId,
+            [owner, sender, noAutoFlushForwarder.address],
+            [0, 90, 10]
+          );
+        });
 
-      it('should receive batch erc1155 tokens with autoflush off', async function () {
-        const erc1155TokenId1 = 1;
-        const erc1155TokenId2 = 2;
+        it('should receive erc1155 tokens with autoflush on', async function () {
+          const erc1155TokenId = 1;
 
-        const sender = accounts[1];
-        await mint(sender, erc1155TokenId1, 100);
-        await mint(sender, erc1155TokenId2, 50);
+          const sender = accounts[1];
+          await mint(sender, erc1155TokenId, 100);
 
-        await transferBatchERC1155(
-          sender,
-          noAutoFlushForwarder.address,
-          [erc1155TokenId1, erc1155TokenId2],
-          [10, 20]
-        );
+          await transferERC1155(
+            sender,
+            autoFlushForwarder.address,
+            erc1155TokenId,
+            10
+          );
 
-        await assertBalances(
-          erc1155TokenId1,
-          [owner, sender, noAutoFlushForwarder.address],
-          [0, 90, 10]
-        );
+          await assertBalances(
+            erc1155TokenId,
+            [owner, sender, autoFlushForwarder.address],
+            [10, 90, 0]
+          );
+        });
 
-        await assertBalances(
-          erc1155TokenId2,
-          [owner, sender, noAutoFlushForwarder.address],
-          [0, 30, 20]
-        );
-      });
+        it('should receive batch erc1155 tokens with autoflush off', async function () {
+          const erc1155TokenId1 = 1;
+          const erc1155TokenId2 = 2;
 
-      it('should receive batch erc1155 tokens with autoflush on', async function () {
-        const erc1155TokenId1 = 1;
-        const erc1155TokenId2 = 2;
+          const sender = accounts[1];
+          await mint(sender, erc1155TokenId1, 100);
+          await mint(sender, erc1155TokenId2, 50);
 
-        const sender = accounts[1];
-        await mint(sender, erc1155TokenId1, 100);
-        await mint(sender, erc1155TokenId2, 50);
+          await transferBatchERC1155(
+            sender,
+            noAutoFlushForwarder.address,
+            [erc1155TokenId1, erc1155TokenId2],
+            [10, 20]
+          );
 
-        await transferBatchERC1155(
-          sender,
-          autoFlushForwarder.address,
-          [erc1155TokenId1, erc1155TokenId2],
-          [10, 20]
-        );
+          await assertBalances(
+            erc1155TokenId1,
+            [owner, sender, noAutoFlushForwarder.address],
+            [0, 90, 10]
+          );
 
-        await assertBalances(
-          erc1155TokenId1,
-          [owner, sender, autoFlushForwarder.address],
-          [10, 90, 0]
-        );
+          await assertBalances(
+            erc1155TokenId2,
+            [owner, sender, noAutoFlushForwarder.address],
+            [0, 30, 20]
+          );
+        });
 
-        await assertBalances(
-          erc1155TokenId2,
-          [owner, sender, autoFlushForwarder.address],
-          [20, 30, 0]
-        );
-      });
+        it('should receive batch erc1155 tokens with autoflush on', async function () {
+          const erc1155TokenId1 = 1;
+          const erc1155TokenId2 = 2;
 
-      it('should revert if msg.sender does not support IERC1155', async () => {
-        await truffleAssert.reverts(
-          noAutoFlushForwarder.onERC1155Received(
-            accounts[0],
-            accounts[1],
-            0,
-            0,
-            [],
-            {
-              from: accounts[0]
-            }
-          )
-        );
+          const sender = accounts[1];
+          await mint(sender, erc1155TokenId1, 100);
+          await mint(sender, erc1155TokenId2, 50);
 
-        await truffleAssert.reverts(
-          noAutoFlushForwarder.onERC1155BatchReceived(
-            accounts[0],
-            accounts[1],
-            [],
-            [],
-            [],
-            {
-              from: accounts[0]
-            }
-          )
-        );
+          await transferBatchERC1155(
+            sender,
+            autoFlushForwarder.address,
+            [erc1155TokenId1, erc1155TokenId2],
+            [10, 20]
+          );
+
+          await assertBalances(
+            erc1155TokenId1,
+            [owner, sender, autoFlushForwarder.address],
+            [10, 90, 0]
+          );
+
+          await assertBalances(
+            erc1155TokenId2,
+            [owner, sender, autoFlushForwarder.address],
+            [20, 30, 0]
+          );
+        });
+
+        it('should revert if msg.sender does not support IERC1155', async () => {
+          await truffleAssert.reverts(
+            noAutoFlushForwarder.onERC1155Received(
+              accounts[0],
+              accounts[1],
+              0,
+              0,
+              [],
+              {
+                from: accounts[0]
+              }
+            )
+          );
+
+          await truffleAssert.reverts(
+            noAutoFlushForwarder.onERC1155BatchReceived(
+              accounts[0],
+              accounts[1],
+              [],
+              [],
+              [],
+              {
+                from: accounts[0]
+              }
+            )
+          );
+        });
       });
     });
   });
