@@ -376,6 +376,56 @@ contract('Forwarder', function (accounts) {
             )
           );
         });
+
+        it('should batch flush erc1155 tokens back to parent address when caller is parent', async () => {
+          const erc1155TokenIds = [1, 2, 3];
+          const amounts = [10, 20, 30];
+
+          for (let i = 0; i < erc1155TokenIds.length; i++) {
+            await mint(
+              noAutoFlushForwarder.address,
+              erc1155TokenIds[i],
+              amounts[i]
+            );
+          }
+
+          for (let i = 0; i < erc1155TokenIds.length; i++) {
+            await assertBalances(
+              erc1155TokenIds[i],
+              [noAutoFlushForwarder.address],
+              [amounts[i]]
+            );
+          }
+
+          await noAutoFlushForwarder.batchFlushERC1155Tokens(
+            token1155.address,
+            erc1155TokenIds,
+            { from: owner }
+          );
+
+          for (let i = 0; i < erc1155TokenIds.length; i++) {
+            await assertBalances(
+              erc1155TokenIds[i],
+              [owner, noAutoFlushForwarder.address],
+              [amounts[i], 0]
+            );
+          }
+        });
+
+        it('should fail to batch flush erc1155 tokens when caller is not parent', async () => {
+          const owner = baseAddress;
+          const token1155 = await ERC1155.new({ from: owner });
+
+          await truffleAssert.reverts(
+            noAutoFlushForwarder.batchFlushERC1155Tokens(
+              token1155.address,
+              [],
+              {
+                from: accounts[2]
+              }
+            )
+          );
+        });
       });
 
       describe('ERC1155Receiver', () => {

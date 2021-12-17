@@ -370,6 +370,22 @@ contract WalletSimple is
   }
 
   /**
+   * Execute a ERC1155 batch token flush from one of the forwarder addresses.
+   * This transfer needs only a single signature and can be done by any signer.
+   *
+   * @param forwarderAddress the address of the forwarder address to flush the tokens from
+   * @param tokenContractAddress the address of the erc1155 token contract
+   */
+  function batchFlushERC1155ForwarderTokens(
+    address payable forwarderAddress,
+    address tokenContractAddress,
+    uint256[] calldata tokenIds
+  ) external onlySigner {
+    Forwarder forwarder = Forwarder(forwarderAddress);
+    forwarder.batchFlushERC1155Tokens(tokenContractAddress, tokenIds);
+  }
+
+  /**
    * Execute a ERC1155 token flush from one of the forwarder addresses.
    * This transfer needs only a single signature and can be done by any signer.
    *
