@@ -8,6 +8,7 @@ const { makeInterfaceId } = require('@openzeppelin/test-helpers');
 const Forwarder = artifacts.require('./Forwarder.sol');
 const ERC721 = artifacts.require('./MockERC721');
 const ERC1155 = artifacts.require('./MockERC1155');
+const AlwaysFalseERC165 = artifacts.require('./AlwaysFalseERC165.sol');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
@@ -188,6 +189,22 @@ contract('Forwarder', function (accounts) {
         data
       );
       methodId.should.eql('0x150b7a02');
+    });
+
+    it('should revert if msg.sender in onERC721Received does not support ERC721', async function () {
+      const operator = accounts[0];
+      const from = accounts[1];
+      const tokenId = 123;
+
+      const alwaysFalseERC165 = await AlwaysFalseERC165.new(
+        autoFlushForwarder.address
+      );
+
+      await truffleAssert.reverts(
+        alwaysFalseERC165.onERC721Received(operator, from, tokenId, [], {
+          from: operator
+        })
+      );
     });
 
     it('Should receive with safeTransferFrom function with auto flush', async function () {
