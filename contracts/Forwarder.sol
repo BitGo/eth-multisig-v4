@@ -234,6 +234,37 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
   }
 
   /**
+   * Execute a batch nft transfer from the forwarder to the parent address.
+
+   * @param tokenContractAddress the address of the ERC1155 NFT contract
+   * @param tokenIds The token ids of the nfts
+   */
+  function batchFlushERC1155Tokens(
+    address tokenContractAddress,
+    uint256[] calldata tokenIds
+  ) external onlyParent {
+    IERC1155 instance = IERC1155(tokenContractAddress);
+    require(
+      instance.supportsInterface(type(IERC1155).interfaceId),
+      'The caller does not support the IERC1155 interface'
+    );
+
+    address forwarderAddress = address(this);
+    uint256[] memory amounts = new uint256[](tokenIds.length);
+    for (uint256 i = 0; i < tokenIds.length; i++) {
+      amounts[i] = instance.balanceOf(forwarderAddress, tokenIds[i]);
+    }
+
+    instance.safeBatchTransferFrom(
+      forwarderAddress,
+      parentAddress,
+      tokenIds,
+      amounts,
+      ''
+    );
+  }
+
+  /**
    * Flush the entire balance of the contract to the parent address.
    */
   function flush() public {

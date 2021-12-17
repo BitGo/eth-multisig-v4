@@ -2556,6 +2556,54 @@ coins.forEach(
                 );
                 walletBalancePostFlush.toNumber().should.equal(amount);
               });
+
+              it(`should batch flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
+                const erc1155TokenId = 1;
+                const amount = 100;
+
+                const forwarder = await (
+                  await createForwarderFromWallet(wallet, false)
+                ).create();
+
+                await token1155.mint(
+                  forwarder.address,
+                  erc1155TokenId,
+                  amount,
+                  [],
+                  { from: owner }
+                );
+
+                const forwarderBalancePreFlush = await token1155.balanceOf(
+                  forwarder.address,
+                  erc1155TokenId
+                );
+                forwarderBalancePreFlush.toNumber().should.equal(amount);
+
+                const walletBalancePreFlush = await token1155.balanceOf(
+                  wallet.address,
+                  erc1155TokenId
+                );
+                walletBalancePreFlush.toNumber().should.equal(0);
+
+                await wallet.flushERC1155ForwarderTokens(
+                  forwarder.address,
+                  token1155.address,
+                  [erc1155TokenId],
+                  { from: signer }
+                );
+
+                const forwarderBalancePostFlush = await token1155.balanceOf(
+                  forwarder.address,
+                  erc1155TokenId
+                );
+                forwarderBalancePostFlush.toNumber().should.equal(0);
+
+                const walletBalancePostFlush = await token1155.balanceOf(
+                  wallet.address,
+                  erc1155TokenId
+                );
+                walletBalancePostFlush.toNumber().should.equal(amount);
+              });
             });
         });
       });
