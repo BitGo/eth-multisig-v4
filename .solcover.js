@@ -17,6 +17,8 @@ module.exports = {
     'test/GasHeavy.sol',
     'test/MockERC721.sol',
     'test/Reentry.sol',
+    'test/ReentryForwarder.sol',
+    'test/ReentryWalletSimple.sol',
     'test/TestBatcherDriver.sol',
     'test/Tether.sol'
   ],
