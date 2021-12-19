@@ -29,6 +29,7 @@ const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
 const ERC721 = artifacts.require('./MockERC721');
 const ERC1155 = artifacts.require('./MockERC1155');
+const ReentryWalletSimple = artifacts.require('./ReentryWalletSimple');
 
 const assertVMException = (err, expectedErrMsg) => {
   err.message.toString().should.containEql('VM Exception');
@@ -2624,9 +2625,280 @@ coins.forEach(
               accounts[2]
             ]);
 
-            const supportsInterface = await wallet.supportsInterface(interfaceId);
+            const supportsInterface = await wallet.supportsInterface(
+              interfaceId
+            );
             supportsInterface.should.equal(true);
           });
+        });
+      });
+
+      // we try to re-enter through receive and fallback function for sendMultiSig and sendMultiSigBatch
+      // and transfer function for sendMultiSigToken
+      describe('Re-Entrancy', function () {
+        let sequenceId;
+        let reentryInstance;
+        before(async function () {
+          //reentryInstance should be a signer due to onlySigner modifier
+          reentryInstance = await ReentryWalletSimple.new();
+          wallet = await createWallet(accounts[0], [
+            accounts[0],
+            accounts[1],
+            reentryInstance.address
+          ]);
+
+          const amount = web3.utils.toWei('200000', 'ether');
+          await web3.eth.sendTransaction({
+            from: accounts[0],
+            to: wallet.address,
+            value: amount
+          });
+        });
+
+        beforeEach(async function () {
+          // Run before each test. Sets the sequence ID up to be used in the tests
+          const sequenceIdString = await wallet.getNextSequenceId.call();
+          sequenceId = parseInt(sequenceIdString);
+        });
+
+        it('should fail with reentry set to true for sendMultiSig function', async function () {
+          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let amount = web3.utils.toWei('1', 'ether');
+          let toAddress = reentryInstance.address.toLowerCase();
+          let data = util.bufferToHex(crypto.randomBytes(20));
+          const operationHash = helpers.getSha3ForConfirmationTx(
+            nativePrefix,
+            toAddress,
+            amount,
+            data,
+            expireTime,
+            sequenceId
+          );
+
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(accounts[1])
+          );
+          const signature = helpers.serializeSignature(sig);
+          const reentry = true;
+          try {
+            await reentryInstance.sendMultiSig(
+              wallet.address,
+              toAddress,
+              amount,
+              data,
+              expireTime,
+              sequenceId,
+              signature,
+              reentry,
+              { from: accounts[0] }
+            );
+          } catch (err) {
+            assertVMException(
+              err,
+              'ReentryWalletSimple: sendMultiSig failed call'
+            );
+          }
+        });
+
+        it('should pass with reentry set to false for sendMultiSig function', async function () {
+          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let amount = web3.utils.toWei('1', 'ether');
+          let toAddress = reentryInstance.address.toLowerCase();
+          let data = util.bufferToHex(crypto.randomBytes(20));
+          const operationHash = helpers.getSha3ForConfirmationTx(
+            nativePrefix,
+            toAddress,
+            amount,
+            data,
+            expireTime,
+            sequenceId
+          );
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(accounts[1])
+          );
+          const signature = helpers.serializeSignature(sig);
+          const reentry = false;
+          const destinationStartBalance = await web3.eth.getBalance(
+            reentryInstance.address
+          );
+          await reentryInstance.sendMultiSig(
+            wallet.address,
+            toAddress,
+            amount,
+            data,
+            expireTime,
+            sequenceId,
+            signature,
+            reentry,
+            { from: accounts[0] }
+          );
+          const destinationEndBalance = await web3.eth.getBalance(
+            reentryInstance.address
+          );
+          new BigNumber(destinationStartBalance)
+            .plus(amount)
+            .eq(destinationEndBalance)
+            .should.be.true();
+        });
+
+        it('should fail with reentry set to true for sendMultiSigBatch function', async function () {
+          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let amount = web3.utils.toWei('1', 'ether');
+          const recipients = [reentryInstance.address.toLowerCase()];
+          const values = [amount];
+          let data = util.bufferToHex(crypto.randomBytes(20));
+          const operationHash = helpers.getSha3ForBatchTx(
+            nativeBatchPrefix,
+            recipients,
+            values,
+            expireTime,
+            sequenceId
+          );
+
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(accounts[1])
+          );
+          const signature = helpers.serializeSignature(sig);
+          const reentry = true;
+
+          try {
+            await reentryInstance.sendMultiSigBatch(
+              wallet.address,
+              recipients,
+              values,
+              expireTime,
+              sequenceId,
+              signature,
+              reentry,
+              { from: accounts[0] }
+            );
+          } catch (err) {
+            assertVMException(
+              err,
+              'ReentryWalletSimple: sendMultiSigBatch failed call'
+            );
+          }
+        });
+
+        it('should pass with reentry set to false for sendMultiSigBatch function', async function () {
+          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let amount = web3.utils.toWei('1', 'ether');
+          const recipients = [reentryInstance.address.toLowerCase()];
+          const values = [amount];
+          const operationHash = helpers.getSha3ForBatchTx(
+            nativeBatchPrefix,
+            recipients,
+            values,
+            expireTime,
+            sequenceId
+          );
+
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(accounts[1])
+          );
+          const signature = helpers.serializeSignature(sig);
+          const reentry = false;
+
+          const destinationStartBalance = await web3.eth.getBalance(
+            reentryInstance.address
+          );
+
+          await reentryInstance.sendMultiSigBatch(
+            wallet.address,
+            recipients,
+            values,
+            expireTime,
+            sequenceId,
+            signature,
+            reentry,
+            { from: accounts[0] }
+          );
+
+          const destinationEndBalance = await web3.eth.getBalance(
+            reentryInstance.address
+          );
+          new BigNumber(destinationStartBalance)
+            .plus(amount)
+            .eq(destinationEndBalance)
+            .should.be.true();
+        });
+
+        it('should fail with reentry set to true for sendMultiSigToken function', async function () {
+          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let amount = web3.utils.toWei('1', 'ether');
+          let toAddress = accounts[5];
+          let tokenContractAddress = reentryInstance.address;
+          const operationHash = helpers.getSha3ForConfirmationTx(
+            tokenPrefix,
+            toAddress,
+            amount,
+            tokenContractAddress,
+            expireTime,
+            sequenceId
+          );
+
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(accounts[1])
+          );
+          const signature = helpers.serializeSignature(sig);
+          const reentry = true;
+          try {
+            await reentryInstance.sendMultiSigToken(
+              wallet.address,
+              toAddress,
+              amount,
+              tokenContractAddress,
+              expireTime,
+              sequenceId,
+              signature,
+              reentry,
+              { from: accounts[0] }
+            );
+          } catch (err) {
+            assertVMException(
+              err,
+              'ReentryWalletSimple: sendMultiSigToken failed call'
+            );
+          }
+        });
+
+        it('should pass with reentry set to false for sendMultiSigToken function', async function () {
+          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let amount = web3.utils.toWei('1', 'ether');
+          let toAddress = accounts[3];
+          let tokenContractAddress = reentryInstance.address;
+          const operationHash = helpers.getSha3ForConfirmationTx(
+            tokenPrefix,
+            toAddress,
+            amount,
+            tokenContractAddress,
+            expireTime,
+            sequenceId
+          );
+
+          const sig = util.ecsign(
+            operationHash,
+            privateKeyForAccount(accounts[1])
+          );
+          const signature = helpers.serializeSignature(sig);
+          const reentry = false;
+
+          await reentryInstance.sendMultiSigToken(
+            wallet.address,
+            toAddress,
+            amount,
+            tokenContractAddress,
+            expireTime,
+            sequenceId,
+            signature,
+            reentry,
+            { from: accounts[0] }
+          );
         });
       });
     });

@@ -9,6 +9,9 @@ const Forwarder = artifacts.require('./Forwarder.sol');
 const ERC721 = artifacts.require('./MockERC721');
 const ERC1155 = artifacts.require('./MockERC1155');
 const AlwaysFalseERC165 = artifacts.require('./AlwaysFalseERC165.sol');
+const ReentryForwarder = artifacts.require('./ReentryForwarder');
+const util = require('ethereumjs-util');
+const abi = require('ethereumjs-abi');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
@@ -25,6 +28,14 @@ const assertVMException = (err, expectedErrMsg) => {
   if (expectedErrMsg) {
     err.message.toString().should.containEql(expectedErrMsg);
   }
+};
+
+const getMethodData = async function (types, values, methodName) {
+  const id = abi.methodID(methodName, types).toString('hex');
+  const data = util.addHexPrefix(
+    id + abi.rawEncode(types, values).toString('hex')
+  );
+  return data;
 };
 
 const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
@@ -227,7 +238,9 @@ contract('Forwarder', function (accounts) {
       await token721.transferFrom(owner, autoFlushForwarder.address, tokenId, {
         from: owner
       });
-      expect(await token721.ownerOf(tokenId)).to.be.equal(autoFlushForwarder.address);
+      expect(await token721.ownerOf(tokenId)).to.be.equal(
+        autoFlushForwarder.address
+      );
     });
 
     it('Should receive with safeTransferFrom function with no auto flush', async function () {
@@ -274,7 +287,9 @@ contract('Forwarder', function (accounts) {
         noAutoFlushForwarder.address
       );
 
-      await noAutoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {from: baseAddress});
+      await noAutoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {
+        from: baseAddress
+      });
       expect(await token721.ownerOf(tokenId)).to.be.equal(baseAddress);
     });
 
@@ -289,7 +304,9 @@ contract('Forwarder', function (accounts) {
         autoFlushForwarder.address
       );
 
-      await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {from: baseAddress});
+      await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {
+        from: baseAddress
+      });
       expect(await token721.ownerOf(tokenId)).to.be.equal(baseAddress);
     });
 
@@ -299,7 +316,9 @@ contract('Forwarder', function (accounts) {
       await token721.mint(owner, tokenId);
 
       try {
-        await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {from: baseAddress});
+        await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {
+          from: baseAddress
+        });
       } catch (err) {
         assertVMException(err);
       }
@@ -574,6 +593,150 @@ contract('Forwarder', function (accounts) {
         );
         supportsInterface.should.equal(true);
       });
+    });
+  });
+
+  describe('Re-Entrancy', function () {
+    let reentryForwarderInstance;
+    let forwarder;
+    let tokenId = 1;
+    const name = 'Non Fungible Token';
+    const symbol = 'NFT';
+    let owner;
+    let token1155;
+    let token721;
+
+    before(async function () {
+      reentryForwarderInstance = await ReentryForwarder.new();
+      forwarder = await createForwarder(
+        accounts[0],
+        reentryForwarderInstance.address
+      );
+    });
+    beforeEach(async function () {
+      owner = accounts[0];
+      token1155 = await ERC1155.new({ from: owner });
+      token721 = await ERC721.new(name, symbol);
+    });
+
+    it('should fail with reentry set to true for onERC721Received function', async function () {
+      let to = forwarder.address;
+      await reentryForwarderInstance.setForwarder(to);
+      await reentryForwarderInstance.setReentry(true);
+
+      try {
+        await token721.mint(to, tokenId);
+      } catch (err) {
+        assertVMException(
+          err,
+          'ReentryForwarder: onERC721Received failed call'
+        );
+      }
+    });
+
+    it('should pass with reentry set to false for onERC721Received function', async function () {
+      let to = forwarder.address;
+      await reentryForwarderInstance.setForwarder(to);
+      await reentryForwarderInstance.setReentry(false);
+
+      await token721.mint(to, tokenId);
+      assert.equal(
+        await token721.ownerOf(tokenId),
+        reentryForwarderInstance.address
+      );
+    });
+
+    it('should fail with reentry set to true for onERC1155Received function', async function () {
+      let to = forwarder.address;
+
+      let amount = 1;
+      await reentryForwarderInstance.setForwarder(to);
+      await reentryForwarderInstance.setReentry(true);
+
+      try {
+        await token1155.mint(to, tokenId, amount, [], { from: owner });
+      } catch (err) {
+        assertVMException(
+          err,
+          'ReentryForwarder: onERC1155Received failed call'
+        );
+      }
+    });
+
+    it('should pass with reentry set to false for onERC1155Received function', async function () {
+      let to = forwarder.address;
+
+      let amount = 1;
+      await reentryForwarderInstance.setForwarder(to);
+      await reentryForwarderInstance.setReentry(false);
+
+      await token1155.mint(to, tokenId, amount, [], { from: owner });
+
+      assert.equal(
+        await token1155.balanceOf(reentryForwarderInstance.address, tokenId),
+        1
+      );
+    });
+
+    it('should fail with reentry set to true for onERC1155BatchReceived function', async function () {
+      let to = forwarder.address;
+
+      let amount = 1;
+      await reentryForwarderInstance.setForwarder(to);
+      await reentryForwarderInstance.setReentry(true);
+
+      try {
+        await token1155.mintBatch(to, [tokenId], [amount], [], { from: owner });
+      } catch (err) {
+        assertVMException(
+          err,
+          'ReentryForwarder: onERC1155BatchReceived failed call'
+        );
+      }
+    });
+
+    it('should pass with reentry set to false for onERC1155BatchReceived function', async function () {
+      let to = forwarder.address;
+
+      let amount = 1;
+      await reentryForwarderInstance.setForwarder(to);
+      await reentryForwarderInstance.setReentry(false);
+
+      await token1155.mintBatch(to, [tokenId], [amount], [], { from: owner });
+
+      assert.equal(
+        await token1155.balanceOf(reentryForwarderInstance.address, tokenId),
+        1
+      );
+    });
+
+    it('should fail with reentry set to true for callFromParent function', async function () {
+      let parent = reentryForwarderInstance.address;
+
+      await reentryForwarderInstance.setForwarder(forwarder.address);
+      await reentryForwarderInstance.setReentry(true);
+      let types = ['address', 'uint256', 'bytes'];
+      let values = [parent, 0, ''];
+      let methodName = 'callFromParent';
+      let data = await getMethodData(types, values, methodName);
+      try {
+        await reentryForwarderInstance.dataCall(parent, 0, data);
+      } catch (err) {
+        assertVMException(err, 'dataCall execution failed');
+      }
+    });
+
+    it('should pass with reentry set to false for callFromParent function', async function () {
+      let parent = reentryForwarderInstance.address;
+
+      await reentryForwarderInstance.setForwarder(forwarder.address);
+      await reentryForwarderInstance.setReentry(false);
+      let types = ['address', 'uint256', 'bytes'];
+      let values = [parent, 0, ''];
+      let methodName = 'callFromParent';
+      let data = await getMethodData(types, values, methodName);
+
+      await reentryForwarderInstance.dataCall(parent, 0, data);
     });
   });
 });
