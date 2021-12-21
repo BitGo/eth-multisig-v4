@@ -4,15 +4,18 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*', // Match any network id
-      // https://github.com/trufflesuite/truffle/issues/271#issuecomment-341651827
-      gas: 2900000,
+      gas: 5800000,
       websockets: true
     }
   },
   compilers: {
     solc: {
-      version: '0.7.5'
+      version: '0.8',
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
     }
   },
-  plugins: ["solidity-coverage"]
+  plugins: ['solidity-coverage']
 };

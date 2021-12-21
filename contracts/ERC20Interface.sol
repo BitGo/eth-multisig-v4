@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.7.5;
+pragma solidity 0.8;
 
 /**
  * Contract that exposes the needed erc20 token functions

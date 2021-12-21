@@ -1,6 +1,6 @@
-pragma solidity 0.7.5;
+pragma solidity 0.8;
 
-import '@openzeppelin/contracts/introspection/IERC165.sol';
+import '@openzeppelin/contracts/interfaces/IERC165.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 
 contract AlwaysFalseERC165 is IERC165, IERC721Receiver {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.7.5;
+pragma solidity 0.8;
 
 // import "./MockERC1155.sol";
 
