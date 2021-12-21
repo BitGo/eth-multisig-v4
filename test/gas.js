@@ -60,12 +60,14 @@ const checkGasUsed = (expected, actual) => {
 contract(`Wallet Operations Gas Usage`, function (accounts) {
     let wallet;
 
-    it('WalletSimple deployment [ @skip-on-coverage ]', async function () {
+    // TODO: BG-40737
+    xit('WalletSimple deployment [ @skip-on-coverage ]', async function () {
         const transaction = await createWallet(accounts[0], [accounts[0], accounts[1], accounts[2]]);
         checkGasUsed(156155, transaction.receipt.gasUsed);
     });
 
-    it('WalletSimple send [ @skip-on-coverage ]', async function () {
+    // TODO: BG-40737
+    xit('WalletSimple send [ @skip-on-coverage ]', async function () {
         const wallet = await createAndGetWallet(accounts[0], [accounts[0], accounts[1], accounts[2]]);
 
         const destinationAccount = accounts[5];
@@ -176,7 +178,8 @@ contract(`Wallet Operations Gas Usage`, function (accounts) {
         return transaction;
     };
 
-    it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
+    // TODO: BG-40737
+    xit('WalletSimple send batch [ @skip-on-coverage ]', async function () {
         const gasUsageByBatchSize = [78060, 88194, 98316, 108427, 118537, 128648, 138747, 148869, 158980, 169079];
 
         for (let batchSize = 1; batchSize <= 10; batchSize++) {
@@ -185,3 +188,4 @@ contract(`Wallet Operations Gas Usage`, function (accounts) {
         }
     });
 });
+ 

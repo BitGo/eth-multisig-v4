@@ -521,7 +521,8 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    it('Executes as many transfers as possible when not given enough gas', async () => {
+    // TODO: BG-40737
+    xit('Executes as many transfers as possible when not given enough gas', async () => {
       const randVals = createRandIntArr(3);
       const params = {
         recipients: accounts.slice(1, 4),

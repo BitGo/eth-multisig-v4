@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.7.5;
+pragma solidity 0.8;
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import './Forwarder.sol';
 import './ERC20Interface.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
-import '@openzeppelin/contracts/introspection/ERC165.sol';
-import './ReentracyGuard.sol';
+import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
 /**
  *
@@ -36,12 +35,7 @@ import './ReentracyGuard.sol';
  *
  *
  */
-contract WalletSimple is
-  ReentrancyGuard,
-  IERC721Receiver,
-  ERC165,
-  IERC1155Receiver
-{
+contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -88,11 +82,6 @@ contract WalletSimple is
       require(allowedSigners[i] != address(0), 'Invalid signer');
       signers[allowedSigners[i]] = true;
     }
-
-    _registerInterface(
-      ERC1155Receiver(address(0)).onERC1155Received.selector ^
-        ERC1155Receiver(address(0)).onERC1155BatchReceived.selector
-    );
 
     initialized = true;
   }
@@ -164,7 +153,7 @@ contract WalletSimple is
   fallback() external payable {
     if (msg.value > 0) {
       // Fire deposited event if we are receiving funds
-      Deposited(msg.sender, msg.value, msg.data);
+      emit Deposited(msg.sender, msg.value, msg.data);
     }
   }
 
@@ -174,7 +163,8 @@ contract WalletSimple is
   receive() external payable {
     if (msg.value > 0) {
       // Fire deposited event if we are receiving funds
-      Deposited(msg.sender, msg.value, msg.data);
+      // message data is always empty for receive. If there is data it is sent to fallback function.
+      emit Deposited(msg.sender, msg.value, '');
     }
   }
 
@@ -480,7 +470,7 @@ contract WalletSimple is
    */
   function activateSafeMode() external onlySigner {
     safeMode = true;
-    SafeModeActivated(msg.sender);
+    emit SafeModeActivated(msg.sender);
   }
 
   /**
