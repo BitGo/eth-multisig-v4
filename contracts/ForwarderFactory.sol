@@ -31,7 +31,16 @@ contract ForwarderFactory is CloneFactory {
     bytes32 finalSalt = keccak256(abi.encodePacked(parent, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
-    Forwarder(clone).init(parent, shouldAutoFlushERC721, shouldAutoFlushERC1155);
-    emit ForwarderCreated(clone, parent, shouldAutoFlushERC721, shouldAutoFlushERC1155);
+    Forwarder(clone).init(
+      parent,
+      shouldAutoFlushERC721,
+      shouldAutoFlushERC1155
+    );
+    emit ForwarderCreated(
+      clone,
+      parent,
+      shouldAutoFlushERC721,
+      shouldAutoFlushERC1155
+    );
   }
 }

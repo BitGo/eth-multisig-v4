@@ -23,21 +23,24 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
   /**
    * Initialize the contract, and sets the destination address to that of the creator
    */
-  function init(address _parentAddress, bool _autoFlush721, bool _autoFlush1155) external onlyUninitialized {
+  function init(
+    address _parentAddress,
+    bool _autoFlush721,
+    bool _autoFlush1155
+  ) external onlyUninitialized {
     parentAddress = _parentAddress;
     uint256 value = address(this).balance;
 
     // set whether we want to automatically flush erc721/erc1155 tokens or not
     autoFlush721 = _autoFlush721;
     autoFlush1155 = _autoFlush1155;
-    
+
     if (value == 0) {
       return;
     }
 
     (bool success, ) = parentAddress.call{ value: value }('');
     require(success, 'Flush failed');
-
 
     // NOTE: since we are forwarding on initialization,
     // we don't have the context of the original sender.
@@ -80,7 +83,7 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     autoFlush721 = !autoFlush721;
   }
 
-    function toggleAutoFlush1155() external onlyParent {
+  function toggleAutoFlush1155() external onlyParent {
     autoFlush1155 = !autoFlush1155;
   }
 
@@ -112,7 +115,11 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     return this.onERC721Received.selector;
   }
 
-  function callFromParent(address target, uint256 value, bytes calldata data) external nonReentrant onlyParent {
+  function callFromParent(
+    address target,
+    uint256 value,
+    bytes calldata data
+  ) external nonReentrant onlyParent {
     (bool success, ) = target.call{ value: value }(data);
     require(success, 'Parent call execution failed');
   }
@@ -199,8 +206,11 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
 
     address forwarderAddress = address(this);
     address ownerAddress = instance.ownerOf(tokenId);
-    address approvedAddress=instance.getApproved(tokenId);
-    require(forwarderAddress == ownerAddress || forwarderAddress == approvedAddress, "Not owner or approved of the ERC721 token");
+    address approvedAddress = instance.getApproved(tokenId);
+    require(
+      forwarderAddress == ownerAddress || forwarderAddress == approvedAddress,
+      'Not owner or approved of the ERC721 token'
+    );
 
     instance.transferFrom(ownerAddress, parentAddress, tokenId);
   }
