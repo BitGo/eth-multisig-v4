@@ -455,7 +455,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     address _from,
     uint256 _tokenId,
     bytes memory _data
-  ) public virtual override returns (bytes4) {
+  ) external virtual override returns (bytes4) {
     return this.onERC721Received.selector;
   }
 

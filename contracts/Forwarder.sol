@@ -107,7 +107,7 @@ contract Forwarder is
     address _from,
     uint256 _tokenId,
     bytes memory _data
-  ) public virtual override nonReentrant returns (bytes4) {
+  ) external virtual override nonReentrant returns (bytes4) {
     if (autoFlush721) {
       IERC721 instance = IERC721(msg.sender);
       require(
