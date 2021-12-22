@@ -580,6 +580,14 @@ contract('Forwarder', function (accounts) {
       IERC1155Receiver: makeInterfaceId.ERC165([
         'onERC1155Received(address,address,uint256,uint256,bytes)',
         'onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)'
+      ]),
+      IForwarder: makeInterfaceId.ERC165([
+        'toggleAutoFlush721()',
+        'toggleAutoFlush1155()',
+        'flushTokens(address)',
+        'flushERC721Tokens(address,uint256)',
+        'flushERC1155Tokens(address,uint256)',
+        'batchFlushERC1155Tokens(address,uint256[])'
       ])
     };
 

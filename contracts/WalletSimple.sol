@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8;
 import './TransferHelper.sol';
-import './Forwarder.sol';
 import './ERC20Interface.sol';
+import './IForwarder.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
@@ -339,7 +339,11 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     address payable forwarderAddress,
     address tokenContractAddress
   ) external onlySigner {
-    Forwarder forwarder = Forwarder(forwarderAddress);
+    IForwarder forwarder = IForwarder(forwarderAddress);
+    require(
+      forwarder.supportsInterface(type(IForwarder).interfaceId),
+      'The forwarder address does not support the IERC1155 interface'
+    );
     forwarder.flushTokens(tokenContractAddress);
   }
 
@@ -354,7 +358,11 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     address tokenContractAddress,
     uint256 tokenId
   ) external onlySigner {
-    Forwarder forwarder = Forwarder(forwarderAddress);
+    IForwarder forwarder = IForwarder(forwarderAddress);
+    require(
+      forwarder.supportsInterface(type(IForwarder).interfaceId),
+      'The forwarder address does not support the IERC1155 interface'
+    );
     forwarder.flushERC721Tokens(tokenContractAddress, tokenId);
   }
 
@@ -370,7 +378,11 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     address tokenContractAddress,
     uint256[] calldata tokenIds
   ) external onlySigner {
-    Forwarder forwarder = Forwarder(forwarderAddress);
+    IForwarder forwarder = IForwarder(forwarderAddress);
+    require(
+      forwarder.supportsInterface(type(IForwarder).interfaceId),
+      'The forwarder address does not support the IERC1155 interface'
+    );
     forwarder.batchFlushERC1155Tokens(tokenContractAddress, tokenIds);
   }
 
@@ -387,7 +399,11 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     address tokenContractAddress,
     uint256 tokenId
   ) external onlySigner {
-    Forwarder forwarder = Forwarder(forwarderAddress);
+    IForwarder forwarder = IForwarder(forwarderAddress);
+    require(
+      forwarder.supportsInterface(type(IForwarder).interfaceId),
+      'The forwarder address does not support the IERC1155 interface'
+    );
     forwarder.flushERC1155Tokens(tokenContractAddress, tokenId);
   }
 

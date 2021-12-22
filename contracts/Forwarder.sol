@@ -7,12 +7,18 @@ import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import './ERC20Interface.sol';
 import './TransferHelper.sol';
+import './IForwarder.sol';
 
 /**
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
+contract Forwarder is
+  ReentrancyGuard,
+  IERC721Receiver,
+  ERC1155Receiver,
+  IForwarder
+{
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   bool public autoFlush721 = true;
@@ -79,11 +85,11 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     flush();
   }
 
-  function toggleAutoFlush721() external onlyParent {
+  function toggleAutoFlush721() external virtual override onlyParent {
     autoFlush721 = !autoFlush721;
   }
 
-  function toggleAutoFlush1155() external onlyParent {
+  function toggleAutoFlush1155() external virtual override onlyParent {
     autoFlush1155 = !autoFlush1155;
   }
 
@@ -174,7 +180,12 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
    * Execute a token transfer of the full balance from the forwarder token to the parent address
    * @param tokenContractAddress the address of the erc20 token contract
    */
-  function flushTokens(address tokenContractAddress) external onlyParent {
+  function flushTokens(address tokenContractAddress)
+    external
+    virtual
+    override
+    onlyParent
+  {
     ERC20Interface instance = ERC20Interface(tokenContractAddress);
     address forwarderAddress = address(this);
     uint256 forwarderBalance = instance.balanceOf(forwarderAddress);
@@ -196,6 +207,8 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
    */
   function flushERC721Tokens(address tokenContractAddress, uint256 tokenId)
     external
+    virtual
+    override
     onlyParent
   {
     IERC721 instance = IERC721(tokenContractAddress);
@@ -223,6 +236,8 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
    */
   function flushERC1155Tokens(address tokenContractAddress, uint256 tokenId)
     external
+    virtual
+    override
     onlyParent
   {
     IERC1155 instance = IERC1155(tokenContractAddress);
@@ -252,7 +267,7 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
   function batchFlushERC1155Tokens(
     address tokenContractAddress,
     uint256[] calldata tokenIds
-  ) external onlyParent {
+  ) external virtual override onlyParent {
     IERC1155 instance = IERC1155(tokenContractAddress);
     require(
       instance.supportsInterface(type(IERC1155).interfaceId),
@@ -287,5 +302,17 @@ contract Forwarder is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     (bool success, ) = parentAddress.call{ value: value }('');
     require(success, 'Flush failed');
     emit ForwarderDeposited(msg.sender, value, msg.data);
+  }
+
+  function supportsInterface(bytes4 interfaceId)
+    public
+    virtual
+    override(ERC1155Receiver, IERC165)
+    view
+    returns (bool)
+  {
+    return
+      interfaceId == type(IForwarder).interfaceId ||
+      super.supportsInterface(interfaceId);
   }
 }
