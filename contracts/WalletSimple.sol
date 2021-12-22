@@ -329,7 +329,6 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     TransferHelper.safeTransfer(tokenContractAddress, toAddress, value);
   }
 
-
   /**
    * Execute a token flush from one of the forwarder addresses. This transfer needs only a single signature and can be done by any signer
    *
@@ -344,7 +343,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     forwarder.flushTokens(tokenContractAddress);
   }
 
-   /**
+  /**
    * Execute a ERC721 token flush from one of the forwarder addresses. This transfer needs only a single signature and can be done by any signer
    *
    * @param forwarderAddress the address of the forwarder address to flush the tokens from
@@ -356,7 +355,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256 tokenId
   ) external onlySigner {
     Forwarder forwarder = Forwarder(forwarderAddress);
-    forwarder.flushERC721Tokens(tokenContractAddress,tokenId);
+    forwarder.flushERC721Tokens(tokenContractAddress, tokenId);
   }
 
   /**
@@ -435,7 +434,12 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
    * @param _tokenId The token id of the nft
    * @param _data Additional data with no specified format, sent in call to `_to`
    */
-  function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) public virtual override returns (bytes4) {
+  function onERC721Received(
+    address _operator,
+    address _from,
+    uint256 _tokenId,
+    bytes memory _data
+  ) public virtual override returns (bytes4) {
     return this.onERC721Received.selector;
   }
 
@@ -525,7 +529,10 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     // Keep a pointer to the lowest value element in the window
     uint256 lowestValueIndex = 0;
     // fetch recentSequenceIds into memory for function context to avoid unnecessary sloads
-    uint256[SEQUENCE_ID_WINDOW_SIZE] memory _recentSequenceIds = recentSequenceIds;
+
+
+      uint256[SEQUENCE_ID_WINDOW_SIZE] memory _recentSequenceIds
+     = recentSequenceIds;
     for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
       require(_recentSequenceIds[i] != sequenceId, 'Sequence ID already used');
 

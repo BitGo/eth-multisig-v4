@@ -52,9 +52,15 @@ const createForwarder = async (
     initCode
   );
 
-  await factory.createForwarder(parent, inputSalt, shouldAutoFlushERC721, shouldAutoFlushERC1155, {
-    from: sender
-  });
+  await factory.createForwarder(
+    parent,
+    inputSalt,
+    shouldAutoFlushERC721,
+    shouldAutoFlushERC1155,
+    {
+      from: sender
+    }
+  );
 
   return forwarderAddress;
 };
