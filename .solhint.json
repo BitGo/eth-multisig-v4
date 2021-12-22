@@ -6,6 +6,7 @@
     "avoid-low-level-calls": "off",
     "compiler-version": ["error", ">=0.8"],
     "const-name-snakecase": "off",
-    "not-rely-on-time": "off"
+    "not-rely-on-time": "off",
+    "quotes": ["error", "single"]
   }
 }
