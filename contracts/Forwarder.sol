@@ -85,10 +85,16 @@ contract Forwarder is
     flush();
   }
 
+  /**
+   * @inheritdoc IForwarder
+   */
   function toggleAutoFlush721() external virtual override onlyParent {
     autoFlush721 = !autoFlush721;
   }
 
+  /**
+   * @inheritdoc IForwarder
+   */
   function toggleAutoFlush1155() external virtual override onlyParent {
     autoFlush1155 = !autoFlush1155;
   }
@@ -130,6 +136,9 @@ contract Forwarder is
     require(success, 'Parent call execution failed');
   }
 
+  /**
+   * @inheritdoc IERC1155Receiver
+   */
   function onERC1155Received(
     address _operator,
     address _from,
@@ -150,6 +159,9 @@ contract Forwarder is
     return this.onERC1155Received.selector;
   }
 
+  /**
+   * @inheritdoc IERC1155Receiver
+   */
   function onERC1155BatchReceived(
     address _operator,
     address _from,
@@ -177,8 +189,7 @@ contract Forwarder is
   }
 
   /**
-   * Execute a token transfer of the full balance from the forwarder token to the parent address
-   * @param tokenContractAddress the address of the erc20 token contract
+   * @inheritdoc IForwarder
    */
   function flushTokens(address tokenContractAddress)
     external
@@ -201,9 +212,7 @@ contract Forwarder is
   }
 
   /**
-   * Execute a nft transfer from the forwarder to the parent address
-   * @param tokenContractAddress the address of the ERC721 NFT contract
-   * @param tokenId The token id of the nft
+   * @inheritdoc IForwarder
    */
   function flushERC721Tokens(address tokenContractAddress, uint256 tokenId)
     external
@@ -229,10 +238,7 @@ contract Forwarder is
   }
 
   /**
-   * Execute a nft transfer from the forwarder to the parent address.
-
-   * @param tokenContractAddress the address of the ERC1155 NFT contract
-   * @param tokenId The token id of the nft
+   * @inheritdoc IForwarder
    */
   function flushERC1155Tokens(address tokenContractAddress, uint256 tokenId)
     external
@@ -259,10 +265,7 @@ contract Forwarder is
   }
 
   /**
-   * Execute a batch nft transfer from the forwarder to the parent address.
-
-   * @param tokenContractAddress the address of the ERC1155 NFT contract
-   * @param tokenIds The token ids of the nfts
+   * @inheritdoc IForwarder
    */
   function batchFlushERC1155Tokens(
     address tokenContractAddress,
@@ -304,6 +307,9 @@ contract Forwarder is
     emit ForwarderDeposited(msg.sender, value, msg.data);
   }
 
+  /**
+   * @inheritdoc IERC165
+   */
   function supportsInterface(bytes4 interfaceId)
     public
     virtual
