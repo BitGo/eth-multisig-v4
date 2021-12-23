@@ -1,5 +1,5 @@
 // Created with: https://wizard.openzeppelin.com/#erc1155
-pragma solidity 0.8;
+pragma solidity 0.8.10;
 
 import '@openzeppelin/contracts/token/ERC1155/ERC1155.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';

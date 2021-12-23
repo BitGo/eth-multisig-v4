@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8;
-import "../Forwarder.sol";
-import "../ERC20Interface.sol";
-import "../WalletSimple.sol";
+pragma solidity 0.8.10;
+import '../Forwarder.sol';
+import '../ERC20Interface.sol';
+import '../WalletSimple.sol';
 
 /**
  *
@@ -35,23 +35,23 @@ contract EtcWalletSimple is WalletSimple {
    * Get the network identifier that signers must sign over
    * This provides protection signatures being replayed on other chains
    */
-  function getNetworkId() override internal pure returns (string memory) {
-      return "ETC";
+  function getNetworkId() internal override pure returns (string memory) {
+    return 'ETC';
   }
 
   /**
    * Get the network identifier that signers must sign over for token transfers
    * This provides protection signatures being replayed on other chains
    */
-  function getTokenNetworkId() override internal pure returns (string memory) {
-      return "ETC-ERC20";
+  function getTokenNetworkId() internal override pure returns (string memory) {
+    return 'ETC-ERC20';
   }
 
   /**
    * Get the network identifier that signers must sign over for batch transfers
    * This provides protection signatures being replayed on other chains
    */
-  function getBatchNetworkId() override internal pure returns (string memory) {
-      return "ETC-Batch";
+  function getBatchNetworkId() internal override pure returns (string memory) {
+    return 'ETC-Batch';
   }
 }
