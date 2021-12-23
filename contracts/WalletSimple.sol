@@ -407,6 +407,24 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     forwarder.flushERC1155Tokens(tokenContractAddress, tokenId);
   }
 
+  function toggleAutoFlush721(address forwarderAddress) external onlySigner {
+    IForwarder forwarder = IForwarder(forwarderAddress);
+    require(
+      forwarder.supportsInterface(type(IForwarder).interfaceId),
+      'The forwarder address does not support the IERC1155 interface'
+    );
+    forwarder.toggleAutoFlush721();
+  }
+
+  function toggleAutoFlush1155(address forwarderAddress) external onlySigner {
+    IForwarder forwarder = IForwarder(forwarderAddress);
+    require(
+      forwarder.supportsInterface(type(IForwarder).interfaceId),
+      'The forwarder address does not support the IERC1155 interface'
+    );
+    forwarder.toggleAutoFlush1155();
+  }
+
   /**
    * Do common multisig verification for both eth sends and erc20token transfers
    *
