@@ -2498,6 +2498,18 @@ coins.forEach(
           }
         });
 
+        it('should toggle auto flush 721', async function () {
+          const autoFlush721 = await forwarder.autoFlush721();
+          await wallet.toggleAutoFlush721(forwarder.address);
+          (await forwarder.autoFlush721()).should.equal(!autoFlush721);
+        });
+
+        it('should toggle auto flush 1155', async function () {
+          const autoFlush1155 = await forwarder.autoFlush1155();
+          await wallet.toggleAutoFlush1155(forwarder.address);
+          (await forwarder.autoFlush1155()).should.equal(!autoFlush1155);
+        });
+
         describe('ERC1155', async function () {
           const owner = accounts[0];
           const signers = [accounts[0], accounts[1], accounts[2]];
