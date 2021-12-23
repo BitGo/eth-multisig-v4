@@ -1,4 +1,4 @@
-pragma solidity 0.8;
+pragma solidity 0.8.10;
 
 // SPDX-License-Identifier: Apache-2.0
 

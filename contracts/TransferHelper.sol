@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // source: https://github.com/Uniswap/solidity-lib/blob/master/contracts/libraries/TransferHelper.sol
-pragma solidity 0.8;
+pragma solidity 0.8.10;
 
 // helper methods for interacting with ERC20 tokens and sending ETH that do not consistently return true/false
 library TransferHelper {
