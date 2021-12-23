@@ -407,6 +407,11 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     forwarder.flushERC1155Tokens(tokenContractAddress, tokenId);
   }
 
+  /**
+   * Toggles the autoflush 721 parameter on the forwarder.
+   *
+   * @param forwarderAddress the address of the forwarder to toggle.
+   */
   function toggleAutoFlush721(address forwarderAddress) external onlySigner {
     IForwarder forwarder = IForwarder(forwarderAddress);
     require(
@@ -416,6 +421,11 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     forwarder.toggleAutoFlush721();
   }
 
+  /**
+   * Toggles the autoflush 721 parameter on the forwarder.
+   *
+   * @param forwarderAddress the address of the forwarder to toggle.
+   */
   function toggleAutoFlush1155(address forwarderAddress) external onlySigner {
     IForwarder forwarder = IForwarder(forwarderAddress);
     require(
