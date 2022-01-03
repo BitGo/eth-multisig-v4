@@ -521,15 +521,14 @@ contract('Batcher', (accounts) => {
       await runTestBatcherDriver(params);
     });
 
-    // TODO: BG-40737
-    xit('Executes as many transfers as possible when not given enough gas', async () => {
+    it('Executes as many transfers as possible when not given enough gas', async () => {
       const randVals = createRandIntArr(3);
       const params = {
         recipients: accounts.slice(1, 4),
         values: randVals,
         // costs roughly 40,000 gas to get to beginning of `distributeBatch`
         // and then another 10,000 gas for each subsequent iteration
-        gasLimit: 8e4
+        gasLimit: 9e4
       };
       await runTestBatcherDriver(params);
     });
