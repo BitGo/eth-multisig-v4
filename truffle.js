@@ -1,6 +1,6 @@
 require('dotenv').config();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const { API_URL, MNEMONIC } = process.env;
+const { HD_WALLET_API_URL, MNEMONIC, ETHERSCAN_API_KEY } = process.env;
 
 module.exports = {
   networks: {
@@ -13,7 +13,7 @@ module.exports = {
     },
     live: {
       provider: function () {
-        return new HDWalletProvider(MNEMONIC, API_URL);
+        return new HDWalletProvider(MNEMONIC, HD_WALLET_API_URL);
       },
       network_id: '*',
       gas: 5800000,
@@ -29,5 +29,8 @@ module.exports = {
       }
     }
   },
-  plugins: ['solidity-coverage']
+  plugins: ['solidity-coverage', 'truffle-plugin-verify'],
+  api_keys: {
+    etherscan: ETHERSCAN_API_KEY ?? ''
+  }
 };
