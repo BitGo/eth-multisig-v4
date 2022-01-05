@@ -34,6 +34,8 @@ These factories employ two features to minimize the cost associated with deployi
 - [Minimal proxy](https://eips.ethereum.org/EIPS/eip-1167) - Each deployed contract is simply a tiny contract which proxies calls to use the logic of a single implementation contract.
 - [CREATE2](https://eips.ethereum.org/EIPS/eip-1014) - Contracts are deployed with the CREATE2 opcode to allow users to distribute contract addresses and only deploy them upon first use. 
 
+You can use `truffle migrate` to deploy the contracts. The run `truffle run verify CONTRACTNAME@CONTRACTADDRESS --network live` to verify them on etherscan.
+
 **Wallets**
 To deploy wallets, follow these steps:
 1. Deploy a wallet contract ([contracts/WalletSimple.sol](contracts/WalletSimple.sol)) with any address. Take note of the wallet's address.

@@ -9,3 +9,5 @@ coverage
 .node-xml*
 build
 coverage.json
+
+.env

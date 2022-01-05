@@ -26,6 +26,7 @@
   ],
   "dependencies": {
     "@openzeppelin/contracts": "4.4.1",
+    "@truffle/hdwallet-provider": "^2.0.0",
     "bignumber.js": "^9.0.0",
     "bluebird": "^3.3.5",
     "bn": "^1.0.1",
@@ -45,11 +46,13 @@
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.15",
     "@types/mocha": "^9.0.0",
+    "dotenv": "^10.0.0",
     "prettier": "^2.1.2",
     "prettier-plugin-solidity": "^1.0.0-alpha.58",
     "solhint-plugin-prettier": "0.0.5",
     "solidity-coverage": "^0.7.17",
     "truffle-flattener": "^1.5.0",
+    "truffle-plugin-verify": "^0.5.20",
     "typescript": "^4.5.4"
   }
 }
