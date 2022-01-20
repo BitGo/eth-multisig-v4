@@ -106,13 +106,13 @@ contract Forwarder is
    * @param _operator The address which called `safeTransferFrom` function
    * @param _from The address of the sender
    * @param _tokenId The token id of the nft
-   * @param _data Additional data with no specified format, sent in call to `_to`
+   * @param data Additional data with no specified format, sent in call to `_to`
    */
   function onERC721Received(
     address _operator,
     address _from,
     uint256 _tokenId,
-    bytes memory _data
+    bytes memory data
   ) external virtual override nonReentrant returns (bytes4) {
     if (autoFlush721) {
       IERC721 instance = IERC721(msg.sender);
@@ -121,7 +121,7 @@ contract Forwarder is
         'The caller does not support the ERC721 interface'
       );
       // this won't work for ERC721 re-entrancy
-      instance.safeTransferFrom(address(this), parentAddress, _tokenId);
+      instance.safeTransferFrom(address(this), parentAddress, _tokenId, data);
     }
 
     return this.onERC721Received.selector;
@@ -214,7 +214,7 @@ contract Forwarder is
   /**
    * @inheritdoc IForwarder
    */
-  function flushERC721Tokens(address tokenContractAddress, uint256 tokenId)
+  function flushERC721Token(address tokenContractAddress, uint256 tokenId)
     external
     virtual
     override
@@ -226,14 +226,7 @@ contract Forwarder is
       'The tokenContractAddress does not support the ERC721 interface'
     );
 
-    address forwarderAddress = address(this);
     address ownerAddress = instance.ownerOf(tokenId);
-    address approvedAddress = instance.getApproved(tokenId);
-    require(
-      forwarderAddress == ownerAddress || forwarderAddress == approvedAddress,
-      'Not owner or approved of the ERC721 token'
-    );
-
     instance.transferFrom(ownerAddress, parentAddress, tokenId);
   }
 

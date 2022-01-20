@@ -363,7 +363,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
       forwarder.supportsInterface(type(IForwarder).interfaceId),
       'The forwarder address does not support the IERC1155 interface'
     );
-    forwarder.flushERC721Tokens(tokenContractAddress, tokenId);
+    forwarder.flushERC721Token(tokenContractAddress, tokenId);
   }
 
   /**

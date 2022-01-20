@@ -287,7 +287,7 @@ contract('Forwarder', function (accounts) {
         noAutoFlushForwarder.address
       );
 
-      await noAutoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {
+      await noAutoFlushForwarder.flushERC721Token(token721.address, tokenId, {
         from: baseAddress
       });
       expect(await token721.ownerOf(tokenId)).to.be.equal(baseAddress);
@@ -304,7 +304,7 @@ contract('Forwarder', function (accounts) {
         autoFlushForwarder.address
       );
 
-      await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {
+      await autoFlushForwarder.flushERC721Token(token721.address, tokenId, {
         from: baseAddress
       });
       expect(await token721.ownerOf(tokenId)).to.be.equal(baseAddress);
@@ -316,7 +316,7 @@ contract('Forwarder', function (accounts) {
       await token721.mint(owner, tokenId);
 
       try {
-        await autoFlushForwarder.flushERC721Tokens(token721.address, tokenId, {
+        await autoFlushForwarder.flushERC721Token(token721.address, tokenId, {
           from: baseAddress
         });
       } catch (err) {
@@ -585,7 +585,7 @@ contract('Forwarder', function (accounts) {
         'toggleAutoFlush721()',
         'toggleAutoFlush1155()',
         'flushTokens(address)',
-        'flushERC721Tokens(address,uint256)',
+        'flushERC721Token(address,uint256)',
         'flushERC1155Tokens(address,uint256)',
         'batchFlushERC1155Tokens(address,uint256[])'
       ])
