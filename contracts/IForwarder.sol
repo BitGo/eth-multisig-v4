@@ -26,7 +26,7 @@ interface IForwarder is IERC165 {
    * @param tokenContractAddress the address of the ERC721 NFT contract
    * @param tokenId The token id of the nft
    */
-  function flushERC721Tokens(address tokenContractAddress, uint256 tokenId)
+  function flushERC721Token(address tokenContractAddress, uint256 tokenId)
     external;
 
   /**
