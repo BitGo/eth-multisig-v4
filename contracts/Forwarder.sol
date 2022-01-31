@@ -4,7 +4,6 @@ import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import './ERC20Interface.sol';
 import './TransferHelper.sol';
 import './IForwarder.sol';
@@ -13,12 +12,7 @@ import './IForwarder.sol';
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder is
-  ReentrancyGuard,
-  IERC721Receiver,
-  ERC1155Receiver,
-  IForwarder
-{
+contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   bool public autoFlush721 = true;
@@ -141,7 +135,7 @@ contract Forwarder is
     address target,
     uint256 value,
     bytes calldata data
-  ) external nonReentrant onlyParent returns (bytes calldata) {
+  ) external onlyParent returns (bytes calldata) {
     (bool success, ) = target.call{ value: value }(data);
     require(success, 'Parent call execution failed');
 
