@@ -340,10 +340,6 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     address tokenContractAddress
   ) external onlySigner {
     IForwarder forwarder = IForwarder(forwarderAddress);
-    require(
-      forwarder.supportsInterface(type(IForwarder).interfaceId),
-      'The forwarder address does not support the IERC1155 interface'
-    );
     forwarder.flushTokens(tokenContractAddress);
   }
 
@@ -359,10 +355,6 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256 tokenId
   ) external onlySigner {
     IForwarder forwarder = IForwarder(forwarderAddress);
-    require(
-      forwarder.supportsInterface(type(IForwarder).interfaceId),
-      'The forwarder address does not support the IERC1155 interface'
-    );
     forwarder.flushERC721Token(tokenContractAddress, tokenId);
   }
 
@@ -379,10 +371,6 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256[] calldata tokenIds
   ) external onlySigner {
     IForwarder forwarder = IForwarder(forwarderAddress);
-    require(
-      forwarder.supportsInterface(type(IForwarder).interfaceId),
-      'The forwarder address does not support the IERC1155 interface'
-    );
     forwarder.batchFlushERC1155Tokens(tokenContractAddress, tokenIds);
   }
 
@@ -400,10 +388,6 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256 tokenId
   ) external onlySigner {
     IForwarder forwarder = IForwarder(forwarderAddress);
-    require(
-      forwarder.supportsInterface(type(IForwarder).interfaceId),
-      'The forwarder address does not support the IERC1155 interface'
-    );
     forwarder.flushERC1155Tokens(tokenContractAddress, tokenId);
   }
 
@@ -418,10 +402,6 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     onlySigner
   {
     IForwarder forwarder = IForwarder(forwarderAddress);
-    require(
-      forwarder.supportsInterface(type(IForwarder).interfaceId),
-      'The forwarder address does not support the IERC1155 interface'
-    );
     forwarder.setAutoFlush721(autoFlush);
   }
 
@@ -436,10 +416,6 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     onlySigner
   {
     IForwarder forwarder = IForwarder(forwarderAddress);
-    require(
-      forwarder.supportsInterface(type(IForwarder).interfaceId),
-      'The forwarder address does not support the IERC1155 interface'
-    );
     forwarder.setAutoFlush1155(autoFlush);
   }
 
