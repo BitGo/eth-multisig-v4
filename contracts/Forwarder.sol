@@ -88,15 +88,25 @@ contract Forwarder is
   /**
    * @inheritdoc IForwarder
    */
-  function toggleAutoFlush721() external virtual override onlyParent {
-    autoFlush721 = !autoFlush721;
+  function setAutoFlush721(bool autoFlush)
+    external
+    virtual
+    override
+    onlyParent
+  {
+    autoFlush721 = autoFlush;
   }
 
   /**
    * @inheritdoc IForwarder
    */
-  function toggleAutoFlush1155() external virtual override onlyParent {
-    autoFlush1155 = !autoFlush1155;
+  function setAutoFlush1155(bool autoFlush)
+    external
+    virtual
+    override
+    onlyParent
+  {
+    autoFlush1155 = autoFlush;
   }
 
   /**
@@ -113,7 +123,7 @@ contract Forwarder is
     address _from,
     uint256 _tokenId,
     bytes memory data
-  ) external virtual override nonReentrant returns (bytes4) {
+  ) external virtual override returns (bytes4) {
     if (autoFlush721) {
       IERC721 instance = IERC721(msg.sender);
       require(
@@ -131,9 +141,11 @@ contract Forwarder is
     address target,
     uint256 value,
     bytes calldata data
-  ) external nonReentrant onlyParent {
+  ) external nonReentrant onlyParent returns (bytes calldata) {
     (bool success, ) = target.call{ value: value }(data);
     require(success, 'Parent call execution failed');
+
+    return data;
   }
 
   /**
@@ -145,7 +157,7 @@ contract Forwarder is
     uint256 id,
     uint256 value,
     bytes calldata data
-  ) external virtual override nonReentrant returns (bytes4) {
+  ) external virtual override returns (bytes4) {
     IERC1155 instance = IERC1155(msg.sender);
     require(
       instance.supportsInterface(type(IERC1155).interfaceId),
@@ -168,7 +180,7 @@ contract Forwarder is
     uint256[] calldata ids,
     uint256[] calldata values,
     bytes calldata data
-  ) external virtual override nonReentrant returns (bytes4) {
+  ) external virtual override returns (bytes4) {
     IERC1155 instance = IERC1155(msg.sender);
     require(
       instance.supportsInterface(type(IERC1155).interfaceId),

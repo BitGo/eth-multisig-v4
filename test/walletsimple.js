@@ -2500,13 +2500,13 @@ coins.forEach(
 
         it('should toggle auto flush 721', async function () {
           const autoFlush721 = await forwarder.autoFlush721();
-          await wallet.toggleAutoFlush721(forwarder.address);
+          await wallet.setAutoFlush721(forwarder.address, !autoFlush721);
           (await forwarder.autoFlush721()).should.equal(!autoFlush721);
         });
 
         it('should toggle auto flush 1155', async function () {
           const autoFlush1155 = await forwarder.autoFlush1155();
-          await wallet.toggleAutoFlush1155(forwarder.address);
+          await wallet.setAutoFlush1155(forwarder.address, !autoFlush1155);
           (await forwarder.autoFlush1155()).should.equal(!autoFlush1155);
         });
 

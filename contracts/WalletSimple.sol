@@ -408,31 +408,39 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
   }
 
   /**
-   * Toggles the autoflush 721 parameter on the forwarder.
+   * Sets the autoflush 721 parameter on the forwarder.
    *
    * @param forwarderAddress the address of the forwarder to toggle.
+   * @param autoFlush whether to autoflush erc721 tokens
    */
-  function toggleAutoFlush721(address forwarderAddress) external onlySigner {
+  function setAutoFlush721(address forwarderAddress, bool autoFlush)
+    external
+    onlySigner
+  {
     IForwarder forwarder = IForwarder(forwarderAddress);
     require(
       forwarder.supportsInterface(type(IForwarder).interfaceId),
       'The forwarder address does not support the IERC1155 interface'
     );
-    forwarder.toggleAutoFlush721();
+    forwarder.setAutoFlush721(autoFlush);
   }
 
   /**
-   * Toggles the autoflush 721 parameter on the forwarder.
+   * Sets the autoflush 721 parameter on the forwarder.
    *
    * @param forwarderAddress the address of the forwarder to toggle.
+   * @param autoFlush whether to autoflush erc1155 tokens
    */
-  function toggleAutoFlush1155(address forwarderAddress) external onlySigner {
+  function setAutoFlush1155(address forwarderAddress, bool autoFlush)
+    external
+    onlySigner
+  {
     IForwarder forwarder = IForwarder(forwarderAddress);
     require(
       forwarder.supportsInterface(type(IForwarder).interfaceId),
       'The forwarder address does not support the IERC1155 interface'
     );
-    forwarder.toggleAutoFlush1155();
+    forwarder.setAutoFlush1155(autoFlush);
   }
 
   /**
@@ -607,7 +615,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
    * Gets the next available sequence ID for signing when using executeAndConfirm
    * returns the sequenceId one higher than the highest currently stored
    */
-  function getNextSequenceId() public view returns (uint256) {
+  function getNextSequenceId() external view returns (uint256) {
     uint256 highestSequenceId = 0;
     for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
       if (recentSequenceIds[i] > highestSequenceId) {

@@ -2,6 +2,8 @@
 // source: https://github.com/Uniswap/solidity-lib/blob/master/contracts/libraries/TransferHelper.sol
 pragma solidity 0.8.10;
 
+import '@openzeppelin/contracts/utils/Address.sol';
+
 // helper methods for interacting with ERC20 tokens and sending ETH that do not consistently return true/false
 library TransferHelper {
   function safeTransfer(
@@ -26,11 +28,12 @@ library TransferHelper {
     uint256 value
   ) internal {
     // bytes4(keccak256(bytes('transferFrom(address,address,uint256)')));
-    (bool success, bytes memory data) = token.call(
+    (bool success, bytes memory returndata) = token.call(
       abi.encodeWithSelector(0x23b872dd, from, to, value)
     );
-    require(
-      success && (data.length == 0 || abi.decode(data, (bool))),
+    Address.verifyCallResult(
+      success,
+      returndata,
       'TransferHelper::transferFrom: transferFrom failed'
     );
   }

@@ -131,12 +131,12 @@ contract('Forwarder', function (accounts) {
     );
   });
 
-  it('should toggle autoFlush721 when calling toggleAutoFlush721', async () => {
+  it('should change autoFlush721 when calling setAutoFlush721', async () => {
     const baseAddress = accounts[3];
     const forwarder = await createForwarder(baseAddress, baseAddress);
 
     const initialState = await forwarder.autoFlush721();
-    await forwarder.toggleAutoFlush721({ from: baseAddress });
+    await forwarder.setAutoFlush721(!initialState, { from: baseAddress });
 
     const newState = await forwarder.autoFlush721();
     initialState.should.equal(!newState);
@@ -147,16 +147,16 @@ contract('Forwarder', function (accounts) {
     const forwarder = await createForwarder(baseAddress, baseAddress);
 
     await truffleAssert.reverts(
-      forwarder.toggleAutoFlush721({ from: accounts[4] })
+      forwarder.setAutoFlush721(false, { from: accounts[4] })
     );
   });
 
-  it('should toggle autoFlush1155 when calling toggleAutoFlush1155', async () => {
+  it('should toggle autoFlush1155 when calling setAutoFlush1155', async () => {
     const baseAddress = accounts[3];
     const forwarder = await createForwarder(baseAddress, baseAddress);
 
     const initialState = await forwarder.autoFlush1155();
-    await forwarder.toggleAutoFlush1155({ from: baseAddress });
+    await forwarder.setAutoFlush1155(!initialState, { from: baseAddress });
 
     const newState = await forwarder.autoFlush1155();
     initialState.should.equal(!newState);
@@ -167,7 +167,7 @@ contract('Forwarder', function (accounts) {
     const forwarder = await createForwarder(baseAddress, baseAddress);
 
     await truffleAssert.reverts(
-      forwarder.toggleAutoFlush1155({ from: accounts[4] })
+      forwarder.setAutoFlush1155(false, { from: accounts[4] })
     );
   });
 
@@ -582,8 +582,8 @@ contract('Forwarder', function (accounts) {
         'onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)'
       ]),
       IForwarder: makeInterfaceId.ERC165([
-        'toggleAutoFlush721()',
-        'toggleAutoFlush1155()',
+        'setAutoFlush721(bool)',
+        'setAutoFlush1155(bool)',
         'flushTokens(address)',
         'flushERC721Token(address,uint256)',
         'flushERC1155Tokens(address,uint256)',

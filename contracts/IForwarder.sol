@@ -4,14 +4,18 @@ import '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 
 interface IForwarder is IERC165 {
   /**
-   * Toggles the autoflush721 parameter.
+   * Sets the autoflush721 parameter.
+   *
+   * @param autoFlush whether to autoflush erc721 tokens
    */
-  function toggleAutoFlush721() external;
+  function setAutoFlush721(bool autoFlush) external;
 
   /**
-   * Toggles the autoflush1155 parameter.
+   * Sets the autoflush1155 parameter.
+   *
+   * @param autoFlush whether to autoflush erc1155 tokens
    */
-  function toggleAutoFlush1155() external;
+  function setAutoFlush1155(bool autoFlush) external;
 
   /**
    * Execute a token transfer of the full balance from the forwarder token to the parent address
