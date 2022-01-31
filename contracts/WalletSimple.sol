@@ -7,7 +7,6 @@ import './IForwarder.sol';
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
 /**
  *
@@ -35,7 +34,7 @@ import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
  *
  *
  */
-contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
+contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -186,7 +185,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external nonReentrant onlySigner {
+  ) external onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(
@@ -238,7 +237,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external nonReentrant onlySigner {
+  ) external onlySigner {
     require(recipients.length != 0, 'Not enough recipients');
     require(
       recipients.length == values.length,
@@ -311,7 +310,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external nonReentrant onlySigner {
+  ) external onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(
@@ -480,7 +479,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256 id,
     uint256 value,
     bytes calldata data
-  ) external virtual override nonReentrant returns (bytes4) {
+  ) external virtual override returns (bytes4) {
     return this.onERC1155Received.selector;
   }
 
@@ -493,7 +492,7 @@ contract WalletSimple is ReentrancyGuard, IERC721Receiver, ERC1155Receiver {
     uint256[] calldata ids,
     uint256[] calldata values,
     bytes calldata data
-  ) external virtual override nonReentrant returns (bytes4) {
+  ) external virtual override returns (bytes4) {
     return this.onERC1155BatchReceived.selector;
   }
 
