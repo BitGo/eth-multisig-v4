@@ -2,6 +2,8 @@ const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
 const BN = require('bn.js');
 const Promise = require('bluebird');
+const _ = require('lodash');
+
 const Forwarder = artifacts.require('./Forwarder.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 const WalletFactory = artifacts.require('./WalletFactory.sol');
@@ -14,8 +16,8 @@ const abis = [
   WalletFactory.abi
 ];
 
-exports.showBalances = function () {
-  const accounts = web3.eth.accounts;
+exports.showBalances = async function () {
+  const accounts = await web3.eth.getAccounts();
   for (let i = 0; i < accounts.length; i++) {
     console.log(
       accounts[i] +
@@ -138,7 +140,7 @@ exports.assertVMException = async (fn) => {
   try {
     await fn();
   } catch (err) {
-    err.message.toString().should.containEql('VM Exception');
+    err.message.toString().should.containEql('Transaction reverted:');
     failed = true;
   }
 

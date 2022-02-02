@@ -82,7 +82,7 @@ NodeJS 8.14.0 is recommended.
 npm install
 ```
 
-This installs truffle and an Ethereum test RPC client.
+This installs hardhat.
 
 ## Wallet Solidity Contract
 
@@ -90,20 +90,17 @@ Find it at [contracts/WalletSimple.sol](contracts/WalletSimple.sol)
 
 ## Running tests
 
-A test suite is included through the use of the truffle framework, providing coverage for methods in the wallet.
-
-The truffle framework will depend on the Web3 interface to a local Web3 Ethereum JSON-RPC. If you've followed the above steps, run the following to start testrpc. 
+A test suite is included through the use of the hardhat framework, providing coverage for methods in the wallet.
 
 ```shell
-npm run truffle-testrpc
+npx hardhat test
 ```
 
-You should verify that you are not already running geth, as this will cause the tests to run against that interface. 
+## Running tests in IntelliJ
 
-In a **separate terminal window**, run the following command to initiate the test suite, which will run against the RPC:
-
-```shell
-npm run truffle-test
+You need to add the following to the extra mocha options
+```
+--require hardhat/register
 ```
 
 ## Notes

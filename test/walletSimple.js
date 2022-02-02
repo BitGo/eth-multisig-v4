@@ -5,8 +5,17 @@ const { makeInterfaceId } = require('@openzeppelin/test-helpers');
 const BigNumber = require('bignumber.js');
 const Promise = require('bluebird');
 const _ = require('lodash');
+const hre = require("hardhat");
 
 const helpers = require('./helpers');
+const {
+  assertVMException,
+  calculateFutureExpireTime,
+  createForwarderFromWallet,
+  createWalletHelper,
+  getBalanceInWei,
+  isSigner,
+} = require('./wallet/helpers');
 const { privateKeyForAccount } = require('../testrpc/accounts');
 
 // Used to build the solidity tightly packed buffer to sha3, ecsign
@@ -14,7 +23,6 @@ const util = require('ethereumjs-util');
 const abi = require('ethereumjs-abi');
 const crypto = require('crypto');
 
-const WalletFactory = artifacts.require('./WalletFactory.sol');
 const EthWalletSimple = artifacts.require('./WalletSimple.sol');
 const RskWalletSimple = artifacts.require('./RskWalletSimple.sol');
 const EtcWalletSimple = artifacts.require('./EtcWalletSimple.sol');
@@ -22,77 +30,17 @@ const CeloWalletSimple = artifacts.require('./CeloWalletSimple.sol');
 const Fail = artifacts.require('./Fail.sol');
 const GasGuzzler = artifacts.require('./GasGuzzler.sol');
 const GasHeavy = artifacts.require('./GasHeavy.sol');
-const Forwarder = artifacts.require('./Forwarder.sol');
 const ForwarderTarget = artifacts.require('./ForwarderTarget.sol');
-const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
 const ERC721 = artifacts.require('./MockERC721');
 const ERC1155 = artifacts.require('./MockERC1155');
 const ReentryWalletSimple = artifacts.require('./ReentryWalletSimple');
 
-const assertVMException = (err, expectedErrMsg) => {
-  err.message.toString().should.containEql('VM Exception');
-  if (expectedErrMsg) {
-    err.message.toString().should.containEql(expectedErrMsg);
-  }
-};
-
-const createForwarderFromWallet = async (wallet, autoFlush = true) => {
-  const parent = wallet.address;
-  const salt = util.bufferToHex(crypto.randomBytes(20));
-  const inputSalt = util.setLengthLeft(
-    Buffer.from(util.stripHexPrefix(salt), 'hex'),
-    32
-  );
-  const calculationSalt = abi.soliditySHA3(
-    ['address', 'bytes32'],
-    [parent, inputSalt]
-  );
-  const forwarderContract = await Forwarder.new([], {});
-  const forwarderFactory = await ForwarderFactory.new(
-    forwarderContract.address
-  );
-  const initCode = helpers.getInitCode(
-    util.stripHexPrefix(forwarderContract.address)
-  );
-  const forwarderAddress = helpers.getNextContractAddressCreate2(
-    forwarderFactory.address,
-    calculationSalt,
-    initCode
-  );
-
-  return {
-    forwarderAddress,
-    create: async () =>
-      executeCreateForwarder(
-        forwarderFactory,
-        calculationSalt,
-        inputSalt,
-        initCode,
-        parent,
-        autoFlush
-      )
-  };
-};
-
-const executeCreateForwarder = async (
-  factory,
-  calculationSalt,
-  inputSalt,
-  initCode,
-  parent,
-  autoFlush = true
-) => {
-  const forwarderAddress = helpers.getNextContractAddressCreate2(
-    factory.address,
-    calculationSalt,
-    initCode
-  );
-
-  await factory.createForwarder(parent, inputSalt, autoFlush, autoFlush);
-  return Forwarder.at(forwarderAddress);
-};
+const DEPOSITED_EVENT = 'Deposited';
+const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
+const TRANSACTED_EVENT = 'Transacted';
+const SAFE_MODE_ACTIVATE_EVENT = 'SafeModeActivated';
 
 const coins = [
   {
@@ -133,61 +81,19 @@ coins.forEach(
     tokenPrefix,
     WalletSimple
   }) => {
-    const DEPOSITED_EVENT = 'Deposited';
-    const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
-    const TRANSACTED_EVENT = 'Transacted';
-    const SAFE_MODE_ACTIVATE_EVENT = 'SafeModeActivated';
 
-    const createWallet = async (creator, signers) => {
-      // OK to be the same for all wallets since we are using a new factory for each
-      const salt = '0x1234';
-      const { factory, implementationAddress } = await createWalletFactory();
+    const createWallet = (creator, signers) => {
+      return createWalletHelper(WalletSimple, creator, signers)
+    }
 
-      const inputSalt = util.setLengthLeft(
-        Buffer.from(util.stripHexPrefix(salt), 'hex'),
-        32
-      );
-      const calculationSalt = abi.soliditySHA3(
-        ['address[]', 'bytes32'],
-        [signers, inputSalt]
-      );
-      const initCode = helpers.getInitCode(
-        util.stripHexPrefix(implementationAddress)
-      );
-      const walletAddress = helpers.getNextContractAddressCreate2(
-        factory.address,
-        calculationSalt,
-        initCode
-      );
-      await factory.createWallet(signers, inputSalt, { from: creator });
-      return WalletSimple.at(walletAddress);
-    };
+    describe(`${coinName}WalletSimple`, function () {
 
-    const createWalletFactory = async () => {
-      const walletContract = await WalletSimple.new([], {});
-      const walletFactory = await WalletFactory.new(walletContract.address);
-      return {
-        implementationAddress: walletContract.address,
-        factory: walletFactory
-      };
-    };
-
-    const getBalanceInWei = async (address) => {
-      return web3.utils.toBN(await web3.eth.getBalance(address));
-    };
-
-    contract(`${coinName}WalletSimple`, function (accounts) {
       let wallet;
-      let watcher;
-
-      // Taken from http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html -
-      // The automatic accessor function for a public state variable of array type only returns individual elements.
-      // If you want to return the complete array, you have to manually write a function to do that.
-      const isSigner = async function getSigners(wallet, signer) {
-        const signers = [];
-        const i = 0;
-        return await wallet.signers.call(signer);
-      };
+      let accounts;
+      before(async () => {
+        await hre.network.provider.send("hardhat_reset");
+        accounts = await web3.eth.getAccounts();
+      });
 
       describe('Wallet creation', function () {
         it('2 of 3 multisig wallet', async function () {
@@ -279,6 +185,7 @@ coins.forEach(
             value: web3.utils.toWei('30', 'ether'),
             data: '0xabcd'
           });
+
           const depositEvent = await helpers.getEventFromTransaction(
             tx.transactionHash,
             DEPOSITED_EVENT
@@ -294,7 +201,6 @@ coins.forEach(
       /*
   Commented out because tryInsertSequenceId and recoverAddressFromSignature is private. Uncomment the private and tests to test this.
   Functionality is also tested in the sendMultiSig tests.
-
   describe('Recover address from signature', function() {
     before(async function() {
         wallet = await createWallet(accounts[0], [
@@ -303,7 +209,6 @@ coins.forEach(
             accounts[2]
         ]);
     });
-
     it('Check for matching implementation with util.ecsign (50 iterations)', async function() {
       for (let i=0; i<50; i++) {
         // Get a random operation hash to sign
@@ -324,7 +229,6 @@ coins.forEach(
       }
     });
   });
-
   describe('Sequence ID anti-replay protection', function() {
     before(async function() {
         wallet = await createWallet(accounts[0], [
@@ -333,12 +237,10 @@ coins.forEach(
             accounts[2]
         ]);
     });
-
     const getSequenceId = async function() {
       const sequenceIdString = await wallet.getNextSequenceId.call();
       return parseInt(sequenceIdString);
     };
-
     it('Authorized signer can request and insert an id', async function() {
       let sequenceId = await getSequenceId();
       sequenceId.should.eql(1);
@@ -346,22 +248,18 @@ coins.forEach(
       sequenceId = await getSequenceId();
       sequenceId.should.eql(2);
     });
-
     it('Non-signer cannot insert an id', async function() {
       const sequenceId = await getSequenceId();
-
       try {
         await wallet.tryInsertSequenceId(sequenceId, { from: accounts[8] });
         throw new Error('should not have inserted successfully');
       } catch(err) {
         assertVMException(err);
       }
-
         // should be unchanged
       const newSequenceId = await getSequenceId();
       sequenceId.should.eql(newSequenceId);
     });
-
     it('Can request large sequence ids', async function() {
       for (let i=0; i<30; i++) {
         let sequenceId = await getSequenceId();
@@ -372,7 +270,6 @@ coins.forEach(
         newSequenceId.should.eql(sequenceId + 1);
       }
     });
-
     it('Cannot request lower than the current', async function() {
       let sequenceId = await getSequenceId();
       sequenceId -= 50; // we used this in the previous test
@@ -383,7 +280,6 @@ coins.forEach(
         assertVMException(err);
       }
     });
-
     it('Cannot request lower used sequence id outside the window', async function() {
       try {
         await wallet.tryInsertSequenceId(1, { from: accounts[8] });
@@ -393,8 +289,9 @@ coins.forEach(
       }
     });
   });
-
   */
+
+
       const getMethodData = async function (types, values, methodName) {
         const id = abi.methodID(methodName, types).toString('hex');
         const data = util.addHexPrefix(
@@ -560,7 +457,7 @@ coins.forEach(
             accounts[1],
             accounts[2]
           ]);
-          const amount = web3.utils.toWei('200000', 'ether');
+          const amount = web3.utils.toWei('2000', 'ether');
           await web3.eth.sendTransaction({
             from: accounts[0],
             to: wallet.address,
@@ -582,7 +479,7 @@ coins.forEach(
           // We are not using the helper here because we want to check the operation hash in events
           const destinationAccount = accounts[5];
           const amount = web3.utils.toWei('50', 'ether');
-          const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
+          let expireTime = calculateFutureExpireTime(120);
           const data = '0xabcde35f1234';
 
           const destinationStartBalance = await web3.eth.getBalance(
@@ -648,7 +545,7 @@ coins.forEach(
               web3.utils.toBN(_.random(1, 9)),
               'ether'
             );
-            const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
+            let expireTime = calculateFutureExpireTime(120);
             const data = util.addHexPrefix(
               crypto.randomBytes(20).toString('hex')
             );
@@ -722,7 +619,7 @@ coins.forEach(
           for (let round = 0; round < 10; round++) {
             const destinationAccount = accounts[2];
             const amount = _.random(1, 9);
-            const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
+            const expireTime = calculateFutureExpireTime(120);
             const data = util.bufferToHex(crypto.randomBytes(20));
 
             const operationHash = helpers.getSha3ForConfirmationTx(
@@ -792,7 +689,7 @@ coins.forEach(
           for (let round = 0; round < 20; round++) {
             const destinationAccount = accounts[2];
             const amount = _.random(1, 9);
-            const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
+            const expireTime = calculateFutureExpireTime(120);
             const data = util.bufferToHex(crypto.randomBytes(20));
 
             const operationHash = helpers.getSha3ForConfirmationTx(
@@ -869,7 +766,7 @@ coins.forEach(
             toAddress: accounts[8],
             amount: 15,
             data: '',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -889,7 +786,7 @@ coins.forEach(
             toAddress: accounts[5],
             amount: 25,
             data: '001122ee',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -909,7 +806,7 @@ coins.forEach(
             toAddress: accounts[0],
             amount: 30,
             data: 'abcdef',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -929,7 +826,7 @@ coins.forEach(
             toAddress: accounts[2],
             amount: 50,
             data: 'abcdef',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -949,7 +846,7 @@ coins.forEach(
             toAddress: accounts[9],
             amount: 51,
             data: 'abcdef',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -964,7 +861,7 @@ coins.forEach(
             toAddress: accounts[1],
             amount: 52,
             data: '',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -979,7 +876,7 @@ coins.forEach(
             toAddress: accounts[6],
             amount: 53,
             data: 'ab1234',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -995,7 +892,7 @@ coins.forEach(
             toAddress: accounts[5],
             amount: 60,
             data: '',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1027,7 +924,7 @@ coins.forEach(
             toAddress: accounts[5],
             amount: 60,
             data: 'abcde35f1230',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1043,7 +940,7 @@ coins.forEach(
             toAddress: accounts[5],
             amount: 61,
             data: '100135f123',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1057,7 +954,6 @@ coins.forEach(
           const toAddress = accounts[6];
           const amount = '60';
           const data = '';
-          const expireTime = Math.floor(new Date().getTime() / 1000) + 60;
 
           const destinationStartBalance = await web3.eth.getBalance(toAddress);
           const walletStartBalance = await web3.eth.getBalance(wallet.address);
@@ -1068,7 +964,7 @@ coins.forEach(
             toAddress.toLowerCase(),
             web3.utils.toWei(amount, 'ether'),
             data,
-            expireTime,
+            calculateFutureExpireTime(120),
             sequenceId
           );
 
@@ -1084,7 +980,7 @@ coins.forEach(
               toAddress.toLowerCase(),
               web3.utils.toWei(web3.utils.toBN(amount), 'ether'),
               '0x' + data,
-              expireTime,
+              calculateFutureExpireTime(120),
               sequenceId,
               helpers.serializeSignature(sig),
               { from: msgSenderAddress }
@@ -1103,7 +999,7 @@ coins.forEach(
             toAddress: accounts[5],
             amount: 62,
             data: '',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1119,7 +1015,7 @@ coins.forEach(
             toAddress: accounts[5],
             amount: 63,
             data: '5566abfe',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1135,7 +1031,7 @@ coins.forEach(
             toAddress: accounts[5],
             amount: 63,
             data: '5566abfe',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId,
             prefix: 'Invalid'
           };
@@ -1317,7 +1213,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5], accounts[7]],
             values: [60, 25],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1331,7 +1227,7 @@ coins.forEach(
             wallet: wallet,
             recipients: Array(10).fill(accounts[5]),
             values: Array(10).fill(10),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1348,7 +1244,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5], accounts[6], accounts[7]],
             values: [halfBalance, halfBalance, halfBalance],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1362,7 +1258,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [],
             values: [],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1376,7 +1272,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5], accounts[6], accounts[7]],
             values: [15, 12],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1393,7 +1289,7 @@ coins.forEach(
             wallet: wallet,
             recipients: Array(256).fill(accounts[5]),
             values: Array(256).fill(10),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1407,7 +1303,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[8]],
             values: [15],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1426,7 +1322,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5]],
             values: [25],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1445,7 +1341,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[2]],
             values: [50],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1464,11 +1360,11 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[9]],
             values: [51],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, 'Signers cannot be equal.');
+          await expectFailSendMultiSigBatch(params, 'Signers cannot be equal\'');
         });
 
         it('Sending from an unauthorized signer (but valid other signature) should fail', async function () {
@@ -1478,13 +1374,13 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[1]],
             values: [52],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
           await expectFailSendMultiSigBatch(
             params,
-            'Non-signer in onlySigner method.'
+            'Non-signer in onlySigner method'
           );
         });
 
@@ -1495,7 +1391,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[6]],
             values: [53],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1510,7 +1406,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5]],
             values: [60],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1529,7 +1425,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, 'Transaction expired.');
+          await expectFailSendMultiSigBatch(params, 'Transaction expired\'');
         });
 
         it('Can send with a sequence ID that is not sequential but higher than previous', async function () {
@@ -1540,7 +1436,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5]],
             values: [60],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1555,7 +1451,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5]],
             values: [61],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1570,7 +1466,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5]],
             values: [62],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1585,7 +1481,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5]],
             values: [63],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1600,7 +1496,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[5]],
             values: [63],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId,
             prefix: 'Invalid'
           };
@@ -1617,7 +1513,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [gasGuzzlerInstance.address, accounts[5]],
             values: [63, 20],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1632,7 +1528,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [failInstance.address, accounts[5]],
             values: [63, 20],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1647,7 +1543,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [gasHeavyInstance.address, accounts[5]],
             values: [63, 20],
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: sequenceId
           };
 
@@ -1656,6 +1552,7 @@ coins.forEach(
       });
 
       describe('Safe mode', function () {
+
         before(async function () {
           // Create and fund the wallet
           wallet = await createWallet(accounts[0], [
@@ -1714,7 +1611,7 @@ coins.forEach(
             toAddress: accounts[8],
             amount: 22,
             data: '100135f123',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(120),
             sequenceId: 10001
           };
 
@@ -1729,7 +1626,7 @@ coins.forEach(
             toAddress: accounts[0],
             amount: 28,
             data: '100135f123',
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60,
+            expireTime: calculateFutureExpireTime(800),
             sequenceId: 9000
           };
 
@@ -1798,21 +1695,11 @@ coins.forEach(
           const forwarder = await (
             await createForwarderFromWallet(forwarderTarget)
           ).create();
-          const events = [];
-          forwarder.allEvents({}, (err, event) => {
-            if (err) {
-              throw err;
-            }
-            events.push(event);
-          });
           const forwarderAsTarget = await ForwarderTarget.at(forwarder.address);
 
           const newData = 0xc0fefe;
 
           for (const setDataReturn of [true, false]) {
-            // clear events
-            events.length = 0;
-
             // calls without value do not emit deposited event and don't get forwarded
             const tx = await forwarderAsTarget.setData(newData, setDataReturn);
             (await forwarderTarget.data.call()).toString().should.eql('0');
@@ -2010,7 +1897,7 @@ coins.forEach(
 
           const destinationAccount = accounts[5];
           const amount = 50;
-          const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
+          const expireTime = calculateFutureExpireTime(800);
 
           const destinationAccountStartTokens = await fixedSupplyTokenContract.balanceOf.call(
             accounts[5]
@@ -2098,8 +1985,7 @@ coins.forEach(
             .add(web3.utils.toBN(100))
             .eq(walletContractEndTokens)
             .should.be.true();
-          /* TODO Barath - Get event testing for forwarder contract token send to work
-           */
+          // TODO Barath - Get event testing for forwarder contract token send to work
         });
 
         it('Flush Tether from Forwarder contract', async function () {
@@ -2139,8 +2025,7 @@ coins.forEach(
             .add(web3.utils.toBN(100))
             .eq(walletContractEndTokens)
             .should.be.true();
-          /* TODO Barath - Get event testing for forwarder contract token send to work
-           */
+          // TODO Barath - Get event testing for forwarder contract token send to work
         });
 
         it('Flush Tether from WalletSimple contract', async function () {
@@ -2166,7 +2051,7 @@ coins.forEach(
 
           const destinationAccount = accounts[5];
           const amount = 50;
-          const expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds
+          const expireTime = calculateFutureExpireTime(800); // 60 seconds
 
           const destinationAccountStartTokens = await tetherTokenContract.balanceOf.call(
             accounts[5]
@@ -2330,7 +2215,7 @@ coins.forEach(
             toAddress,
             amount: 0,
             data: await getMethodData(types, values, 'safeTransferFrom'),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            expireTime: calculateFutureExpireTime(800),
             sequenceId
           };
           await expectSuccessfulSendMultiSig721Token(params);
@@ -2353,7 +2238,7 @@ coins.forEach(
             toAddress,
             amount: 0,
             data: await getMethodData(types, values, 'safeTransferFrom'),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            expireTime: calculateFutureExpireTime(120),
             sequenceId
           };
 
@@ -2378,7 +2263,7 @@ coins.forEach(
             toAddress,
             amount: 0,
             data: await getMethodData(types, values, 'safeTransferFrom'),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            expireTime: calculateFutureExpireTime(120),
             sequenceId
           };
           await expectFailSendMultiSig721Token(params);
@@ -2401,7 +2286,7 @@ coins.forEach(
             toAddress,
             amount: 0,
             data: await getMethodData(types, values, 'safeTransferFrom'),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            expireTime: calculateFutureExpireTime(800),
             sequenceId
           };
           await expectSuccessfulSendMultiSig721Token(params);
@@ -2424,7 +2309,7 @@ coins.forEach(
             toAddress,
             amount: 0,
             data: await getMethodData(types, values, 'safeTransferFrom'),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            expireTime: calculateFutureExpireTime(800),
             sequenceId
           };
           await expectSuccessfulSendMultiSig721Token(params);
@@ -2448,7 +2333,7 @@ coins.forEach(
             toAddress,
             amount: 0,
             data: await getMethodData(types, values, 'safeTransferFrom'),
-            expireTime: Math.floor(new Date().getTime() / 1000) + 60, // 60 seconds
+            expireTime: calculateFutureExpireTime(800),
             sequenceId
           };
           await expectSuccessfulSendMultiSig721Token(params);
@@ -2511,21 +2396,21 @@ coins.forEach(
         });
 
         describe('ERC1155', async function () {
-          const owner = accounts[0];
-          const signers = [accounts[0], accounts[1], accounts[2]];
+          let owner;
+          let signersIndex = [0, 1, 2];
           let token1155;
 
           beforeEach(async () => {
+            owner = accounts[0];
             token1155 = await ERC1155.new({ from: owner });
           });
 
-          signers
-            .map((signer, i) => [signer, i])
-            .map(([signer, signerNum]) => {
-              it(`should flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
-                const erc1155TokenId = 1;
-                const amount = 100;
+          signersIndex.forEach((signerNum) => {
+              const erc1155TokenId = 1;
+              const amount = 100;
 
+              it(`should flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
+                const signer = accounts[signerNum];
                 const forwarder = await (
                   await createForwarderFromWallet(wallet, false)
                 ).create();
@@ -2571,9 +2456,7 @@ coins.forEach(
               });
 
               it(`should batch flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
-                const erc1155TokenId = 1;
-                const amount = 100;
-
+                const signer = accounts[signerNum];
                 const forwarder = await (
                   await createForwarderFromWallet(wallet, false)
                 ).create();
@@ -2674,7 +2557,7 @@ coins.forEach(
         });
 
         it('should fail with reentry set to true for sendMultiSig function', async function () {
-          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let expireTime = calculateFutureExpireTime(120);
           let amount = web3.utils.toWei('1', 'ether');
           let toAddress = reentryInstance.address.toLowerCase();
           let data = util.bufferToHex(crypto.randomBytes(20));
@@ -2714,10 +2597,10 @@ coins.forEach(
         });
 
         it('should pass with reentry set to false for sendMultiSig function', async function () {
-          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
-          let amount = web3.utils.toWei('1', 'ether');
-          let toAddress = reentryInstance.address.toLowerCase();
-          let data = util.bufferToHex(crypto.randomBytes(20));
+          const expireTime = calculateFutureExpireTime(1000);
+          const amount = web3.utils.toWei('1', 'ether');
+          const toAddress = reentryInstance.address.toLowerCase();
+          const data = util.bufferToHex(crypto.randomBytes(20));
           const operationHash = helpers.getSha3ForConfirmationTx(
             nativePrefix,
             toAddress,
@@ -2735,6 +2618,7 @@ coins.forEach(
           const destinationStartBalance = await web3.eth.getBalance(
             reentryInstance.address
           );
+          // console.log("destination start balance", destinationStartBalance);
           await reentryInstance.sendMultiSig(
             wallet.address,
             toAddress,
@@ -2756,7 +2640,7 @@ coins.forEach(
         });
 
         it('should fail with reentry set to true for sendMultiSigBatch function', async function () {
-          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let expireTime = calculateFutureExpireTime(120);
           let amount = web3.utils.toWei('1', 'ether');
           const recipients = [reentryInstance.address.toLowerCase()];
           const values = [amount];
@@ -2796,7 +2680,7 @@ coins.forEach(
         });
 
         it('should pass with reentry set to false for sendMultiSigBatch function', async function () {
-          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let expireTime = calculateFutureExpireTime(1000);
           let amount = web3.utils.toWei('1', 'ether');
           const recipients = [reentryInstance.address.toLowerCase()];
           const values = [amount];
@@ -2840,7 +2724,7 @@ coins.forEach(
         });
 
         it('should fail with reentry set to true for sendMultiSigToken function', async function () {
-          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let expireTime = calculateFutureExpireTime(120);
           let amount = web3.utils.toWei('1', 'ether');
           let toAddress = accounts[5];
           let tokenContractAddress = reentryInstance.address;
@@ -2880,7 +2764,7 @@ coins.forEach(
         });
 
         it('should pass with reentry set to false for sendMultiSigToken function', async function () {
-          let expireTime = Math.floor(new Date().getTime() / 1000) + 60; // 60 seconds,
+          let expireTime = calculateFutureExpireTime(1000);
           let amount = web3.utils.toWei('1', 'ether');
           let toAddress = accounts[3];
           let tokenContractAddress = reentryInstance.address;

@@ -10,6 +10,7 @@ const Forwarder = artifacts.require('./Forwarder.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 
 const ForwarderABI = require('../ABIs/Forwarder.json');
+const hre = require('hardhat');
 
 const createForwarderFactory = async () => {
   const forwarderContract = await Forwarder.new([], {});
@@ -65,7 +66,14 @@ const createForwarder = async (
   return forwarderAddress;
 };
 
-contract('ForwarderFactory', function (accounts) {
+describe('ForwarderFactory', function () {
+
+  let accounts;
+  before(async () => {
+    await hre.network.provider.send("hardhat_reset");
+    accounts = await web3.eth.getAccounts();
+  })
+
   it('Should create a functional forwarder using the factory', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
 

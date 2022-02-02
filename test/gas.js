@@ -1,21 +1,16 @@
 require('assert');
-const should = require('should');
-const truffleAssert = require('truffle-assertions');
+require('should');
 const BigNumber = require('bignumber.js');
-const Promise = require('bluebird');
-const _ = require('lodash');
 
 const helpers = require('./helpers');
 const { privateKeyForAccount } = require('../testrpc/accounts');
 
 // Used to build the solidity tightly packed buffer to sha3, ecsign
 const util = require('ethereumjs-util');
-const abi = require('ethereumjs-abi');
-const crypto = require('crypto');
+const hre = require('hardhat');
 
 const WalletSimple = artifacts.require('./WalletSimple.sol');
 const WalletFactory = artifacts.require('./WalletFactory.sol');
-const Forwarder = artifacts.require('./Forwarder.sol');
 
 const createWalletFactory = async () => {
   const walletContract = await WalletSimple.new([], {});
@@ -59,8 +54,12 @@ const checkGasUsed = (expected, actual) => {
   diff.should.be.lessThan(GAS_DIFF_THRESHOLD);
 };
 
-contract(`Wallet Operations Gas Usage`, function (accounts) {
-  let wallet;
+describe(`Wallet Operations Gas Usage`, function () {
+  let accounts;
+  before(async () => {
+    await hre.network.provider.send("hardhat_reset");
+    accounts = await web3.eth.getAccounts();
+  })
 
   it('WalletSimple deployment [ @skip-on-coverage ]', async function () {
     const transaction = await createWallet(accounts[0], [
@@ -68,7 +67,7 @@ contract(`Wallet Operations Gas Usage`, function (accounts) {
       accounts[1],
       accounts[2]
     ]);
-    checkGasUsed(164533, transaction.receipt.gasUsed);
+    checkGasUsed(171030, transaction.receipt.gasUsed);
   });
 
   it('WalletSimple send [ @skip-on-coverage ]', async function () {
@@ -121,7 +120,7 @@ contract(`Wallet Operations Gas Usage`, function (accounts) {
       .eq(destinationEndBalance)
       .should.be.true();
 
-    checkGasUsed(101870, transaction.receipt.gasUsed);
+    checkGasUsed(99618, transaction.receipt.gasUsed);
   });
 
   const sendBatchHelper = async (batchSize) => {
@@ -134,7 +133,6 @@ contract(`Wallet Operations Gas Usage`, function (accounts) {
     const amount = web3.utils.toWei('1', 'ether');
     const expireTime = Math.floor(new Date().getTime() / 1000) + 60;
     const destination = accounts[3];
-    const data = '0x';
     const sequenceId = 1;
     const recipients = [];
     for (let i = 0; i < batchSize; i++) {
@@ -180,17 +178,17 @@ contract(`Wallet Operations Gas Usage`, function (accounts) {
 
   it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
     const gasUsageByBatchSize = [
-        104868,
-        116810,
-        128727,
-        140656,
-        152561,
-        164480,
-        176397,
-        188326,
-        200244,
-        212150
-      ];
+      101938,
+      113244,
+      124585,
+      135902,
+      147219,
+      158538,
+      169855,
+      181172,
+      192490,
+      203796
+    ];
 
     for (let batchSize = 1; batchSize <= 10; batchSize++) {
       const transaction = await sendBatchHelper(batchSize);
