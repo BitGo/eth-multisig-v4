@@ -1,11 +1,11 @@
 require('should');
 
-const truffleAssert = require('truffle-assertions');
 const helpers = require('./helpers');
 const util = require('ethereumjs-util');
 const abi = require('ethereumjs-abi');
 const { privateKeyForAccount } = require('../testrpc/accounts');
 const BigNumber = require('bignumber.js');
+const hre = require('hardhat');
 
 const WalletSimple = artifacts.require('./WalletSimple.sol');
 const WalletFactory = artifacts.require('./WalletFactory.sol');
@@ -28,7 +28,7 @@ const createWallet = async (
   implementationAddress,
   signers,
   salt,
-  sender
+  sender,
 ) => {
   const inputSalt = util.setLengthLeft(
     Buffer.from(util.stripHexPrefix(salt), 'hex'),
@@ -60,7 +60,14 @@ const createWallet = async (
   return WalletSimple.at(walletAddress);
 };
 
-contract('WalletFactory', function (accounts) {
+describe('WalletFactory', function () {
+
+  let accounts;
+  before(async () => {
+    await hre.network.provider.send("hardhat_reset");
+    accounts = await web3.eth.getAccounts();
+  })
+
   it('Should create a functional wallet using the factory', async function () {
     const { factory, implementationAddress } = await createWalletFactory();
 
@@ -197,7 +204,7 @@ contract('WalletFactory', function (accounts) {
 
     const signers = [accounts[0], accounts[1], accounts[2]];
     const salt = '0x1234';
-    const walletAddress = await createWallet(
+    await createWallet(
       factory,
       implementationAddress,
       signers,

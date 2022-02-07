@@ -12,6 +12,7 @@ const AlwaysFalseERC165 = artifacts.require('./AlwaysFalseERC165.sol');
 const ReentryForwarder = artifacts.require('./ReentryForwarder');
 const util = require('ethereumjs-util');
 const abi = require('ethereumjs-abi');
+const hre = require('hardhat');
 
 const createForwarder = async (creator, parent) => {
   const forwarderContract = await Forwarder.new([], { from: creator });
@@ -40,7 +41,14 @@ const getMethodData = async function (types, values, methodName) {
 
 const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
 
-contract('Forwarder', function (accounts) {
+describe('Forwarder', function () {
+
+  let accounts;
+  before(async () => {
+    await hre.network.provider.send("hardhat_reset");
+    accounts = await web3.eth.getAccounts();
+  })
+
   it('Basic forwarding test', async function () {
     const forwarder = await createForwarder(accounts[0], accounts[0]);
     const startBalance = await getBalanceInWei(accounts[0]);

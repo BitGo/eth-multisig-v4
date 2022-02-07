@@ -1,3 +1,5 @@
+const hre = require('hardhat');
+
 const Batcher = artifacts.require('./Batcher.sol');
 const TestBatcherDriver = artifacts.require('./TestBatcherDriver.sol');
 const Reentry = artifacts.require('./Reentry.sol');
@@ -44,15 +46,10 @@ const assertVMException = async (promise, expectedExceptionMsg) => {
     await promise;
     badSucceed = true;
   } catch (err) {
-    assert.notStrictEqual(
-      err.message.search('VM Exception'),
-      -1,
-      'Received non-VM exception'
-    );
     assert.strictEqual(
-      err.reason || '',
-      expectedExceptionMsg,
-      "Didn't receive expected VM exception"
+      err.message,
+      `VM Exception while processing transaction: reverted with reason string '${expectedExceptionMsg}'`,
+      "Invalid exception"
     );
   }
   if (badSucceed) {
@@ -65,19 +62,23 @@ const assertBalanceDiff = (start, end, diff, errMsg) => {
   assert.strictEqual(startWithDiff.toString(), end.toString(), errMsg);
 };
 
-contract('Batcher', (accounts) => {
+describe('Batcher', () => {
   let batcherInstance;
   let reentryInstance;
   let failInstance;
   let gasGuzzlerInstance;
   let gasHeavyInstance;
   let testBatcherDriverInstance;
-
-  const sender = accounts[0];
-  const batcherOwner = accounts[8];
+  let sender;
+  let batcherOwner;
   const zeroAddr = '0x0000000000000000000000000000000000000000';
 
   before(async () => {
+    await hre.network.provider.send("hardhat_reset");
+    accounts = await web3.eth.getAccounts();
+    sender = accounts[0];
+    batcherOwner = accounts[8];
+
     batcherInstance = await Batcher.new({ from: batcherOwner });
     reentryInstance = await Reentry.new(batcherInstance.address);
     failInstance = await Fail.new();
@@ -607,10 +608,14 @@ contract('Batcher', (accounts) => {
     });
 
     describe('Transferring ownership and setting gas transfer limit', () => {
+
       // note: at the start of every test, the Batcher owner should be `batcherOwner`
       // and the transfer gas limit should be the default
-      const otherBatcherOwner = accounts[7];
       const defaultTransferGasLimit = 1e4;
+      let otherBatcherOwner;
+      beforeEach(async () => {
+        otherBatcherOwner = accounts[7];
+      });
 
       const setBatcherOwner = async (oldBatcherOwner, newBatcherOwner) => {
         const tx = await batcherInstance.transferOwnership(newBatcherOwner, {
@@ -720,7 +725,10 @@ contract('Batcher', (accounts) => {
     describe('Using recover for ERC20 Tokens', () => {
       let tokenContract;
       let totalSupply;
-      const tokenContractOwner = accounts[9];
+      let tokenContractOwner;
+      beforeEach(async () => {
+        tokenContractOwner = accounts[9];
+      });
 
       const checkBalance = async (address, expectedAmt) => {
         const balance = await tokenContract.balanceOf(address);

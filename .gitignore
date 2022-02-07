@@ -11,3 +11,8 @@ build
 coverage.json
 
 .env
+
+#Hardhat files
+artifacts
+cache
+typechain
