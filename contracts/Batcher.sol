@@ -92,6 +92,7 @@ contract Batcher {
     bytes calldata data
   ) external onlyOwner returns (bytes memory) {
     (bool success, bytes memory returnData) = to.call{ value: value }(data);
+    require(success, 'Recover failed');
     return returnData;
   }
 
