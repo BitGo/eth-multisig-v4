@@ -49,7 +49,7 @@ const assertVMException = async (promise, expectedExceptionMsg) => {
     assert.strictEqual(
       err.message,
       `VM Exception while processing transaction: reverted with reason string '${expectedExceptionMsg}'`,
-      "Invalid exception"
+      'Invalid exception'
     );
   }
   if (badSucceed) {
@@ -74,7 +74,7 @@ describe('Batcher', () => {
   const zeroAddr = '0x0000000000000000000000000000000000000000';
 
   before(async () => {
-    await hre.network.provider.send("hardhat_reset");
+    await hre.network.provider.send('hardhat_reset');
     accounts = await web3.eth.getAccounts();
     sender = accounts[0];
     batcherOwner = accounts[8];
@@ -595,9 +595,12 @@ describe('Batcher', () => {
       await runTestBatcherDriver(params);
       const beforeWalletBalance = await getBalance(recoverAddress);
 
-      await batcherInstance.recover(recoverAddress, 60, 0, {
-        from: batcherOwner
-      });
+      await assertVMException(
+        batcherInstance.recover(recoverAddress, 60, 0, {
+          from: batcherOwner
+        }),
+        'Recover failed'
+      );
 
       const recoverWalletBalance = await getBalance(recoverAddress);
       assert.strictEqual(
@@ -608,7 +611,6 @@ describe('Batcher', () => {
     });
 
     describe('Transferring ownership and setting gas transfer limit', () => {
-
       // note: at the start of every test, the Batcher owner should be `batcherOwner`
       // and the transfer gas limit should be the default
       const defaultTransferGasLimit = 1e4;
