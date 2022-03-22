@@ -185,7 +185,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     uint256 expireTime,
     uint256 sequenceId,
     bytes calldata signature
-  ) external onlySigner {
+  ) external onlySigner returns (bytes memory) {
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(
@@ -207,7 +207,9 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     );
 
     // Success, send the transaction
-    (bool success, ) = toAddress.call{ value: value }(data);
+    (bool success, bytes memory returnedData) = toAddress.call{ value: value }(
+      data
+    );
     require(success, 'Call execution failed');
 
     emit Transacted(
@@ -218,6 +220,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       value,
       data
     );
+
+    return returnedData;
   }
 
   /**
