@@ -9,7 +9,7 @@ coverage
 .node-xml*
 build
 coverage.json
-
+yarn-error.log
 .env
 
 #Hardhat files

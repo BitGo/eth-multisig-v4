@@ -141,6 +141,7 @@ describe('Batcher', () => {
     });
   };
 
+  // TODO: "Executes as many transfers as possible when not given enough gas" test fails only when running coverage command
   const runTestBatcherDriver = async ({
     recipients,
     values,

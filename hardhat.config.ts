@@ -1,3 +1,5 @@
+require('solidity-coverage')
+
 import * as dotenv from "dotenv";
 
 const { HD_WALLET_API_URL, MNEMONIC, ETHERSCAN_API_KEY } = process.env;
