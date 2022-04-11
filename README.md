@@ -32,9 +32,7 @@ Note that this suite of contracts is an upgraded version of [eth-multisig-v2](ht
 The Wallet contract and forwarder contracts can each be deployed independently of each other, using the provided ForwarderFactory and WalletFactory.
 These factories employ two features to minimize the cost associated with deploying a new contract:
 - [Minimal proxy](https://eips.ethereum.org/EIPS/eip-1167) - Each deployed contract is simply a tiny contract which proxies calls to use the logic of a single implementation contract.
-- [CREATE2](https://eips.ethereum.org/EIPS/eip-1014) - Contracts are deployed with the CREATE2 opcode to allow users to distribute contract addresses and only deploy them upon first use. 
-
-You can use `truffle migrate` to deploy the contracts. The run `truffle run verify CONTRACTNAME@CONTRACTADDRESS --network live` to verify them on etherscan.
+- [CREATE2](https://eips.ethereum.org/EIPS/eip-1014) - Contracts are deployed with the CREATE2 opcode to allow users to distribute contract addresses and only deploy them upon first use.
 
 **Wallets**
 To deploy wallets, follow these steps:
@@ -76,10 +74,10 @@ Transfer batcher. Takes a list of recipients and amounts, and distributes ETH to
 
 ## Installation
 
-NodeJS 8.14.0 is recommended.
+NodeJS 14 is required.
 
 ```shell
-npm install
+yarn
 ```
 
 This installs hardhat.

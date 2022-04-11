@@ -16,7 +16,7 @@ const {
   getBalanceInWei,
   isSigner,
 } = require('./wallet/helpers');
-const { privateKeyForAccount } = require('../testrpc/accounts');
+const { privateKeyForAccount } = require('./helpers');
 
 // Used to build the solidity tightly packed buffer to sha3, ecsign
 const util = require('ethereumjs-util');

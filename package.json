@@ -9,11 +9,8 @@
     "test": "test"
   },
   "scripts": {
-    "truffle-testrpc": "node ./testrpc/run.js",
-    "mocha-test": "./node_modules/mocha/bin/mocha mocha-test",
-    "truffle-test": "./node_modules/truffle/build/cli.bundled.js test",
-    "coverage": "node --max-old-space-size=8096 ./node_modules/truffle/build/cli.bundled.js run coverage --network development",
-    "compile": "./node_modules/truffle/build/cli.bundled.js compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
     "prettier": "./node_modules/.bin/prettier --config .prettierrc --write './**/*.js'",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/*.sol",
@@ -38,9 +35,7 @@
     "mocha": "^4.1.0",
     "q": "^1.5.1",
     "should": "^8.3.1",
-    "solc": "0.8.11",
-    "truffle": "^5.4.25",
-    "truffle-assertions": "^0.9.2"
+    "solc": "0.8.11"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
@@ -74,12 +69,11 @@
     "solhint": "^3.3.6",
     "solhint-plugin-prettier": "0.0.5",
     "solidity-coverage": "^0.7.18",
-    "truffle-flattener": "^1.5.0",
-    "truffle-plugin-verify": "^0.5.20",
     "ts-node": "^10.4.0",
     "typechain": "^5.2.0",
     "typescript": "^4.5.5",
-    "web3": "^1.7.0"
+    "web3": "^1.7.0",
+    "truffle-assertions": "^0.9.2"
   },
   "engines": {
     "node": ">=14.17.5 <15",

@@ -3,7 +3,7 @@ require('should');
 const helpers = require('./helpers');
 const util = require('ethereumjs-util');
 const abi = require('ethereumjs-abi');
-const { privateKeyForAccount } = require('../testrpc/accounts');
+const { privateKeyForAccount } = require('./helpers');
 const BigNumber = require('bignumber.js');
 const hre = require('hardhat');
 
