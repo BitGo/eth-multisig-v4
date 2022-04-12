@@ -9,7 +9,7 @@ const BigNumber = require('bignumber.js');
 const Forwarder = artifacts.require('./Forwarder.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 
-const ForwarderABI = require('../ABIs/Forwarder.json');
+const ForwarderABI = require('./Forwarder.json');
 const hre = require('hardhat');
 
 const createForwarderFactory = async () => {
