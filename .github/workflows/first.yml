@@ -1,5 +1,10 @@
 on: push
 
+env:
+  PRIVATE_KEY=${{secrets.API_KEY}}
+  ALCHEMY_API_KEY=${{secrets.ALCHEMY_API_KEY}}
+  ETHERSCAN_API_KEY=${{secrets.ETHERSCAN_API_KEY}}
+
 jobs:
   build:
     runs-on: ubuntu-latest
