@@ -1,9 +1,6 @@
-require('solidity-coverage')
-
 import * as dotenv from "dotenv";
-
-const { HD_WALLET_API_URL, MNEMONIC, ETHERSCAN_API_KEY } = process.env;
-
+dotenv.config();
+import "@nomiclabs/hardhat-etherscan";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
@@ -12,10 +9,7 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 
-dotenv.config();
-
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
+const { PRIVATE_KEY, ALCHEMY_API_KEY, ETHERSCAN_API_KEY } = process.env;
 
 const config: HardhatUserConfig = {
   solidity: '0.8.10',
@@ -39,20 +33,22 @@ const config: HardhatUserConfig = {
       })),
       loggingEnabled: false,
     },
-    ropsten: {
-      url: process.env.ROPSTEN_URL || '',
-      // gasPrice: 5800000,
-      gasPrice: 875000000,
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
-    }
+    mainnet: {
+      url:`https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+      accounts: [`${PRIVATE_KEY}`]
+    },
+    goerli: {
+      url:`https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+      accounts: [`${PRIVATE_KEY}`]
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: 'USD'
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    // Same API KEY for all env's
+    apiKey: ETHERSCAN_API_KEY
   },
   mocha: {
     timeout: 100000,
