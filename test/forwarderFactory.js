@@ -9,7 +9,6 @@ const BigNumber = require('bignumber.js');
 const Forwarder = artifacts.require('./Forwarder.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 
-const ForwarderABI = require('../ABIs/Forwarder.json');
 const hre = require('hardhat');
 
 const createForwarderFactory = async () => {
@@ -212,13 +211,8 @@ describe('ForwarderFactory', function () {
         accounts[1]
       );
 
-      const forwarderContract = new web3.eth.Contract(
-        ForwarderABI,
-        forwarderAddress
-      );
-      const autoFlush721 = await forwarderContract.methods
-        .autoFlush721()
-        .call();
+      const forwarderContract = await hre.ethers.getContractAt("Forwarder", forwarderAddress);
+      const autoFlush721 = await forwarderContract.autoFlush721();
 
       autoFlush721.should.equal(shouldAutoFlush);
     });
@@ -238,14 +232,8 @@ describe('ForwarderFactory', function () {
         accounts[1]
       );
 
-      const forwarderContract = new web3.eth.Contract(
-        ForwarderABI,
-        forwarderAddress
-      );
-      const autoFlush1155 = await forwarderContract.methods
-        .autoFlush1155()
-        .call();
-
+      const forwarderContract = await hre.ethers.getContractAt("Forwarder", forwarderAddress);
+      const autoFlush1155 = await forwarderContract.autoFlush1155();
       autoFlush1155.should.equal(shouldAutoFlush);
     });
   });
