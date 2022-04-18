@@ -14,9 +14,9 @@
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
-    "prettier": "./node_modules/.bin/prettier --config .prettierrc --write './**/*.js'",
+    "prettier": "./node_modules/.bin/prettier --check --config .prettierrc --write './**/*.js' './**/*.ts'",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/*.sol",
-    "lint": "npm run prettier && npm run solhint"
+    "lint": "npm run prettier"
   },
   "keywords": [
     "multi-sig",
