@@ -1,13 +1,11 @@
-name: Lint and Test
+name: Pull Request Lint and Test
 
 on:
-  push:
   pull_request:
     branches: [ master ]
-    types: [closed]
 
 jobs:
-  build:
+  test:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     strategy:

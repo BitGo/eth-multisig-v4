@@ -1,10 +1,10 @@
-name: Lint and Test
+name: Push Lint and Test
 
 on:
   push:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:

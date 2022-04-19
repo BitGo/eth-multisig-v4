@@ -1,0 +1,39 @@
+name: Create Release on Push Tag
+on:
+ push:
+   tags:
+      - 'v*'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Release
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+              const fs = require('fs');
+              const path = require('path');
+              var json;
+              var html = "";
+              try {
+                json = JSON.parse(fs.readFileSync('./releasenotes.json').toString());
+                for(const coin in json){
+                  html += "<h1>"+coin+"</h1>";
+                  html += "wallet: "+json[coin].wallet+"<br>";
+                  html += "scan: "+json[coin].etherscan+"<br>";
+                }
+              } catch (err){
+                console.log("json file not found.");
+              }
+              const repo = context.repo.repo;
+              const owner = context.repo.owner;
+              const tag = process.env.GITHUB_REF_NAME;
+              const release= await github.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                body: html,
+                prerelease: false
+              });

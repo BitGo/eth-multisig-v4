@@ -1,0 +1,10 @@
+{
+    "BTC" : {
+        "wallet" : "0x0000000FFFFFFF",
+        "etherscan" : "0x000080FFFFFFF"
+    },
+    "Ethereum" : {
+        "wallet" : "0x0000000FFFFFFF",
+        "etherscan" : "0x000080FFFFFFF"
+    }
+}
