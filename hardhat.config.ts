@@ -1,13 +1,13 @@
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
 dotenv.config();
-import "@nomiclabs/hardhat-etherscan";
-import { HardhatUserConfig, task } from "hardhat/config";
-import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-truffle5";
-import "@typechain/hardhat";
-import "hardhat-gas-reporter";
-import "solidity-coverage";
+import '@nomiclabs/hardhat-etherscan';
+import { HardhatUserConfig, task } from 'hardhat/config';
+import '@nomiclabs/hardhat-etherscan';
+import '@nomiclabs/hardhat-waffle';
+import '@nomiclabs/hardhat-truffle5';
+import '@typechain/hardhat';
+import 'hardhat-gas-reporter';
+import 'solidity-coverage';
 
 const { PRIVATE_KEY, ALCHEMY_API_KEY, ETHERSCAN_API_KEY } = process.env;
 
@@ -29,18 +29,18 @@ const config: HardhatUserConfig = {
         '0xace7201611ba195f85fb2e25b53e0f9869e57e2267d1c5eef63144c75dee5142'
       ].map((key) => ({
         privateKey: key,
-        balance: '200000000000000000000000000',
+        balance: '200000000000000000000000000'
       })),
-      loggingEnabled: false,
+      loggingEnabled: false
     },
     mainnet: {
-      url:`https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
     },
     goerli: {
-      url:`https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+      url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
-    },
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
@@ -51,7 +51,7 @@ const config: HardhatUserConfig = {
     apiKey: ETHERSCAN_API_KEY
   },
   mocha: {
-    timeout: 100000,
+    timeout: 100000
   }
 };
 

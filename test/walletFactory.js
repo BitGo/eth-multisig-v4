@@ -28,7 +28,7 @@ const createWallet = async (
   implementationAddress,
   signers,
   salt,
-  sender,
+  sender
 ) => {
   const inputSalt = util.setLengthLeft(
     Buffer.from(util.stripHexPrefix(salt), 'hex'),
@@ -61,12 +61,11 @@ const createWallet = async (
 };
 
 describe('WalletFactory', function () {
-
   let accounts;
   before(async () => {
-    await hre.network.provider.send("hardhat_reset");
+    await hre.network.provider.send('hardhat_reset');
     accounts = await web3.eth.getAccounts();
-  })
+  });
 
   it('Should create a functional wallet using the factory', async function () {
     const { factory, implementationAddress } = await createWalletFactory();
@@ -149,10 +148,8 @@ describe('WalletFactory', function () {
 
   it('Different creators should create at different addresses', async function () {
     const { factory, implementationAddress } = await createWalletFactory();
-    const {
-      factory: factory2,
-      implementationAddress: implementationAddress2
-    } = await createWalletFactory();
+    const { factory: factory2, implementationAddress: implementationAddress2 } =
+      await createWalletFactory();
 
     const signers = [accounts[0], accounts[1], accounts[2]];
     const salt = '0x1234';

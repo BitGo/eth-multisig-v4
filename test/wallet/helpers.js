@@ -15,7 +15,7 @@ const WalletFactory = artifacts.require('../WalletFactory.sol');
 const assertVMException = (err, expectedErrMsg) => {
   err.message.toString().should.containEql('VM Exception');
   if (expectedErrMsg) {
-      err.message.toString().should.containEql(expectedErrMsg);
+    err.message.toString().should.containEql(expectedErrMsg);
   }
 };
 
@@ -87,7 +87,9 @@ const createWalletFactory = async (WalletSimple) => {
 const createWalletHelper = async (WalletSimple, creator, signers) => {
   // OK to be the same for all wallets since we are using a new factory for each
   const salt = '0x1234';
-  const { factory, implementationAddress } = await createWalletFactory(WalletSimple);
+  const { factory, implementationAddress } = await createWalletFactory(
+    WalletSimple
+  );
 
   const inputSalt = util.setLengthLeft(
     Buffer.from(util.stripHexPrefix(salt), 'hex'),
@@ -130,5 +132,5 @@ exports.executeCreateForwarder = executeCreateForwarder;
 exports.createWalletFactory = createWalletFactory;
 exports.createWalletHelper = createWalletHelper;
 exports.getBalanceInWei = getBalanceInWei;
-exports.calculateFutureExpireTime =calculateFutureExpireTime;
+exports.calculateFutureExpireTime = calculateFutureExpireTime;
 exports.isSigner = isSigner;

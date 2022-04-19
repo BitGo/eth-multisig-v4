@@ -66,12 +66,11 @@ const createForwarder = async (
 };
 
 describe('ForwarderFactory', function () {
-
   let accounts;
   before(async () => {
-    await hre.network.provider.send("hardhat_reset");
+    await hre.network.provider.send('hardhat_reset');
     accounts = await web3.eth.getAccounts();
-  })
+  });
 
   it('Should create a functional forwarder using the factory', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
@@ -134,10 +133,8 @@ describe('ForwarderFactory', function () {
 
   it('Different creators should create at different addresses', async function () {
     const { factory, implementationAddress } = await createForwarderFactory();
-    const {
-      factory: factory2,
-      implementationAddress: implementationAddress2
-    } = await createForwarderFactory();
+    const { factory: factory2, implementationAddress: implementationAddress2 } =
+      await createForwarderFactory();
 
     const parent = accounts[0];
     const salt = '0x1234';
@@ -211,7 +208,10 @@ describe('ForwarderFactory', function () {
         accounts[1]
       );
 
-      const forwarderContract = await hre.ethers.getContractAt("Forwarder", forwarderAddress);
+      const forwarderContract = await hre.ethers.getContractAt(
+        'Forwarder',
+        forwarderAddress
+      );
       const autoFlush721 = await forwarderContract.autoFlush721();
 
       autoFlush721.should.equal(shouldAutoFlush);
@@ -232,7 +232,10 @@ describe('ForwarderFactory', function () {
         accounts[1]
       );
 
-      const forwarderContract = await hre.ethers.getContractAt("Forwarder", forwarderAddress);
+      const forwarderContract = await hre.ethers.getContractAt(
+        'Forwarder',
+        forwarderAddress
+      );
       const autoFlush1155 = await forwarderContract.autoFlush1155();
       autoFlush1155.should.equal(shouldAutoFlush);
     });

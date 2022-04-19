@@ -57,9 +57,9 @@ const checkGasUsed = (expected, actual) => {
 describe(`Wallet Operations Gas Usage`, function () {
   let accounts;
   before(async () => {
-    await hre.network.provider.send("hardhat_reset");
+    await hre.network.provider.send('hardhat_reset');
     accounts = await web3.eth.getAccounts();
-  })
+  });
 
   it('WalletSimple deployment [ @skip-on-coverage ]', async function () {
     const transaction = await createWallet(accounts[0], [
@@ -178,15 +178,7 @@ describe(`Wallet Operations Gas Usage`, function () {
 
   it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
     const gasUsageByBatchSize = [
-      101938,
-      113244,
-      124585,
-      135902,
-      147219,
-      158538,
-      169855,
-      181172,
-      192490,
+      101938, 113244, 124585, 135902, 147219, 158538, 169855, 181172, 192490,
       203796
     ];
 

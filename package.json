@@ -1,22 +1,23 @@
 {
-  "name": "eth-multisig-v3",
+  "name": "eth-multisig-v4",
   "version": "1.0.0",
   "description": "Ethereum multi signature wallet contract supporting single-tx execute and confirm with multiple owners",
-  "author": "Ben Chan",
+  "author": "BitGo ETH/DeFi Team",
   "license": "ISC",
-  "main": "truffle.js",
   "directories": {
     "test": "test"
   },
+  "private": true,
   "scripts": {
     "deploy-prod": "hardhat run --network mainnet scripts/deploy.ts",
     "deploy-test": "hardhat run --network goerli scripts/deploy.ts",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
-    "prettier": "./node_modules/.bin/prettier --config .prettierrc --write './**/*.js'",
+    "prettier-check": "./node_modules/.bin/prettier --config .prettierrc --check './**/*.js' './**/*.ts'",
+    "prettier-lint": "./node_modules/.bin/prettier --config .prettierrc --write './**/*.js' './**/*.ts'",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/*.sol",
-    "lint": "npm run prettier && npm run solhint"
+    "lint": "npm run prettier-check"
   },
   "keywords": [
     "multi-sig",
