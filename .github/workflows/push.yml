@@ -1,14 +1,15 @@
-name: Push Lint and Test
+name: Lint and Test
 
 on:
   push:
-
+    branches:
+      - '**'
 jobs:
-  test:
+  lint-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [12.x, 14.x, 16.x]
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
@@ -17,5 +18,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm install
-    #- run: npm test
+    - run: npm run test
+      env:
+        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
     - run: npm run lint
