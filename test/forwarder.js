@@ -42,12 +42,11 @@ const getMethodData = async function (types, values, methodName) {
 const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
 
 describe('Forwarder', function () {
-
   let accounts;
   before(async () => {
-    await hre.network.provider.send("hardhat_reset");
+    await hre.network.provider.send('hardhat_reset');
     accounts = await web3.eth.getAccounts();
-  })
+  });
 
   it('Basic forwarding test', async function () {
     const forwarder = await createForwarder(accounts[0], accounts[0]);

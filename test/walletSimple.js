@@ -5,7 +5,7 @@ const { makeInterfaceId } = require('@openzeppelin/test-helpers');
 const BigNumber = require('bignumber.js');
 const Promise = require('bluebird');
 const _ = require('lodash');
-const hre = require("hardhat");
+const hre = require('hardhat');
 
 const helpers = require('./helpers');
 const {
@@ -14,7 +14,7 @@ const {
   createForwarderFromWallet,
   createWalletHelper,
   getBalanceInWei,
-  isSigner,
+  isSigner
 } = require('./wallet/helpers');
 const { privateKeyForAccount } = require('./helpers');
 
@@ -89,17 +89,15 @@ coins.forEach(
     tokenPrefix,
     WalletSimple
   }) => {
-
     const createWallet = (creator, signers) => {
-      return createWalletHelper(WalletSimple, creator, signers)
-    }
+      return createWalletHelper(WalletSimple, creator, signers);
+    };
 
     describe(`${coinName}WalletSimple`, function () {
-
       let wallet;
       let accounts;
       before(async () => {
-        await hre.network.provider.send("hardhat_reset");
+        await hre.network.provider.send('hardhat_reset');
         accounts = await web3.eth.getAccounts();
       });
 
@@ -298,7 +296,6 @@ coins.forEach(
     });
   });
   */
-
 
       const getMethodData = async function (types, values, methodName) {
         const id = abi.methodID(methodName, types).toString('hex');
@@ -1372,7 +1369,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, 'Signers cannot be equal\'');
+          await expectFailSendMultiSigBatch(params, "Signers cannot be equal'");
         });
 
         it('Sending from an unauthorized signer (but valid other signature) should fail', async function () {
@@ -1433,7 +1430,7 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-          await expectFailSendMultiSigBatch(params, 'Transaction expired\'');
+          await expectFailSendMultiSigBatch(params, "Transaction expired'");
         });
 
         it('Can send with a sequence ID that is not sequential but higher than previous', async function () {
@@ -1560,7 +1557,6 @@ coins.forEach(
       });
 
       describe('Safe mode', function () {
-
         before(async function () {
           // Create and fund the wallet
           wallet = await createWallet(accounts[0], [
@@ -1780,10 +1776,8 @@ coins.forEach(
             accounts[4],
             accounts[5]
           ]);
-          const {
-            forwarderAddress: forwarderContractAddress,
-            create
-          } = await createForwarderFromWallet(wallet);
+          const { forwarderAddress: forwarderContractAddress, create } =
+            await createForwarderFromWallet(wallet);
 
           await web3.eth.sendTransaction({
             from: accounts[1],
@@ -1823,10 +1817,8 @@ coins.forEach(
             accounts[5],
             accounts[6]
           ]);
-          const {
-            forwarderAddress: forwarderContractAddress,
-            create
-          } = await createForwarderFromWallet(wallet);
+          const { forwarderAddress: forwarderContractAddress, create } =
+            await createForwarderFromWallet(wallet);
 
           await web3.eth.sendTransaction({
             from: accounts[1],
@@ -1895,9 +1887,8 @@ coins.forEach(
             accounts[0]
           );
           balance.should.eql(web3.utils.toBN(1000000 - 100));
-          const msigWalletStartTokens = await fixedSupplyTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const msigWalletStartTokens =
+            await fixedSupplyTokenContract.balanceOf.call(wallet.address);
           msigWalletStartTokens.should.eql(web3.utils.toBN(100));
 
           const sequenceIdString = await wallet.getNextSequenceId.call();
@@ -1907,9 +1898,8 @@ coins.forEach(
           const amount = 50;
           const expireTime = calculateFutureExpireTime(800);
 
-          const destinationAccountStartTokens = await fixedSupplyTokenContract.balanceOf.call(
-            accounts[5]
-          );
+          const destinationAccountStartTokens =
+            await fixedSupplyTokenContract.balanceOf.call(accounts[5]);
           destinationAccountStartTokens.should.eql(web3.utils.toBN(0));
 
           const operationHash = helpers.getSha3ForConfirmationTokenTx(
@@ -1935,18 +1925,16 @@ coins.forEach(
             { from: accounts[5] }
           );
 
-          const destinationAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
-            destinationAccount
-          );
+          const destinationAccountEndTokens =
+            await fixedSupplyTokenContract.balanceOf.call(destinationAccount);
           destinationAccountStartTokens
             .add(web3.utils.toBN(amount))
             .eq(destinationAccountEndTokens)
             .should.be.true();
 
           // Check wallet balance
-          const msigWalletEndTokens = await fixedSupplyTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const msigWalletEndTokens =
+            await fixedSupplyTokenContract.balanceOf.call(wallet.address);
           web3.utils
             .toBN(msigWalletStartTokens)
             .sub(web3.utils.toBN(amount))
@@ -1966,13 +1954,11 @@ coins.forEach(
           );
           balance.should.eql(web3.utils.toBN(1000000 - 100 - 100));
 
-          const forwarderContractStartTokens = await fixedSupplyTokenContract.balanceOf.call(
-            forwarder.address
-          );
+          const forwarderContractStartTokens =
+            await fixedSupplyTokenContract.balanceOf.call(forwarder.address);
           forwarderContractStartTokens.should.eql(web3.utils.toBN(100));
-          const walletContractStartTokens = await fixedSupplyTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const walletContractStartTokens =
+            await fixedSupplyTokenContract.balanceOf.call(wallet.address);
 
           await wallet.flushForwarderTokens(
             forwarder.address,
@@ -1980,15 +1966,13 @@ coins.forEach(
             { from: accounts[5] }
           );
 
-          const forwarderAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
-            forwarder.address
-          );
+          const forwarderAccountEndTokens =
+            await fixedSupplyTokenContract.balanceOf.call(forwarder.address);
           forwarderAccountEndTokens.should.eql(web3.utils.toBN(0));
 
           // Check wallet balance
-          const walletContractEndTokens = await fixedSupplyTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const walletContractEndTokens =
+            await fixedSupplyTokenContract.balanceOf.call(wallet.address);
           walletContractStartTokens
             .add(web3.utils.toBN(100))
             .eq(walletContractEndTokens)
@@ -2006,13 +1990,11 @@ coins.forEach(
           const balance = await tetherTokenContract.balanceOf.call(accounts[0]);
           balance.should.eql(web3.utils.toBN(1000000 - 100));
 
-          const forwarderContractStartTokens = await tetherTokenContract.balanceOf.call(
-            forwarder.address
-          );
+          const forwarderContractStartTokens =
+            await tetherTokenContract.balanceOf.call(forwarder.address);
           forwarderContractStartTokens.should.eql(web3.utils.toBN(100));
-          const walletContractStartTokens = await tetherTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const walletContractStartTokens =
+            await tetherTokenContract.balanceOf.call(wallet.address);
 
           await wallet.flushForwarderTokens(
             forwarder.address,
@@ -2020,15 +2002,13 @@ coins.forEach(
             { from: accounts[5] }
           );
 
-          const forwarderAccountEndTokens = await tetherTokenContract.balanceOf.call(
-            forwarder.address
-          );
+          const forwarderAccountEndTokens =
+            await tetherTokenContract.balanceOf.call(forwarder.address);
           forwarderAccountEndTokens.should.eql(web3.utils.toBN(0));
 
           // Check wallet balance
-          const walletContractEndTokens = await tetherTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const walletContractEndTokens =
+            await tetherTokenContract.balanceOf.call(wallet.address);
           walletContractStartTokens
             .add(web3.utils.toBN(100))
             .eq(walletContractEndTokens)
@@ -2048,9 +2028,8 @@ coins.forEach(
           });
           const balance = await tetherTokenContract.balanceOf.call(accounts[0]);
           balance.should.eql(web3.utils.toBN(1000000 - 200));
-          const msigWalletStartTokens = await tetherTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const msigWalletStartTokens =
+            await tetherTokenContract.balanceOf.call(wallet.address);
 
           msigWalletStartTokens.should.eql(web3.utils.toBN(100));
 
@@ -2061,9 +2040,8 @@ coins.forEach(
           const amount = 50;
           const expireTime = calculateFutureExpireTime(800); // 60 seconds
 
-          const destinationAccountStartTokens = await tetherTokenContract.balanceOf.call(
-            accounts[5]
-          );
+          const destinationAccountStartTokens =
+            await tetherTokenContract.balanceOf.call(accounts[5]);
           destinationAccountStartTokens.should.eql(web3.utils.toBN(0));
 
           const operationHash = helpers.getSha3ForConfirmationTokenTx(
@@ -2089,9 +2067,8 @@ coins.forEach(
             { from: accounts[5] }
           );
 
-          const destinationAccountEndTokens = await tetherTokenContract.balanceOf.call(
-            destinationAccount
-          );
+          const destinationAccountEndTokens =
+            await tetherTokenContract.balanceOf.call(destinationAccount);
           destinationAccountStartTokens
             .add(web3.utils.toBN(amount))
             .eq(destinationAccountEndTokens)
@@ -2113,13 +2090,11 @@ coins.forEach(
             await createForwarderFromWallet(wallet)
           ).create();
 
-          const forwarderContractStartTokens = await fixedSupplyTokenContract.balanceOf.call(
-            forwarder.address
-          );
+          const forwarderContractStartTokens =
+            await fixedSupplyTokenContract.balanceOf.call(forwarder.address);
           forwarderContractStartTokens.should.eql(web3.utils.toBN(0));
-          const walletContractStartTokens = await fixedSupplyTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const walletContractStartTokens =
+            await fixedSupplyTokenContract.balanceOf.call(wallet.address);
 
           await wallet.flushForwarderTokens(
             forwarder.address,
@@ -2127,15 +2102,13 @@ coins.forEach(
             { from: accounts[5] }
           );
 
-          const forwarderAccountEndTokens = await fixedSupplyTokenContract.balanceOf.call(
-            forwarder.address
-          );
+          const forwarderAccountEndTokens =
+            await fixedSupplyTokenContract.balanceOf.call(forwarder.address);
           forwarderAccountEndTokens.should.eql(web3.utils.toBN(0));
 
           // Check wallet balance
-          const walletContractEndTokens = await fixedSupplyTokenContract.balanceOf.call(
-            wallet.address
-          );
+          const walletContractEndTokens =
+            await fixedSupplyTokenContract.balanceOf.call(wallet.address);
           walletContractStartTokens
             .eq(walletContractEndTokens)
             .should.be.true();
@@ -2414,101 +2387,101 @@ coins.forEach(
           });
 
           signersIndex.forEach((signerNum) => {
-              const erc1155TokenId = 1;
-              const amount = 100;
+            const erc1155TokenId = 1;
+            const amount = 100;
 
-              it(`should flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
-                const signer = accounts[signerNum];
-                const forwarder = await (
-                  await createForwarderFromWallet(wallet, false)
-                ).create();
+            it(`should flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
+              const signer = accounts[signerNum];
+              const forwarder = await (
+                await createForwarderFromWallet(wallet, false)
+              ).create();
 
-                await token1155.mint(
-                  forwarder.address,
-                  erc1155TokenId,
-                  amount,
-                  [],
-                  { from: owner }
-                );
+              await token1155.mint(
+                forwarder.address,
+                erc1155TokenId,
+                amount,
+                [],
+                { from: owner }
+              );
 
-                const forwarderBalancePreFlush = await token1155.balanceOf(
-                  forwarder.address,
-                  erc1155TokenId
-                );
-                forwarderBalancePreFlush.toNumber().should.equal(amount);
+              const forwarderBalancePreFlush = await token1155.balanceOf(
+                forwarder.address,
+                erc1155TokenId
+              );
+              forwarderBalancePreFlush.toNumber().should.equal(amount);
 
-                const walletBalancePreFlush = await token1155.balanceOf(
-                  wallet.address,
-                  erc1155TokenId
-                );
-                walletBalancePreFlush.toNumber().should.equal(0);
+              const walletBalancePreFlush = await token1155.balanceOf(
+                wallet.address,
+                erc1155TokenId
+              );
+              walletBalancePreFlush.toNumber().should.equal(0);
 
-                await wallet.flushERC1155ForwarderTokens(
-                  forwarder.address,
-                  token1155.address,
-                  erc1155TokenId,
-                  { from: signer }
-                );
+              await wallet.flushERC1155ForwarderTokens(
+                forwarder.address,
+                token1155.address,
+                erc1155TokenId,
+                { from: signer }
+              );
 
-                const forwarderBalancePostFlush = await token1155.balanceOf(
-                  forwarder.address,
-                  erc1155TokenId
-                );
-                forwarderBalancePostFlush.toNumber().should.equal(0);
+              const forwarderBalancePostFlush = await token1155.balanceOf(
+                forwarder.address,
+                erc1155TokenId
+              );
+              forwarderBalancePostFlush.toNumber().should.equal(0);
 
-                const walletBalancePostFlush = await token1155.balanceOf(
-                  wallet.address,
-                  erc1155TokenId
-                );
-                walletBalancePostFlush.toNumber().should.equal(amount);
-              });
-
-              it(`should batch flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
-                const signer = accounts[signerNum];
-                const forwarder = await (
-                  await createForwarderFromWallet(wallet, false)
-                ).create();
-
-                await token1155.mint(
-                  forwarder.address,
-                  erc1155TokenId,
-                  amount,
-                  [],
-                  { from: owner }
-                );
-
-                const forwarderBalancePreFlush = await token1155.balanceOf(
-                  forwarder.address,
-                  erc1155TokenId
-                );
-                forwarderBalancePreFlush.toNumber().should.equal(amount);
-
-                const walletBalancePreFlush = await token1155.balanceOf(
-                  wallet.address,
-                  erc1155TokenId
-                );
-                walletBalancePreFlush.toNumber().should.equal(0);
-
-                await wallet.flushERC1155ForwarderTokens(
-                  forwarder.address,
-                  token1155.address,
-                  [erc1155TokenId],
-                  { from: signer }
-                );
-
-                const forwarderBalancePostFlush = await token1155.balanceOf(
-                  forwarder.address,
-                  erc1155TokenId
-                );
-                forwarderBalancePostFlush.toNumber().should.equal(0);
-
-                const walletBalancePostFlush = await token1155.balanceOf(
-                  wallet.address,
-                  erc1155TokenId
-                );
-                walletBalancePostFlush.toNumber().should.equal(amount);
-              });
+              const walletBalancePostFlush = await token1155.balanceOf(
+                wallet.address,
+                erc1155TokenId
+              );
+              walletBalancePostFlush.toNumber().should.equal(amount);
             });
+
+            it(`should batch flush erc1155 tokens back to this wallet when called by signer ${signerNum}`, async () => {
+              const signer = accounts[signerNum];
+              const forwarder = await (
+                await createForwarderFromWallet(wallet, false)
+              ).create();
+
+              await token1155.mint(
+                forwarder.address,
+                erc1155TokenId,
+                amount,
+                [],
+                { from: owner }
+              );
+
+              const forwarderBalancePreFlush = await token1155.balanceOf(
+                forwarder.address,
+                erc1155TokenId
+              );
+              forwarderBalancePreFlush.toNumber().should.equal(amount);
+
+              const walletBalancePreFlush = await token1155.balanceOf(
+                wallet.address,
+                erc1155TokenId
+              );
+              walletBalancePreFlush.toNumber().should.equal(0);
+
+              await wallet.flushERC1155ForwarderTokens(
+                forwarder.address,
+                token1155.address,
+                [erc1155TokenId],
+                { from: signer }
+              );
+
+              const forwarderBalancePostFlush = await token1155.balanceOf(
+                forwarder.address,
+                erc1155TokenId
+              );
+              forwarderBalancePostFlush.toNumber().should.equal(0);
+
+              const walletBalancePostFlush = await token1155.balanceOf(
+                wallet.address,
+                erc1155TokenId
+              );
+              walletBalancePostFlush.toNumber().should.equal(amount);
+            });
+          });
         });
       });
 
