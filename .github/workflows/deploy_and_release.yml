@@ -1,0 +1,64 @@
+name: Deploy and Update Release
+on:
+ release:
+   types: [published]
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 
+      uses: actions/setup-node@v3
+      with:
+        cache: 'npm'
+    - run: npm install
+    - run: npm run test
+      env:
+        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+  deploy-and-update-release:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    environment: dev
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.x
+          cache: 'npm'
+      - run: npm install
+      - run: npm run deploy-test
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      - name: Update release notes
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+              const fs = require('fs');
+              const path = require('path');
+              var json;
+              var html = "";
+              try {
+                json = JSON.parse(fs.readFileSync('./output.json').toString());
+                for(const key in json){
+                  html += key+": "+json[key]+"<br>";
+                }
+              } catch (err){
+                console.log("json file not found.");
+              }
+              const response= await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: "${{ github.event.release.tag_name }}"
+              });
+              github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: response.data.id,
+                body: html
+              });

@@ -2,10 +2,11 @@ name: Create Release on Push Tag
 on:
  push:
    tags:
-      - 'v*'
+      - 'r*'
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
@@ -15,7 +16,15 @@ jobs:
           cache: 'npm'
       - run: npm install
       - run: npm run test
-      - run: npm run lint
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      - run: npm run deploy-test
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
       - name: Create Release
         uses: actions/github-script@v6
         with:
@@ -26,14 +35,12 @@ jobs:
               var json;
               var html = "";
               try {
-                json = JSON.parse(fs.readFileSync('./releasenotes.json').toString());
-                for(const coin in json){
-                  html += "<h1>"+coin+"</h1>";
-                  html += "wallet: "+json[coin].wallet+"<br>";
-                  html += "scan: "+json[coin].etherscan+"<br>";
+                json = JSON.parse(fs.readFileSync('./output.json').toString());
+                for(const key in json){
+                  html += key+": "+json[key]+"<br>";
                 }
               } catch (err){
-                console.log("json file not found.");
+                console.log("error converting json to html."+ err);
               }
               const repo = context.repo.repo;
               const owner = context.repo.owner;
@@ -43,5 +50,5 @@ jobs:
                 repo,
                 tag_name: tag,
                 body: html,
-                prerelease: false
+                prerelease: true
               });
