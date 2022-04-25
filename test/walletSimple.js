@@ -1392,7 +1392,6 @@ coins.forEach(
             sequenceId: sequenceId
           };
 
-
           await expectFailSendMultiSigBatch(params, "Transaction expired'");
         });
 
