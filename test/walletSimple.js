@@ -568,19 +568,6 @@ coins.forEach(
               privateKeyForAccount(accounts[0])
             );
 
-            console.log(
-              'ExpectSuccess ' +
-                round +
-                ': ' +
-                amount +
-                'ETH, seqId: ' +
-                sequenceId +
-                ', operationHash: ' +
-                operationHash.toString('hex') +
-                ', sig: ' +
-                helpers.serializeSignature(sig)
-            );
-
             const destinationStartBalance = await web3.eth.getBalance(
               destinationAccount
             );
@@ -640,19 +627,6 @@ coins.forEach(
               privateKeyForAccount(accounts[0])
             );
 
-            console.log(
-              'ExpectFail ' +
-                round +
-                ': ' +
-                amount +
-                'ETH, seqId: ' +
-                sequenceId +
-                ', operationHash: ' +
-                operationHash.toString('hex') +
-                ', sig: ' +
-                helpers.serializeSignature(sig)
-            );
-
             const destinationStartBalance = await web3.eth.getBalance(
               destinationAccount
             );
@@ -710,18 +684,6 @@ coins.forEach(
               privateKeyForAccount(accounts[5 + (round % 5)])
             );
 
-            console.log(
-              'ExpectFail ' +
-                round +
-                ': ' +
-                amount +
-                'ETH, seqId: ' +
-                sequenceId +
-                ', operationHash: ' +
-                operationHash.toString('hex') +
-                ', sig: ' +
-                helpers.serializeSignature(sig)
-            );
             const destinationStartBalance = await web3.eth.getBalance(
               destinationAccount
             );
@@ -913,7 +875,7 @@ coins.forEach(
             toAddress: accounts[2],
             amount: 55,
             data: 'aa',
-            expireTime: Math.floor(new Date().getTime() / 1000) - 100,
+            expireTime: Math.floor(new Date().getTime() / 1000) - 100000,
             sequenceId: sequenceId
           };
 
@@ -1426,7 +1388,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[2]],
             values: [55],
-            expireTime: Math.floor(new Date().getTime() / 1000) - 100,
+            expireTime: Math.floor(new Date().getTime() / 1000) - 100000,
             sequenceId: sequenceId
           };
 
@@ -2599,7 +2561,6 @@ coins.forEach(
           const destinationStartBalance = await web3.eth.getBalance(
             reentryInstance.address
           );
-          // console.log("destination start balance", destinationStartBalance);
           await reentryInstance.sendMultiSig(
             wallet.address,
             toAddress,
