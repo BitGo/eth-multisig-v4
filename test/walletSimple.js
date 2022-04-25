@@ -875,7 +875,7 @@ coins.forEach(
             toAddress: accounts[2],
             amount: 55,
             data: 'aa',
-            expireTime: Math.floor(new Date().getTime() / 1000) - 1000000,
+            expireTime: 1650821880,
             sequenceId: sequenceId
           };
 
@@ -1388,9 +1388,10 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[2]],
             values: [55],
-            expireTime: Math.floor(new Date().getTime() / 1000) - 100000,
+            expireTime: 1650821880,
             sequenceId: sequenceId
           };
+
 
           await expectFailSendMultiSigBatch(params, "Transaction expired'");
         });
