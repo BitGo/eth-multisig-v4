@@ -38,6 +38,10 @@ async function main() {
 
   // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
   console.log('Waiting for 10 confirmations.....');
+
+  // Add sleep here so it doesn't hammer RPC for block requests
+  await new Promise(r => setTimeout(r, 60000));
+
   await walletSimple.deployTransaction.wait(10);
   await walletFactory.deployTransaction.wait(10);
   await forwarder.deployTransaction.wait(10);
