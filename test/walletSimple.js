@@ -875,7 +875,7 @@ coins.forEach(
             toAddress: accounts[2],
             amount: 55,
             data: 'aa',
-            expireTime: Math.floor(new Date().getTime() / 1000) - 10000,
+            expireTime: Math.floor(new Date().getTime() / 1000) - 1000000,
             sequenceId: sequenceId
           };
 
@@ -1388,7 +1388,7 @@ coins.forEach(
             wallet: wallet,
             recipients: [accounts[2]],
             values: [55],
-            expireTime: Math.floor(new Date().getTime() / 1000) - 100,
+            expireTime: Math.floor(new Date().getTime() / 1000) - 100000,
             sequenceId: sequenceId
           };
 
