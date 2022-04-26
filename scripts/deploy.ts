@@ -36,14 +36,17 @@ async function main() {
 
   fs.writeFileSync('output.json', JSON.stringify(output));
 
+  // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
+  console.log('Waiting for 5 minutes before verifying.....');
+  await new Promise(r => setTimeout(r, 1000 * 300));
+
   // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
-  console.log('Waiting for 10 confirmations.....');
   await walletSimple.deployTransaction.wait(10);
   await walletFactory.deployTransaction.wait(10);
   await forwarder.deployTransaction.wait(10);
   await forwarderFactory.deployTransaction.wait(10);
 
-  console.log('Contracts confirmed on chain, verifying');
+  console.log('Done waiting, verifying');
   await verifyContract('WalletSimple', walletSimple.address, []);
   await verifyContract('WalletFactory', walletFactory.address, [
     walletSimple.address
