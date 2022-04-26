@@ -40,7 +40,7 @@ async function main() {
   console.log('Waiting for 10 confirmations.....');
 
   // Add sleep here so it doesn't hammer RPC for block requests
-  await new Promise(r => setTimeout(r, 60000));
+  await new Promise(r => setTimeout(r, 1000 * 300));
 
   await walletSimple.deployTransaction.wait(10);
   await walletFactory.deployTransaction.wait(10);
