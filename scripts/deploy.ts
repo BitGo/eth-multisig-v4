@@ -38,7 +38,7 @@ async function main() {
 
   // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
   console.log('Waiting for 5 minutes before verifying.....');
-  await new Promise(r => setTimeout(r, 1000 * 300));
+  await new Promise((r) => setTimeout(r, 1000 * 300));
 
   // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
   await walletSimple.deployTransaction.wait(10);
