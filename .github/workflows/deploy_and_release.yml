@@ -31,7 +31,7 @@ jobs:
           node-version: 14.x
           cache: 'npm'
       - run: npm install
-      - run: npm run deploy-test
+      - run: npm run deploy-prod
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
