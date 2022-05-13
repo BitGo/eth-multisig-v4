@@ -90,6 +90,16 @@ Find it at [contracts/WalletSimple.sol](contracts/WalletSimple.sol)
 
 A test suite is included through the use of the hardhat framework, providing coverage for methods in the wallet.
 
+On first run:
+1. Create a file called `.env` in the root directory. 
+2. Add the following variable:
+   ```
+   PRIVATE_KEY=<Your private key>
+   ```
+Note: `<your private key>` can be from a wallet like Metamask.
+
+Once done, you can run the test with the following command:
+
 ```shell
 npx hardhat test
 ```
