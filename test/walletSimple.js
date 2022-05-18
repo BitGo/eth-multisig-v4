@@ -27,7 +27,7 @@ const EthWalletSimple = artifacts.require('./WalletSimple.sol');
 const RskWalletSimple = artifacts.require('./RskWalletSimple.sol');
 const EtcWalletSimple = artifacts.require('./EtcWalletSimple.sol');
 const CeloWalletSimple = artifacts.require('./CeloWalletSimple.sol');
-const MaticLWalletSimple = artifacts.require('./MaticLWalletSimple.sol');
+const PolygonWalletSimple = artifacts.require('./PolygonWalletSimple.sol');
 const Fail = artifacts.require('./Fail.sol');
 const GasGuzzler = artifacts.require('./GasGuzzler.sol');
 const GasHeavy = artifacts.require('./GasHeavy.sol');
@@ -73,11 +73,11 @@ const coins = [
     WalletSimple: CeloWalletSimple
   },
   {
-    name: 'MaticL',
-    nativePrefix: 'MATICL',
-    nativeBatchPrefix: 'MATICL-Batch',
-    tokenPrefix: 'MATICL-ERC20',
-    WalletSimple: MaticLWalletSimple
+    name: 'Polygon',
+    nativePrefix: 'POLYGON',
+    nativeBatchPrefix: 'POLYGON-Batch',
+    tokenPrefix: 'POLYGON-ERC20',
+    WalletSimple: PolygonWalletSimple
   }
 ];
 
