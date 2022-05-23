@@ -1,0 +1,44 @@
+name: Testnet Deploy
+on:
+ release:
+   types: [ labeled ]
+jobs:
+  if: ${{ github.event.label.name == 'testnet' }}
+  lint-and-test:
+    environment: dev
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 
+      uses: actions/setup-node@v3
+      with:
+        cache: 'npm'
+    - run: npm install
+    - run: npm run lint
+    - run: npm run test
+      env:
+        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+    - run: npm run deploy-test
+      env:
+        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+    - name: print addresses
+      uses: actions/github-script@v6
+      with:
+        script: |
+            const fs = require('fs');
+            const path = require('path');
+            var json;
+            var html = "";
+            try {
+              json = JSON.parse(fs.readFileSync('./output.json').toString());
+              for(const key in json){
+                html += key+": "+json[key]+"<br>";
+              }
+            } catch (err){
+              console.log("json file not found.");
+            }
+            console.log(html);
