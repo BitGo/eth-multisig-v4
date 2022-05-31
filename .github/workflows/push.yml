@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint-and-test:
-    environment: mainnet
+    environment: dev
     runs-on: ubuntu-latest
     strategy:
       matrix:
