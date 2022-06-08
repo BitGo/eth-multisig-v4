@@ -30,13 +30,13 @@ import '../WalletSimple.sol';
  *
  *
  */
-contract MaticLWalletSimple is WalletSimple {
+contract PolygonWalletSimple is WalletSimple {
   /**
    * Get the network identifier that signers must sign over
    * This provides protection signatures being replayed on other chains
    */
   function getNetworkId() internal override pure returns (string memory) {
-    return 'MATICL';
+    return 'POLYGON';
   }
 
   /**
@@ -44,7 +44,7 @@ contract MaticLWalletSimple is WalletSimple {
    * This provides protection signatures being replayed on other chains
    */
   function getTokenNetworkId() internal override pure returns (string memory) {
-    return 'MATICL-ERC20';
+    return 'POLYGON-ERC20';
   }
 
   /**
@@ -52,6 +52,6 @@ contract MaticLWalletSimple is WalletSimple {
    * This provides protection signatures being replayed on other chains
    */
   function getBatchNetworkId() internal override pure returns (string memory) {
-    return 'MATICL-Batch';
+    return 'POLYGON-Batch';
   }
 }
