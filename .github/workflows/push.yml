@@ -27,4 +27,5 @@ jobs:
         PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
         ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
     - run: npm run lint
