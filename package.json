@@ -9,8 +9,8 @@
     "test": "test"
   },
   "scripts": {
-    "deploy-prod": "hardhat run --network mainnet scripts/deploy.ts",
-    "deploy-test": "hardhat run --network goerli scripts/deploy.ts",
+    "deploy-prod": "hardhat run scripts/deploy.ts --network",
+    "deploy-test": "hardhat run scripts/deploy.ts --network",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
-    "@nomiclabs/hardhat-etherscan": "^2.1.8",
+    "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "@nomiclabs/hardhat-truffle5": "^2.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.2",
     "@nomiclabs/hardhat-web3": "^2.0.0",
