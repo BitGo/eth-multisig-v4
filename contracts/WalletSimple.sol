@@ -3,6 +3,7 @@ pragma solidity 0.8.10;
 import './TransferHelper.sol';
 import './ERC20Interface.sol';
 import './IForwarder.sol';
+import './libraries/SequenceIdArray.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
@@ -35,6 +36,8 @@ import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
  *
  */
 contract WalletSimple is IERC721Receiver, ERC1155Receiver {
+  using SequenceIdArray for uint256;
+
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -63,8 +66,9 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
 
   // Internal fields
   uint256 private constant MAX_SEQUENCE_ID_INCREASE = 10000;
-  uint256 constant SEQUENCE_ID_WINDOW_SIZE = 10;
-  uint256[SEQUENCE_ID_WINDOW_SIZE] recentSequenceIds;
+  uint256 private constant SEQUENCE_ID_WINDOW_SIZE = 10;
+  // encoded as array of 10 24-bit ints, giving max sequence id size of 2^24
+  uint256 recentSequenceIds;
 
   /**
    * Set up a simple multi-sig wallet by specifying the signers allowed to be used on this wallet.
@@ -554,16 +558,15 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    */
   function tryInsertSequenceId(uint256 sequenceId) private onlySigner {
     // Keep a pointer to the lowest value element in the window
-    uint256 lowestValueIndex = 0;
+    uint8 lowestValueIndex = 0;
+
     // fetch recentSequenceIds into memory for function context to avoid unnecessary sloads
+    uint256 _recentSequenceIds = recentSequenceIds;
+    for (uint8 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
+      uint256 id = _recentSequenceIds.getId(i);
+      require(id != sequenceId, 'Sequence ID already used');
 
-
-      uint256[SEQUENCE_ID_WINDOW_SIZE] memory _recentSequenceIds
-     = recentSequenceIds;
-    for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
-      require(_recentSequenceIds[i] != sequenceId, 'Sequence ID already used');
-
-      if (_recentSequenceIds[i] < _recentSequenceIds[lowestValueIndex]) {
+      if (id < _recentSequenceIds.getId(lowestValueIndex)) {
         lowestValueIndex = i;
       }
     }
@@ -571,7 +574,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     // The sequence ID being used is lower than the lowest value in the window
     // so we cannot accept it as it may have been used before
     require(
-      sequenceId > _recentSequenceIds[lowestValueIndex],
+      sequenceId > _recentSequenceIds.getId(lowestValueIndex),
       'Sequence ID below window'
     );
 
@@ -579,11 +582,11 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     // This prevents people blocking the contract by using very large sequence IDs quickly
     require(
       sequenceId <=
-        (_recentSequenceIds[lowestValueIndex] + MAX_SEQUENCE_ID_INCREASE),
+        (_recentSequenceIds.getId(lowestValueIndex) + MAX_SEQUENCE_ID_INCREASE),
       'Sequence ID above maximum'
     );
 
-    recentSequenceIds[lowestValueIndex] = sequenceId;
+    recentSequenceIds = recentSequenceIds.setId(lowestValueIndex, uint24(sequenceId));
   }
 
   /**
@@ -593,8 +596,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   function getNextSequenceId() external view returns (uint256) {
     uint256 highestSequenceId = 0;
     for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
-      if (recentSequenceIds[i] > highestSequenceId) {
-        highestSequenceId = recentSequenceIds[i];
+      if (recentSequenceIds.getId(i) > highestSequenceId) {
+        highestSequenceId = recentSequenceIds.getId(i);
       }
     }
     return highestSequenceId + 1;
