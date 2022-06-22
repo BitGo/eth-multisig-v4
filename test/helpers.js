@@ -147,6 +147,18 @@ exports.assertVMException = async (fn) => {
   failed.should.equal(true);
 };
 
+exports.assertCreateFail = async (fn) => {
+  let failed = false;
+  try {
+    await fn();
+  } catch (err) {
+    err.message.toString().should.containEql('CreateFail()');
+    failed = true;
+  }
+
+  failed.should.equal(true);
+};
+
 exports.getInitCode = (targetAddress) => {
   const target = util
     .stripHexPrefix(targetAddress.toLowerCase())

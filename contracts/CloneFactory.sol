@@ -1,98 +1,181 @@
-// SPDX-License-Identifier: MIT
-// from https://github.com/optionality/clone-factory
+// SPDX-License-Identifier: BSD
+// from https://github.com/wighawag/clones-with-immutable-args/
+// modified to use create2
 pragma solidity 0.8.10;
-
-/*
-    The MIT License (MIT)
-    Copyright (c) 2018 Murray Software, LLC.
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 //solhint-disable max-line-length
 //solhint-disable no-inline-assembly
 
+/// @title ClonesWithImmutableArgs
+/// @author wighawag, zefram.eth
+/// @notice Enables creating clone contracts with immutable args
 contract CloneFactory {
-  function createClone(address target, bytes32 salt)
-    internal
-    returns (address payable result)
-  {
-    bytes20 targetBytes = bytes20(target);
-    assembly {
-      // load the next free memory slot as a place to store the clone contract data
-      let clone := mload(0x40)
+    error CreateFail();
 
-      // The bytecode block below is responsible for contract initialization
-      // during deployment, it is worth noting the proxied contract constructor will not be called during
-      // the cloning procedure and that is why an initialization function needs to be called after the
-      // clone is created
-      mstore(
-        clone,
-        0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000000000000000000000
-      )
+    function cloneCreationCode(address target, bytes memory data)
+        internal
+        pure
+        returns (uint256 ptr, uint256 creationSize)
+    {
+        // unrealistic for memory ptr or data length to exceed 256 bits
+        unchecked {
+            uint256 extraLength = data.length + 2; // +2 bytes for telling how much data there is appended to the call
+            creationSize = 0x41 + extraLength;
+            uint256 runSize = creationSize - 10;
+            uint256 dataPtr;
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                ptr := mload(0x40)
 
-      // This stores the address location of the implementation contract
-      // so that the proxy knows where to delegate call logic to
-      mstore(add(clone, 0x14), targetBytes)
+                // -------------------------------------------------------------------------------------------------------------
+                // CREATION (10 bytes)
+                // -------------------------------------------------------------------------------------------------------------
 
-      // The bytecode block is the actual code that is deployed for each clone created.
-      // It forwards all calls to the already deployed implementation via a delegatecall
-      mstore(
-        add(clone, 0x28),
-        0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000
-      )
+                // 61 runtime  | PUSH2 runtime (r)     | r                       | –
+                mstore(
+                    ptr,
+                    0x6100000000000000000000000000000000000000000000000000000000000000
+                )
+                mstore(add(ptr, 0x01), shl(240, runSize)) // size of the contract running bytecode (16 bits)
 
-      // deploy the contract using the CREATE2 opcode
-      // this deploys the minimal proxy defined above, which will proxy all
-      // calls to use the logic defined in the implementation contract `target`
-      result := create2(0, clone, 0x37, salt)
+                // creation size = 0a
+                // 3d          | RETURNDATASIZE        | 0 r                     | –
+                // 81          | DUP2                  | r 0 r                   | –
+                // 60 creation | PUSH1 creation (c)    | c r 0 r                 | –
+                // 3d          | RETURNDATASIZE        | 0 c r 0 r               | –
+                // 39          | CODECOPY              | 0 r                     | [0-runSize): runtime code
+                // f3          | RETURN                |                         | [0-runSize): runtime code
+
+                // -------------------------------------------------------------------------------------------------------------
+                // RUNTIME (55 bytes + extraLength)
+                // -------------------------------------------------------------------------------------------------------------
+
+                // 3d          | RETURNDATASIZE        | 0                       | –
+                // 3d          | RETURNDATASIZE        | 0 0                     | –
+                // 3d          | RETURNDATASIZE        | 0 0 0                   | –
+                // 3d          | RETURNDATASIZE        | 0 0 0 0                 | –
+                // 36          | CALLDATASIZE          | cds 0 0 0 0             | –
+                // 3d          | RETURNDATASIZE        | 0 cds 0 0 0 0           | –
+                // 3d          | RETURNDATASIZE        | 0 0 cds 0 0 0 0         | –
+                // 37          | CALLDATACOPY          | 0 0 0 0                 | [0, cds) = calldata
+                // 61          | PUSH2 extra           | extra 0 0 0 0           | [0, cds) = calldata
+                mstore(
+                    add(ptr, 0x03),
+                    0x3d81600a3d39f33d3d3d3d363d3d376100000000000000000000000000000000
+                )
+                mstore(add(ptr, 0x13), shl(240, extraLength))
+
+                // 60 0x37     | PUSH1 0x37            | 0x37 extra 0 0 0 0      | [0, cds) = calldata // 0x37 (55) is runtime size - data
+                // 36          | CALLDATASIZE          | cds 0x37 extra 0 0 0 0  | [0, cds) = calldata
+                // 39          | CODECOPY              | 0 0 0 0                 | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 36          | CALLDATASIZE          | cds 0 0 0 0             | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 61 extra    | PUSH2 extra           | extra cds 0 0 0 0       | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                mstore(
+                    add(ptr, 0x15),
+                    0x6037363936610000000000000000000000000000000000000000000000000000
+                )
+                mstore(add(ptr, 0x1b), shl(240, extraLength))
+
+                // 01          | ADD                   | cds+extra 0 0 0 0       | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 3d          | RETURNDATASIZE        | 0 cds 0 0 0 0           | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 73 addr     | PUSH20 0x123…         | addr 0 cds 0 0 0 0      | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                mstore(
+                    add(ptr, 0x1d),
+                    0x013d730000000000000000000000000000000000000000000000000000000000
+                )
+                mstore(add(ptr, 0x20), shl(0x60, target))
+
+                // 5a          | GAS                   | gas addr 0 cds 0 0 0 0  | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // f4          | DELEGATECALL          | success 0 0             | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 3d          | RETURNDATASIZE        | rds success 0 0         | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 3d          | RETURNDATASIZE        | rds rds success 0 0     | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 93          | SWAP4                 | 0 rds success 0 rds     | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 80          | DUP1                  | 0 0 rds success 0 rds   | [0, cds) = calldata, [cds, cds+0x37) = extraData
+                // 3e          | RETURNDATACOPY        | success 0 rds           | [0, rds) = return data (there might be some irrelevant leftovers in memory [rds, cds+0x37) when rds < cds+0x37)
+                // 60 0x35     | PUSH1 0x35            | 0x35 sucess 0 rds       | [0, rds) = return data
+                // 57          | JUMPI                 | 0 rds                   | [0, rds) = return data
+                // fd          | REVERT                | –                       | [0, rds) = return data
+                // 5b          | JUMPDEST              | 0 rds                   | [0, rds) = return data
+                // f3          | RETURN                | –                       | [0, rds) = return data
+                mstore(
+                    add(ptr, 0x34),
+                    0x5af43d3d93803e603557fd5bf300000000000000000000000000000000000000
+                )
+            }
+
+            // -------------------------------------------------------------------------------------------------------------
+            // APPENDED DATA (Accessible from extcodecopy)
+            // (but also send as appended data to the delegatecall)
+            // -------------------------------------------------------------------------------------------------------------
+
+            extraLength -= 2;
+            uint256 counter = extraLength;
+            uint256 copyPtr = ptr + 0x41;
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                dataPtr := add(data, 32)
+            }
+            for (; counter >= 32; counter -= 32) {
+                // solhint-disable-next-line no-inline-assembly
+                assembly {
+                    mstore(copyPtr, mload(dataPtr))
+                }
+
+                copyPtr += 32;
+                dataPtr += 32;
+            }
+            uint256 mask = ~(256**(32 - counter) - 1);
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                mstore(copyPtr, and(mload(dataPtr), mask))
+            }
+            copyPtr += counter;
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                mstore(copyPtr, shl(240, extraLength))
+            }
+        }
     }
-  }
 
-  function isClone(address target, address query)
+    /// @notice Creates a clone proxy of the implementation contract, with immutable args
+    /// @dev data cannot exceed 65535 bytes, since 2 bytes are used to store the data length
+    /// @param target The target contract to clone
+    /// @param salt The create2 salt
+    /// @param data Encoded immutable args
+    /// @return instance The address of the created clone
+    function clone(address target, bytes32 salt, bytes memory data)
     internal
-    view
-    returns (bool result)
-  {
-    bytes20 targetBytes = bytes20(target);
-    assembly {
-      // load the next free memory slot as a place to store the comparison clone
-      let clone := mload(0x40)
-
-      // The next three lines store the expected bytecode for a miniml proxy
-      // that targets `target` as its implementation contract
-      mstore(
-        clone,
-        0x363d3d373d3d3d363d7300000000000000000000000000000000000000000000
-      )
-      mstore(add(clone, 0xa), targetBytes)
-      mstore(
-        add(clone, 0x1e),
-        0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000
-      )
-
-      // the next two lines store the bytecode of the contract that we are checking in memory
-      let other := add(clone, 0x40)
-      extcodecopy(query, other, 0, 0x2d)
-
-      // Check if the expected bytecode equals the actual bytecode and return the result
-      result := and(
-        eq(mload(clone), mload(other)),
-        eq(mload(add(clone, 0xd)), mload(add(other, 0xd)))
-      )
+    returns (address payable instance)
+    {
+      (uint creationPtr, uint creationSize) = cloneCreationCode(target, data);
+      // solhint-disable-next-line no-inline-assembly
+      assembly {
+        instance := create2(0, creationPtr, creationSize, salt)
+      }
+      if (instance == address(0)) {
+        revert CreateFail();
+      }
     }
-  }
+
+    /// @dev Returns the address where a clone of implementation will be deployed by this factory.
+    function computeCloneAddress(address target, bytes32 salt, bytes memory data) public view returns (address) {
+      (uint creationPtr, uint creationSize) = cloneCreationCode(target, data);
+
+      bytes32 creationHash;
+      // solhint-disable-next-line no-inline-assembly
+      assembly {
+        creationHash := keccak256(creationPtr, creationSize)
+      }
+
+      return computeAddress(salt, creationHash, address(this));
+    }
+
+    /// @dev Returns the address where a contract will be stored if deployed via CREATE2 from a contract located at `deployer`.
+    function computeAddress(
+      bytes32 salt,
+      bytes32 bytecodeHash,
+      address deployer
+    ) internal pure returns (address) {
+      bytes32 _data = keccak256(abi.encodePacked(bytes1(0xff), deployer, salt, bytecodeHash));
+      return address(uint160(uint256(_data)));
+    }
 }

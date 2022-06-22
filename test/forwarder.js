@@ -5,7 +5,9 @@ const helpers = require('./helpers');
 const BigNumber = require('bignumber.js');
 const { makeInterfaceId } = require('@openzeppelin/test-helpers');
 
+const { createForwarderFactory } = require('./forwarderFactory');
 const Forwarder = artifacts.require('./Forwarder.sol');
+const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
 const ERC721 = artifacts.require('./MockERC721');
 const ERC1155 = artifacts.require('./MockERC1155');
 const AlwaysFalseERC165 = artifacts.require('./AlwaysFalseERC165.sol');
@@ -14,11 +16,37 @@ const util = require('ethereumjs-util');
 const abi = require('ethereumjs-abi');
 const hre = require('hardhat');
 
-const createForwarder = async (creator, parent) => {
-  const forwarderContract = await Forwarder.new([], { from: creator });
-  await forwarderContract.init(parent, true, true);
-  return forwarderContract;
-};
+class ForwarderDeployer {
+  constructor(factory) {
+    this.factory = factory;
+    this.salt = 0;
+  }
+
+  async createForwarder(creator, parent, autoFlush721 = true, autoFlush1155 = true) {
+    const salt = this.salt++;
+    const inputSalt = this.getSaltBuffer(salt);
+    const implementationAddress = await this.factory.implementationAddress();
+    const tx = await this.factory.createForwarder(parent, inputSalt, autoFlush721, autoFlush1155);
+    return await Forwarder.at(tx.logs[0].args.newForwarderAddress);
+  };
+
+  async nextAddress(creator, parent) {
+    const implementationAddress = await this.factory.implementationAddress();
+    const inputSalt = this.getSaltBuffer(this.salt);
+    return await this.factory.computeForwarderAddress(parent, inputSalt);
+  }
+
+  getSaltBuffer(salt) {
+    let saltString = salt.toString(16);
+    if (saltString.length % 2 !== 0) {
+      saltString = '0' + saltString;
+    }
+    return util.setLengthLeft(
+      Buffer.from(saltString, 'hex'),
+      32
+    );
+  }
+}
 
 const getBalanceInWei = async (address) => {
   return new BigNumber(await web3.eth.getBalance(address));
@@ -43,13 +71,16 @@ const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
 
 describe('Forwarder', function () {
   let accounts;
+  let deployer;
   before(async () => {
     await hre.network.provider.send('hardhat_reset');
     accounts = await web3.eth.getAccounts();
+    const { factory } = (await createForwarderFactory());
+    deployer = new ForwarderDeployer(factory);
   });
 
   it('Basic forwarding test', async function () {
-    const forwarder = await createForwarder(accounts[0], accounts[0]);
+    const forwarder = await deployer.createForwarder(accounts[0], accounts[0]);
     const startBalance = await getBalanceInWei(accounts[0]);
     const amount = web3.utils.toWei('2', 'ether');
 
@@ -76,8 +107,8 @@ describe('Forwarder', function () {
     const amount = web3.utils.toWei('5', 'ether');
     const baseAddress = accounts[3];
     const senderAddress = accounts[0];
-    const forwarderAddress = await helpers.getNextContractAddress(
-      senderAddress
+    const forwarderAddress = await deployer.nextAddress(
+      baseAddress, baseAddress
     );
 
     const startBalance = await getBalanceInWei(baseAddress);
@@ -93,8 +124,7 @@ describe('Forwarder', function () {
     (await getBalanceInWei(forwarderAddress)).eq(amount).should.be.true();
     (await getBalanceInWei(baseAddress)).eq(startBalance).should.be.true();
 
-    const forwarder = await Forwarder.new([], { from: senderAddress });
-    const tx = await forwarder.init(baseAddress, true, true);
+    const forwarder = await deployer.createForwarder(baseAddress, baseAddress);
     forwarder.address.should.eql(forwarderAddress);
 
     // Check that the ether was automatically flushed to the base address
@@ -102,19 +132,10 @@ describe('Forwarder', function () {
     (await getBalanceInWei(baseAddress))
       .eq(startBalance.plus(amount))
       .should.be.true();
-
-    const forwardedEvent = await helpers.getEventFromTransaction(
-      tx.receipt.transactionHash,
-      FORWARDER_DEPOSITED_EVENT
-    );
-
-    should.exist(forwardedEvent);
-    forwardedEvent.from.should.equal(forwarderAddress);
-    forwardedEvent.value.should.equal(amount);
   });
 
   it('Should forward with data passed', async function () {
-    const forwarder = await createForwarder(accounts[0], accounts[0]);
+    const forwarder = await deployer.createForwarder(accounts[0], accounts[0]);
     const startBalance = await getBalanceInWei(accounts[0]);
     const amount = web3.utils.toWei('2', 'ether');
 
@@ -131,16 +152,16 @@ describe('Forwarder', function () {
 
   it('Should not init twice', async function () {
     const baseAddress = accounts[3];
-    const forwarder = await createForwarder(baseAddress, baseAddress);
+    const forwarder = await deployer.createForwarder(baseAddress, baseAddress);
 
     await truffleAssert.reverts(
-      forwarder.init(baseAddress, true, { from: baseAddress })
+      forwarder.init(true, { from: baseAddress })
     );
   });
 
   it('should change autoFlush721 when calling setAutoFlush721', async () => {
     const baseAddress = accounts[3];
-    const forwarder = await createForwarder(baseAddress, baseAddress);
+    const forwarder = await deployer.createForwarder(baseAddress, baseAddress);
 
     const initialState = await forwarder.autoFlush721();
     await forwarder.setAutoFlush721(!initialState, { from: baseAddress });
@@ -151,7 +172,7 @@ describe('Forwarder', function () {
 
   it('should fail to toggle autoFlush721 if caller is not parent', async () => {
     const baseAddress = accounts[3];
-    const forwarder = await createForwarder(baseAddress, baseAddress);
+    const forwarder = await deployer.createForwarder(baseAddress, baseAddress);
 
     await truffleAssert.reverts(
       forwarder.setAutoFlush721(false, { from: accounts[4] })
@@ -160,7 +181,7 @@ describe('Forwarder', function () {
 
   it('should toggle autoFlush1155 when calling setAutoFlush1155', async () => {
     const baseAddress = accounts[3];
-    const forwarder = await createForwarder(baseAddress, baseAddress);
+    const forwarder = await deployer.createForwarder(baseAddress, baseAddress);
 
     const initialState = await forwarder.autoFlush1155();
     await forwarder.setAutoFlush1155(!initialState, { from: baseAddress });
@@ -171,7 +192,7 @@ describe('Forwarder', function () {
 
   it('should fail to toggle autoFlush1155 if caller is not parent', async () => {
     const baseAddress = accounts[3];
-    const forwarder = await createForwarder(baseAddress, baseAddress);
+    const forwarder = await deployer.createForwarder(baseAddress, baseAddress);
 
     await truffleAssert.reverts(
       forwarder.setAutoFlush1155(false, { from: accounts[4] })
@@ -190,9 +211,8 @@ describe('Forwarder', function () {
       const symbol = 'NFT';
       token721 = await ERC721.new(name, symbol);
       baseAddress = accounts[0];
-      autoFlushForwarder = await createForwarder(baseAddress, baseAddress);
-      noAutoFlushForwarder = await Forwarder.new([], { from: accounts[1] });
-      await noAutoFlushForwarder.init(baseAddress, false, false);
+      autoFlushForwarder = await deployer.createForwarder(baseAddress, baseAddress);
+      noAutoFlushForwarder = await deployer.createForwarder(baseAddress, baseAddress, false, false);
     });
 
     it('Should support NFT safeTransferFrom function', async function () {
@@ -601,7 +621,7 @@ describe('Forwarder', function () {
     Object.entries(INTERFACE_IDS).map(([eipInterface, interfaceId]) => {
       it(`should support ${eipInterface}`, async function () {
         const baseAddress = accounts[3];
-        const forwarder = await createForwarder(baseAddress, baseAddress);
+        const forwarder = await deployer.createForwarder(baseAddress, baseAddress);
 
         const supportsInterface = await forwarder.supportsInterface(
           interfaceId
@@ -623,7 +643,7 @@ describe('Forwarder', function () {
 
     before(async function () {
       reentryForwarderInstance = await ReentryForwarder.new();
-      forwarder = await createForwarder(
+      forwarder = await deployer.createForwarder(
         accounts[0],
         reentryForwarderInstance.address
       );

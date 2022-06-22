@@ -4,7 +4,7 @@ import './WalletSimple.sol';
 import './CloneFactory.sol';
 
 contract WalletFactory is CloneFactory {
-  address public implementationAddress;
+  address public immutable implementationAddress;
 
   event WalletCreated(address newWalletAddress, address[] allowedSigners);
 
@@ -18,8 +18,13 @@ contract WalletFactory is CloneFactory {
     // include the signers in the salt so any contract deployed to a given address must have the same signers
     bytes32 finalSalt = keccak256(abi.encodePacked(allowedSigners, salt));
 
-    address payable clone = createClone(implementationAddress, finalSalt);
-    WalletSimple(clone).init(allowedSigners);
+    address payable clone = clone(implementationAddress, finalSalt, abi.encodePacked(allowedSigners[0], allowedSigners[1], allowedSigners[2]));
+    WalletSimple(clone).init();
     emit WalletCreated(clone, allowedSigners);
+  }
+
+  function computeWalletAddress(address[] calldata allowedSigners, bytes32 salt) external view returns (address) {
+    bytes32 finalSalt = keccak256(abi.encodePacked(allowedSigners, salt));
+    return computeCloneAddress(implementationAddress, finalSalt, abi.encodePacked(allowedSigners[0], allowedSigners[1], allowedSigners[2]));
   }
 }

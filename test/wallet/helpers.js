@@ -107,8 +107,8 @@ const createWalletHelper = async (WalletSimple, creator, signers) => {
     calculationSalt,
     initCode
   );
-  await factory.createWallet(signers, inputSalt, { from: creator });
-  return WalletSimple.at(walletAddress);
+  const tx = await factory.createWallet(signers, inputSalt, { from: creator });
+  return WalletSimple.at(tx.logs[0].args.newWalletAddress);
 };
 
 const getBalanceInWei = async (address) => {
@@ -134,3 +134,4 @@ exports.createWalletHelper = createWalletHelper;
 exports.getBalanceInWei = getBalanceInWei;
 exports.calculateFutureExpireTime = calculateFutureExpireTime;
 exports.isSigner = isSigner;
+exports.createWalletFactory = createWalletFactory;

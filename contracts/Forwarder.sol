@@ -4,6 +4,7 @@ import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import 'clones-with-immutable-args/Clone.sol';
 import './ERC20Interface.sol';
 import './TransferHelper.sol';
 import './IForwarder.sol';
@@ -12,11 +13,15 @@ import './IForwarder.sol';
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
+contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder, Clone {
   // Address to which any funds sent to this contract will be forwarded
-  address public parentAddress;
+  function parentAddress() public pure returns (address) {
+    return _getArgAddress(0);
+  }
+
   bool public autoFlush721 = true;
   bool public autoFlush1155 = true;
+  bool public initialized;
 
   event ForwarderDeposited(address from, uint256 value, bytes data);
 
@@ -24,22 +29,21 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
    * Initialize the contract, and sets the destination address to that of the creator
    */
   function init(
-    address _parentAddress,
     bool _autoFlush721,
     bool _autoFlush1155
   ) external onlyUninitialized {
-    parentAddress = _parentAddress;
     uint256 value = address(this).balance;
 
     // set whether we want to automatically flush erc721/erc1155 tokens or not
     autoFlush721 = _autoFlush721;
     autoFlush1155 = _autoFlush1155;
+    initialized = true;
 
     if (value == 0) {
       return;
     }
 
-    (bool success, ) = parentAddress.call{ value: value }('');
+    (bool success, ) = parentAddress().call{ value: value }('');
     require(success, 'Flush failed');
 
     // NOTE: since we are forwarding on initialization,
@@ -53,7 +57,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
    * Modifier that will execute internal code block only if the sender is the parent address
    */
   modifier onlyParent {
-    require(msg.sender == parentAddress, 'Only Parent');
+    require(msg.sender == parentAddress(), 'Only Parent');
     _;
   }
 
@@ -61,7 +65,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
   modifier onlyUninitialized {
-    require(parentAddress == address(0x0), 'Already initialized');
+    require(!initialized, 'Already initialized');
     _;
   }
 
@@ -125,7 +129,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
         'The caller does not support the ERC721 interface'
       );
       // this won't work for ERC721 re-entrancy
-      instance.safeTransferFrom(address(this), parentAddress, _tokenId, data);
+      instance.safeTransferFrom(address(this), parentAddress(), _tokenId, data);
     }
 
     return this.onERC721Received.selector;
@@ -161,7 +165,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
     );
 
     if (autoFlush1155) {
-      instance.safeTransferFrom(address(this), parentAddress, id, value, data);
+      instance.safeTransferFrom(address(this), parentAddress(), id, value, data);
     }
 
     return this.onERC1155Received.selector;
@@ -186,7 +190,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
     if (autoFlush1155) {
       instance.safeBatchTransferFrom(
         address(this),
-        parentAddress,
+        parentAddress(),
         ids,
         values,
         data
@@ -214,7 +218,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
 
     TransferHelper.safeTransfer(
       tokenContractAddress,
-      parentAddress,
+      parentAddress(),
       forwarderBalance
     );
   }
@@ -235,7 +239,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
     );
 
     address ownerAddress = instance.ownerOf(tokenId);
-    instance.transferFrom(ownerAddress, parentAddress, tokenId);
+    instance.transferFrom(ownerAddress, parentAddress(), tokenId);
   }
 
   /**
@@ -258,7 +262,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
 
     instance.safeTransferFrom(
       forwarderAddress,
-      parentAddress,
+      parentAddress(),
       tokenId,
       forwarderBalance,
       ''
@@ -286,7 +290,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
 
     instance.safeBatchTransferFrom(
       forwarderAddress,
-      parentAddress,
+      parentAddress(),
       tokenIds,
       amounts,
       ''
@@ -303,7 +307,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
       return;
     }
 
-    (bool success, ) = parentAddress.call{ value: value }('');
+    (bool success, ) = parentAddress().call{ value: value }('');
     require(success, 'Flush failed');
     emit ForwarderDeposited(msg.sender, value, msg.data);
   }

@@ -26,6 +26,7 @@ const getBalanceInWei = async (address) => {
   return new BigNumber(await web3.eth.getBalance(address));
 };
 
+
 const createForwarder = async (
   factory,
   implementationAddress,
@@ -269,3 +270,5 @@ describe('ForwarderFactory', function () {
     );
   });
 });
+
+exports.createForwarderFactory = createForwarderFactory;

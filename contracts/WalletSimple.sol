@@ -4,6 +4,8 @@ import './TransferHelper.sol';
 import './ERC20Interface.sol';
 import './IForwarder.sol';
 
+import 'clones-with-immutable-args/Clone.sol';
+
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
@@ -34,7 +36,7 @@ import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
  *
  *
  */
-contract WalletSimple is IERC721Receiver, ERC1155Receiver {
+contract WalletSimple is IERC721Receiver, ERC1155Receiver, Clone {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -56,8 +58,19 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     bytes32 operation // Operation hash (see Data Formats)
   );
 
+  function signer0() public pure returns (address) {
+    return _getArgAddress(0);
+  }
+
+  function signer1() public pure returns (address) {
+    return _getArgAddress(20);
+  }
+
+  function signer2() public pure returns (address) {
+    return _getArgAddress(40);
+  }
+
   // Public fields
-  mapping(address => bool) public signers; // The addresses that can co-sign transactions on the wallet
   bool public safeMode = false; // When active, wallet may only send to signer addresses
   bool public initialized = false; // True if the contract has been initialized
 
@@ -71,18 +84,13 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    * 2 signers will be required to send a transaction from this wallet.
    * Note: The sender is NOT automatically added to the list of signers.
    * Signers CANNOT be changed once they are set
-   *
-   * @param allowedSigners An array of signers on the wallet
    */
-  function init(address[] calldata allowedSigners) external onlyUninitialized {
-    require(allowedSigners.length == 3, 'Invalid number of signers');
+  function init() external onlyUninitialized {
+      require(signer0() != address(0), 'Invalid signer 0');
+      require(signer1() != address(0), 'Invalid signer 1');
+      require(signer2() != address(0), 'Invalid signer 2');
 
-    for (uint8 i = 0; i < allowedSigners.length; i++) {
-      require(allowedSigners[i] != address(0), 'Invalid signer');
-      signers[allowedSigners[i]] = true;
-    }
-
-    initialized = true;
+      initialized = true;
   }
 
   /**
@@ -127,7 +135,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    * returns boolean indicating whether address is signer or not
    */
   function isSigner(address signer) public view returns (bool) {
-    return signers[signer];
+    return signer0() == signer || signer1() == signer || signer2() == signer;
   }
 
   /**

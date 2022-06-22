@@ -23,61 +23,21 @@ const getBalanceInWei = async (address) => {
   return new BigNumber(await web3.eth.getBalance(address));
 };
 
-const createWallet = async (
-  factory,
-  implementationAddress,
-  signers,
-  salt,
-  sender
-) => {
-  const inputSalt = util.setLengthLeft(
-    Buffer.from(util.stripHexPrefix(salt), 'hex'),
-    32
-  );
-  const calculationSalt = abi.soliditySHA3(
-    ['address[]', 'bytes32'],
-    [signers, inputSalt]
-  );
-  const initCode = helpers.getInitCode(
-    util.stripHexPrefix(implementationAddress)
-  );
-  const walletAddress = helpers.getNextContractAddressCreate2(
-    factory.address,
-    calculationSalt,
-    initCode
-  );
-
-  const tx = await factory.createWallet(signers, inputSalt, { from: sender });
-  const walletCreatedEvent = await helpers.getEventFromTransaction(
-    tx.receipt.transactionHash,
-    'WalletCreated'
-  );
-
-  walletCreatedEvent.newWalletAddress.should.equal(walletAddress);
-  JSON.stringify(walletCreatedEvent.allowedSigners).should.equal(
-    JSON.stringify(signers)
-  );
-  return WalletSimple.at(walletAddress);
-};
-
 describe('WalletFactory', function () {
   let accounts;
+  let deployer;
   before(async () => {
     await hre.network.provider.send('hardhat_reset');
     accounts = await web3.eth.getAccounts();
+    const { factory } = await createWalletFactory();
+    deployer = new WalletDeployer(factory);
   });
 
   it('Should create a functional wallet using the factory', async function () {
-    const { factory, implementationAddress } = await createWalletFactory();
 
     const signers = [accounts[0], accounts[1], accounts[2]];
-    const salt = '0x1234';
-    const wallet = await createWallet(
-      factory,
-      implementationAddress,
+    const wallet = await deployer.createWallet(
       signers,
-      salt,
-      accounts[1]
     );
     const walletAddress = wallet.address;
     const startBalance = await getBalanceInWei(walletAddress);
@@ -125,23 +85,9 @@ describe('WalletFactory', function () {
     const { factory, implementationAddress } = await createWalletFactory();
 
     const signers = [accounts[0], accounts[1], accounts[2]];
-    const salt = '0x1234';
-    const walletAddress = await createWallet(
-      factory,
-      implementationAddress,
-      signers,
-      salt,
-      accounts[1]
-    );
+    const walletAddress = await deployer.createWallet(signers);
 
-    const salt2 = '0x12345678';
-    const walletAddress2 = await createWallet(
-      factory,
-      implementationAddress,
-      signers,
-      salt2,
-      accounts[1]
-    );
+    const walletAddress2 = await deployer.createWallet(signers);
 
     walletAddress.should.not.equal(walletAddress2);
   });
@@ -152,21 +98,8 @@ describe('WalletFactory', function () {
       await createWalletFactory();
 
     const signers = [accounts[0], accounts[1], accounts[2]];
-    const salt = '0x1234';
-    const walletAddress = await createWallet(
-      factory,
-      implementationAddress,
-      signers,
-      salt,
-      accounts[1]
-    );
-    const walletAddress2 = await createWallet(
-      factory2,
-      implementationAddress2,
-      signers,
-      salt,
-      accounts[1]
-    );
+    const walletAddress = await deployer.createWallet(signers);
+    const walletAddress2 = await deployer.createWallet(signers);
 
     walletAddress.should.not.equal(walletAddress2);
   });
@@ -175,23 +108,10 @@ describe('WalletFactory', function () {
     const { factory, implementationAddress } = await createWalletFactory();
 
     const signers = [accounts[0], accounts[1], accounts[2]];
-    const salt = '0x1234';
-    const walletAddress = await createWallet(
-      factory,
-      implementationAddress,
-      signers,
-      salt,
-      accounts[1]
-    );
+    const walletAddress = await deployer.createWallet(signers, 94);
 
     const signers2 = [accounts[0], accounts[1], accounts[3]];
-    const walletAddress2 = await createWallet(
-      factory,
-      implementationAddress,
-      signers2,
-      salt,
-      accounts[1]
-    );
+    const walletAddress2 = await deployer.createWallet(signers2, 94);
 
     walletAddress.should.not.equal(walletAddress2);
   });
@@ -200,23 +120,10 @@ describe('WalletFactory', function () {
     const { factory, implementationAddress } = await createWalletFactory();
 
     const signers = [accounts[0], accounts[1], accounts[2]];
-    const salt = '0x1234';
-    await createWallet(
-      factory,
-      implementationAddress,
-      signers,
-      salt,
-      accounts[1]
-    );
-    await helpers.assertVMException(
+    await deployer.createWallet(signers, 77);
+    await helpers.assertCreateFail(
       async () =>
-        await createWallet(
-          factory,
-          implementationAddress,
-          signers,
-          salt,
-          accounts[1]
-        )
+        await deployer.createWallet(signers, 77)
     );
   });
 });

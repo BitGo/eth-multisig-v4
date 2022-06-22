@@ -14,7 +14,8 @@ const {
   createForwarderFromWallet,
   createWalletHelper,
   getBalanceInWei,
-  isSigner
+  isSigner,
+  createWalletFactory,
 } = require('./wallet/helpers');
 const { privateKeyForAccount } = require('./helpers');
 
@@ -89,21 +90,55 @@ coins.forEach(
     tokenPrefix,
     WalletSimple
   }) => {
+    class WalletDeployer {
+      constructor(factory) {
+        this.factory = factory;
+        this.salt = 0;
+      }
+
+      async createWallet(signers, salt = this.salt++) {
+        const inputSalt = this.getSaltBuffer(salt);
+        const implementationAddress = await this.factory.implementationAddress();
+        const tx = await this.factory.createWallet(signers, inputSalt);
+        return await WalletSimple.at(tx.logs[0].args.newWalletAddress);
+      };
+
+      async nextAddress(signers) {
+        const implementationAddress = await this.factory.implementationAddress();
+        const inputSalt = this.getSaltBuffer(this.salt);
+        return await this.factory.computeWalletAddress(signers, inputSalt);
+      }
+
+      getSaltBuffer(salt) {
+        let saltString = salt.toString(16);
+        if (saltString.length % 2 !== 0) {
+          saltString = '0' + saltString;
+        }
+        return util.setLengthLeft(
+          Buffer.from(saltString, 'hex'),
+          32
+        );
+      }
+    }
+
     const createWallet = (creator, signers) => {
       return createWalletHelper(WalletSimple, creator, signers);
     };
 
-    describe(`${coinName}WalletSimple`, function () {
+    describe.only(`${coinName}WalletSimple`, function () {
       let wallet;
       let accounts;
+      let deployer;
       before(async () => {
         await hre.network.provider.send('hardhat_reset');
         accounts = await web3.eth.getAccounts();
+        const { factory } = await createWalletFactory(WalletSimple);
+        deployer = new WalletDeployer(factory);
       });
 
       describe('Wallet creation', function () {
         it('2 of 3 multisig wallet', async function () {
-          const wallet = await createWallet(accounts[0], [
+          const wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             accounts[2]
@@ -132,7 +167,7 @@ coins.forEach(
 
         it('Not enough signer addresses', async function () {
           try {
-            await createWallet(accounts[0], [accounts[0]]);
+            await deployer.createWallet([accounts[0]]);
             throw new Error('should not be here');
           } catch (e) {
             e.message.should.not.containEql('should not be here');
@@ -160,7 +195,7 @@ coins.forEach(
 
       describe('Deposits', function () {
         before(async function () {
-          wallet = await createWallet(accounts[0], [
+          wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             accounts[2]
@@ -457,7 +492,7 @@ coins.forEach(
       describe('Transaction sending using sendMultiSig', function () {
         before(async function () {
           // Create and fund the wallet
-          wallet = await createWallet(accounts[0], [
+          wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             accounts[2]
@@ -1147,7 +1182,7 @@ coins.forEach(
 
         before(async function () {
           // Create and fund the wallet
-          wallet = await createWallet(accounts[0], [
+          wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             accounts[2]
@@ -1521,7 +1556,7 @@ coins.forEach(
       describe('Safe mode', function () {
         before(async function () {
           // Create and fund the wallet
-          wallet = await createWallet(accounts[0], [
+          wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             accounts[2]
@@ -1543,7 +1578,7 @@ coins.forEach(
 
         it('Can be activated by any authorized signer', async function () {
           for (let i = 0; i < 3; i++) {
-            const wallet = await createWallet(accounts[0], [
+            const wallet = await deployer.createWallet([
               accounts[0],
               accounts[1],
               accounts[2]
@@ -1621,7 +1656,7 @@ coins.forEach(
         const forwardContract = new web3.eth.Contract(forwardAbi);
 
         it('Create and forward', async function () {
-          const wallet = await createWallet(accounts[0], [
+          const wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             accounts[2]
@@ -1705,7 +1740,7 @@ coins.forEach(
         it('Multiple forward contracts', async function () {
           const numForwardAddresses = 10;
           const etherEachSend = 4;
-          const wallet = await createWallet(accounts[2], [
+          const wallet = await deployer.createWallet([
             accounts[2],
             accounts[3],
             accounts[4]
@@ -1733,7 +1768,7 @@ coins.forEach(
         });
 
         it('Send before create, then flush', async function () {
-          const wallet = await createWallet(accounts[3], [
+          const wallet = await deployer.createWallet([
             accounts[3],
             accounts[4],
             accounts[5]
@@ -1774,7 +1809,7 @@ coins.forEach(
         });
 
         it('Flush sent from external account', async function () {
-          const wallet = await createWallet(accounts[4], [
+          const wallet = await deployer.createWallet([
             accounts[4],
             accounts[5],
             accounts[6]
@@ -1820,7 +1855,7 @@ coins.forEach(
         let tetherTokenContract;
         before(async function () {
           // Create and fund the wallet
-          wallet = await createWallet(accounts[4], [
+          wallet = await deployer.createWallet([
             accounts[4],
             accounts[5],
             accounts[6]
@@ -1979,7 +2014,7 @@ coins.forEach(
         });
 
         it('Flush Tether from WalletSimple contract', async function () {
-          const wallet = await createWallet(accounts[4], [
+          const wallet = await deployer.createWallet([
             accounts[4],
             accounts[5],
             accounts[6]
@@ -2085,7 +2120,7 @@ coins.forEach(
         let sequenceId;
         let forwarder;
         before(async function () {
-          wallet = await createWallet(accounts[0], [
+          wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             accounts[2]
@@ -2457,7 +2492,7 @@ coins.forEach(
 
         Object.entries(INTERFACE_IDS).map(([eipInterface, interfaceId]) => {
           it(`should support ${eipInterface}`, async function () {
-            const wallet = await createWallet(accounts[0], [
+            const wallet = await deployer.createWallet([
               accounts[0],
               accounts[1],
               accounts[2]
@@ -2479,7 +2514,7 @@ coins.forEach(
         before(async function () {
           //reentryInstance should be a signer due to onlySigner modifier
           reentryInstance = await ReentryWalletSimple.new();
-          wallet = await createWallet(accounts[0], [
+          wallet = await deployer.createWallet([
             accounts[0],
             accounts[1],
             reentryInstance.address
