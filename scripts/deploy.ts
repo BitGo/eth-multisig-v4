@@ -10,7 +10,28 @@ async function main() {
     forwarderFactory: ''
   };
 
-  const WalletSimple = await ethers.getContractFactory('WalletSimple');
+  const [deployer] = await ethers.getSigners();
+
+  let walletContractName = "";
+  switch(await deployer.getChainId()) {
+    // https://chainlist.org/
+    //eth
+    case 1:
+    //gteth
+    case 5:
+      walletContractName = "WalletSimple"
+      break;
+    //matic
+    case 137:
+    //tmatic
+    case 80001:
+      walletContractName = "PolygonWalletSimple"
+      break;
+  }
+
+  console.log("Deployed wallet contract called: " + walletContractName);
+
+  const WalletSimple = await ethers.getContractFactory(walletContractName);
   const walletSimple = await WalletSimple.deploy();
   await walletSimple.deployed();
   output.walletImplementation = walletSimple.address;
