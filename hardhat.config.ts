@@ -11,9 +11,9 @@ import 'solidity-coverage';
 
 const {
   PRIVATE_KEY,
-  ALCHEMY_API_KEY,
+  ALCHEMY_ETHER_API_KEY,
   ETHERSCAN_API_KEY,
-  POLYGON_API_KEY,
+  ALCHEMY_POLYGON_API_KEY,
   POLYGONSCAN_API_KEY
 } = process.env;
 
@@ -40,20 +40,20 @@ const config: HardhatUserConfig = {
       loggingEnabled: false
     },
     eth: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ETHER_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
     },
     gteth: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+      url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ETHER_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
     },
     matic: {
-      url: `https://polygon-mainnet.g.alchemyapi.io/v2/${POLYGON_API_KEY}`,
+      url: `https://polygon-mainnet.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
     },
     tmatic: {
       //https://polygon-mumbai.g.alchemy.com/
-      url: `https://polygon-mumbai.g.alchemyapi.io/v2/${POLYGON_API_KEY}`,
+      url: `https://polygon-mumbai.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
     }
   },
@@ -62,7 +62,6 @@ const config: HardhatUserConfig = {
     currency: 'USD'
   },
   etherscan: {
-    // Same API KEY for all env's
     apiKey: {
       //ethereum
       mainnet: `${ETHERSCAN_API_KEY}`,
