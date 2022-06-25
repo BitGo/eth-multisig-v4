@@ -4,7 +4,7 @@ on:
    types: [published]
 jobs:
   lint-and-test:
-    environment: mainnet
+    environment: dev
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -17,11 +17,79 @@ jobs:
     - run: npm run test
       env:
         PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        ALCHEMY_ETHER_API_KEY: ${{ secrets.ALCHEMY_ETHER_API_KEY }}
         ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-  deploy-and-update-release:
+        ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
+        POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+  get-network:
     runs-on: ubuntu-latest
-    needs: lint-and-test
+    needs: [lint-and-test]
+    outputs: 
+      network: ${{steps.network-name.outputs.result}}
+    steps:
+      - name: GET NETWORK NAME
+        id: network-name      
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          result-encoding: string
+          script: | 
+            const tag = process.env.GITHUB_REF_NAME;
+            const regex = /v.*\-(eth|gteth|matic|tmatic)$/;
+            const network = tag.match(regex);
+            return network ? network[1] : "gteth";
+  deploy-to-test:
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, get-network]
+    if:  ${{ (needs.get-network.outputs.network == 'gteth' ) || (needs.get-network.outputs.network == 'tmatic' ) }}
+    environment: testnet
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.x
+          cache: 'npm'
+      - run: npm install
+      - run: npm run deploy-test --network ${{ needs.get-network.outputs.network }}
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY_ETHER_API_KEY: ${{ secrets.ALCHEMY_ETHER_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
+          POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+      - name: Update release notes
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+              const fs = require('fs');
+              const path = require('path');
+              var json;
+              var html = "";
+              try {
+                json = JSON.parse(fs.readFileSync('./output.json').toString());
+                for(const key in json){
+                  html += key+": "+json[key]+"<br>";
+                }
+              } catch (err){
+                console.log("json file not found.");
+              }
+              const response= await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: "${{ github.event.release.tag_name }}"
+              });
+              github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: response.data.id,
+                body: html
+              });
+  deploy-to-prod:
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, get-network]
+    if:  ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) }}
     environment: mainnet
     steps:
       - uses: actions/checkout@v2
@@ -31,11 +99,13 @@ jobs:
           node-version: 14.x
           cache: 'npm'
       - run: npm install
-      - run: npm run deploy-prod
+      - run: npm run deploy-prod --network ${{ needs.get-network.outputs.network }}
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          ALCHEMY_ETHER_API_KEY: ${{ secrets.ALCHEMY_ETHER_API_KEY }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
+          POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:

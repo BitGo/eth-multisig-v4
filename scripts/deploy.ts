@@ -12,24 +12,24 @@ async function main() {
 
   const [deployer] = await ethers.getSigners();
 
-  let walletContractName = "";
-  switch(await deployer.getChainId()) {
+  let walletContractName = '';
+  switch (await deployer.getChainId()) {
     // https://chainlist.org/
     //eth
     case 1:
     //gteth
     case 5:
-      walletContractName = "WalletSimple"
+      walletContractName = 'WalletSimple';
       break;
     //matic
     case 137:
     //tmatic
     case 80001:
-      walletContractName = "PolygonWalletSimple"
+      walletContractName = 'PolygonWalletSimple';
       break;
   }
 
-  console.log("Deployed wallet contract called: " + walletContractName);
+  console.log('Deployed wallet contract called: ' + walletContractName);
 
   const WalletSimple = await ethers.getContractFactory(walletContractName);
   const walletSimple = await WalletSimple.deploy();
