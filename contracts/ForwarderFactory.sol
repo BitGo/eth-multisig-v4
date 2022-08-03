@@ -27,7 +27,7 @@ contract ForwarderFactory is CloneFactory {
     bool shouldAutoFlushERC721,
     bool shouldAutoFlushERC1155
   ) external {
-    // include the signers in the salt so any contract deployed to a given address must have the same signers
+    // include the parent in the salt so any contract deployed to a given address must have the same parent
     bytes32 finalSalt = keccak256(abi.encodePacked(parent, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
