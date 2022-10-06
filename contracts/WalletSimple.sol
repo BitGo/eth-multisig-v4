@@ -38,6 +38,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
+  event SafeModeDeActivated(address msgSender);
   event Transacted(
     address msgSender, // Address of the sender of the message initiating the transaction
     address otherSigner, // Address of the signer (second signature) used to initiate the transaction
@@ -500,9 +501,20 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    * Irrevocably puts contract into safe mode. When in this mode, transactions may only be sent to signing addresses.
    */
   function activateSafeMode() external onlySigner {
+    require(bool(safeMode) == false, 'safeMode already activated');
     safeMode = true;
     emit SafeModeActivated(msg.sender);
   }
+  
+  /**
+   * deactivate safe-mode, transactions can be sent to any addresses.
+   */
+  function deactivateSafeMode() external onlySigner {
+    require(bool(safeMode) == true, 'safeMode is not activated');
+    safeMode = true;
+    emit SafeModeActivated(msg.sender);
+  }
+
 
   /**
    * Gets signer's address using ecrecover
