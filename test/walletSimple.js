@@ -13,6 +13,7 @@ const {
   calculateFutureExpireTime,
   createForwarderFromWallet,
   createWalletHelper,
+  createRecoveryWalletHelper,
   getBalanceInWei,
   isSigner
 } = require('./wallet/helpers');
@@ -2742,3 +2743,54 @@ coins.forEach(
     });
   }
 );
+
+describe('RecoveryWallet', function () {
+  before(async () => {
+    await hre.network.provider.send('hardhat_reset');
+    accounts = await web3.eth.getAccounts();
+  });
+  it('Should successfully send funds', async function () {
+    const signers = [accounts[0], accounts[1], accounts[2]];
+    const wallet = await createRecoveryWalletHelper(accounts[0], signers);
+    const signer = await wallet.signer.call();
+    signer.should.equal(accounts[2]);
+    const tx = await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: wallet.address,
+      value: web3.utils.toWei('20', 'ether')
+    });
+    const walletStartBalance = await web3.eth.getBalance(wallet.address);
+    const amount = web3.utils.toWei('2', 'ether');
+    await wallet.sendFunds(accounts[1], amount, '0x', {
+      from: accounts[2]
+    });
+    // Check wallet balance
+    const walletEndBalance = await web3.eth.getBalance(wallet.address);
+    new BigNumber(walletStartBalance)
+      .minus(amount)
+      .eq(walletEndBalance)
+      .should.be.true();
+  });
+
+  it('Should fail to send funds using wrong signer', async function () {
+    const signers = [accounts[0], accounts[1], accounts[2]];
+    const wallet = await createRecoveryWalletHelper(accounts[0], signers);
+    const signer = await wallet.signer.call();
+    signer.should.equal(accounts[2]);
+    const tx = await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: wallet.address,
+      value: web3.utils.toWei('20', 'ether')
+    });
+    try {
+      await wallet.sendFunds(
+        accounts[1],
+        web3.utils.toWei('2', 'ether'),
+        '0x',
+        { from: accounts[1] }
+      );
+    } catch (err) {
+      assertVMException(err, 'Non-signer in onlySigner method');
+    }
+  });
+});

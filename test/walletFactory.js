@@ -4,6 +4,7 @@ const helpers = require('./helpers');
 const util = require('ethereumjs-util');
 const abi = require('ethereumjs-abi');
 const { privateKeyForAccount } = require('./helpers');
+const { createRecoveryWalletHelper } = require('./wallet/helpers');
 const BigNumber = require('bignumber.js');
 const hre = require('hardhat');
 
@@ -218,5 +219,19 @@ describe('WalletFactory', function () {
           accounts[1]
         )
     );
+  });
+});
+
+describe('RecoveryWalletFactory', function () {
+  let accounts;
+  before(async () => {
+    await hre.network.provider.send('hardhat_reset');
+    accounts = await web3.eth.getAccounts();
+  });
+  it('Should create a wallet using factory', async function () {
+    const signers = [accounts[0], accounts[1], accounts[2]];
+    const wallet = await createRecoveryWalletHelper(accounts[0], signers);
+    const signer = await wallet.signer.call();
+    signer.should.equal(accounts[2]);
   });
 });
