@@ -11,6 +11,8 @@ const crypto = require('crypto');
 const Forwarder = artifacts.require('../Forwarder.sol');
 const ForwarderFactory = artifacts.require('../ForwarderFactory.sol');
 const WalletFactory = artifacts.require('../WalletFactory.sol');
+const RecoveryWalletFactory = artifacts.require('../RecoveryWalletFactory.sol');
+const RecoveryWalletSimple = artifacts.require('../RecoveryWalletSimple.sol');
 
 const assertVMException = (err, expectedErrMsg) => {
   err.message.toString().should.containEql('VM Exception');
@@ -84,6 +86,41 @@ const createWalletFactory = async (WalletSimple) => {
   };
 };
 
+const createRecoveryWalletFactory = async () => {
+  const walletContract = await RecoveryWalletSimple.new([], {});
+  const walletFactory = await RecoveryWalletFactory.new(walletContract.address);
+  return {
+    implementationAddress: walletContract.address,
+    factory: walletFactory
+  };
+};
+
+const createRecoveryWalletHelper = async (creator, signers) => {
+  // OK to be the same for all wallets since we are using a new factory for each
+  const salt = '0x1234';
+  const { factory, implementationAddress } =
+    await createRecoveryWalletFactory();
+
+  const inputSalt = util.setLengthLeft(
+    Buffer.from(util.stripHexPrefix(salt), 'hex'),
+    32
+  );
+  const calculationSalt = abi.soliditySHA3(
+    ['address[]', 'bytes32'],
+    [signers, inputSalt]
+  );
+  const initCode = helpers.getInitCode(
+    util.stripHexPrefix(implementationAddress)
+  );
+  const walletAddress = helpers.getNextContractAddressCreate2(
+    factory.address,
+    calculationSalt,
+    initCode
+  );
+  await factory.createWallet(signers, inputSalt, { from: creator });
+  return RecoveryWalletSimple.at(walletAddress);
+};
+
 const createWalletHelper = async (WalletSimple, creator, signers) => {
   // OK to be the same for all wallets since we are using a new factory for each
   const salt = '0x1234';
@@ -130,7 +167,9 @@ exports.assertVMException = assertVMException;
 exports.createForwarderFromWallet = createForwarderFromWallet;
 exports.executeCreateForwarder = executeCreateForwarder;
 exports.createWalletFactory = createWalletFactory;
+exports.createRecoveryWalletFactory = createRecoveryWalletFactory;
 exports.createWalletHelper = createWalletHelper;
+exports.createRecoveryWalletHelper = createRecoveryWalletHelper;
 exports.getBalanceInWei = getBalanceInWei;
 exports.calculateFutureExpireTime = calculateFutureExpireTime;
 exports.isSigner = isSigner;
