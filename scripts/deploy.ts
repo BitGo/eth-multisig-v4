@@ -12,32 +12,47 @@ async function main() {
 
   const [deployer] = await ethers.getSigners();
 
-  let walletContractName = '';
+  let walletImplementationContractName = '';
+  let walletFactoryContractName = 'WalletFactory';
+  const chainId = await deployer.getChainId();
   switch (await deployer.getChainId()) {
     // https://chainlist.org/
     //eth
     case 1:
     //gteth
     case 5:
-      walletContractName = 'WalletSimple';
+      walletImplementationContractName = 'WalletSimple';
       break;
     //matic
     case 137:
     //tmatic
     case 80001:
-      walletContractName = 'PolygonWalletSimple';
+      walletImplementationContractName = 'PolygonWalletSimple';
+      break;
+    // bsc
+    case 56:
+    // tbsc
+    case 97:
+      walletImplementationContractName = 'RecoveryWalletSimple';
+      walletFactoryContractName = 'RecoveryWalletFactory';
       break;
   }
 
-  console.log('Deployed wallet contract called: ' + walletContractName);
+  console.log(
+    'Deployed wallet contract called: ' + walletImplementationContractName
+  );
 
-  const WalletSimple = await ethers.getContractFactory(walletContractName);
+  const WalletSimple = await ethers.getContractFactory(
+    walletImplementationContractName
+  );
   const walletSimple = await WalletSimple.deploy();
   await walletSimple.deployed();
   output.walletImplementation = walletSimple.address;
   console.log('WalletSimple deployed at ' + walletSimple.address);
 
-  const WalletFactory = await ethers.getContractFactory('WalletFactory');
+  const WalletFactory = await ethers.getContractFactory(
+    walletFactoryContractName
+  );
   const walletFactory = await WalletFactory.deploy(walletSimple.address);
   await walletFactory.deployed();
   output.walletFactory = walletFactory.address;
