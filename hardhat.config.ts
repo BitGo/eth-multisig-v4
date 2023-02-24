@@ -14,7 +14,8 @@ const {
   ALCHEMY_ETHER_API_KEY,
   ETHERSCAN_API_KEY,
   ALCHEMY_POLYGON_API_KEY,
-  POLYGONSCAN_API_KEY
+  POLYGONSCAN_API_KEY,
+  BSCSCAN_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -55,6 +56,14 @@ const config: HardhatUserConfig = {
       //https://polygon-mumbai.g.alchemy.com/
       url: `https://polygon-mumbai.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
+    },
+    bsc: {
+      url: `https://bsc-dataseed1.binance.org/`,
+      accounts: [`${PRIVATE_KEY}`]
+    },
+    tbsc: {
+      url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
+      accounts: [`${PRIVATE_KEY}`]
     }
   },
   gasReporter: {
@@ -68,7 +77,9 @@ const config: HardhatUserConfig = {
       goerli: `${ETHERSCAN_API_KEY}`,
       //polygon
       polygon: `${POLYGONSCAN_API_KEY}`,
-      polygonMumbai: `${POLYGONSCAN_API_KEY}`
+      polygonMumbai: `${POLYGONSCAN_API_KEY}`,
+      bscTestnet: `${BSCSCAN_API_KEY}`,
+      bsc: `${BSCSCAN_API_KEY}`
     }
   },
   mocha: {
