@@ -18,10 +18,10 @@ jobs:
       env:
         PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         ALCHEMY_ETHER_API_KEY: ${{ secrets.ALCHEMY_ETHER_API_KEY }}
-        ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        ETHERSCAN_API_KEY: ${{ secrets.81Y3M1IIMMBTT1ND7TY1MHD5EGP4T59WP7 }}
         ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
         POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
-        BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
+        BSCSCAN_API_KEY: ${{ secrets.3KDS4TPF8WPNH7JVKY7HJFSKSGIENZ6D16 }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
