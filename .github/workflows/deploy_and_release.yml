@@ -16,8 +16,10 @@ jobs:
     - run: npm run lint
     - run: npm run test
       env:
-        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-        ALCHEMY_ETHER_API_KEY: ${{ secrets.ALCHEMY_ETHER_API_KEY }}
+        MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+        TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+        QUICKNODE_ETH_MAINNET_API_KEY: ${{ secrets.QUICKNODE_ETH_MAINNET_API_KEY }}
+        QUICKNODE_ETH_HOLESKY_API_KEY: ${{ secrets.QUICKNODE_ETH_HOLESKY_API_KEY }}
         ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
         ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
         POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
@@ -54,8 +56,10 @@ jobs:
       - run: npm install
       - run: npm run deploy-test --network ${{ needs.get-network.outputs.network }}
         env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          ALCHEMY_ETHER_API_KEY: ${{ secrets.ALCHEMY_ETHER_API_KEY }}
+          MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          QUICKNODE_ETH_MAINNET_API_KEY: ${{ secrets.QUICKNODE_ETH_MAINNET_API_KEY }}
+          QUICKNODE_ETH_HOLESKY_API_KEY: ${{ secrets.QUICKNODE_ETH_HOLESKY_API_KEY }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
           POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
@@ -103,8 +107,10 @@ jobs:
       - run: npm install
       - run: npm run deploy-prod --network ${{ needs.get-network.outputs.network }}
         env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          ALCHEMY_ETHER_API_KEY: ${{ secrets.ALCHEMY_ETHER_API_KEY }}
+          MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          QUICKNODE_ETH_MAINNET_API_KEY: ${{ secrets.QUICKNODE_ETH_MAINNET_API_KEY }}
+          QUICKNODE_ETH_HOLESKY_API_KEY: ${{ secrets.QUICKNODE_ETH_HOLESKY_API_KEY }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
           POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
