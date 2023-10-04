@@ -11,7 +11,8 @@ import 'solidity-coverage';
 
 const {
   PRIVATE_KEY,
-  ALCHEMY_ETHER_API_KEY,
+  QUICKNODE_ETH_MAINNET_API_KEY,
+  QUICKNODE_ETH_HOLESKY_API_KEY,
   ETHERSCAN_API_KEY,
   ALCHEMY_POLYGON_API_KEY,
   POLYGONSCAN_API_KEY,
@@ -41,11 +42,11 @@ const config: HardhatUserConfig = {
       loggingEnabled: false
     },
     eth: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ETHER_API_KEY}`,
+      url: `https://ultra-empty-sanctuary.quiknode.pro/${QUICKNODE_ETH_MAINNET_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
     },
-    gteth: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ETHER_API_KEY}`,
+    hteth: {
+      url: `https://boldest-cosmological-mountain.ethereum-holesky.quiknode.pro/${QUICKNODE_ETH_HOLESKY_API_KEY}`,
       accounts: [`${PRIVATE_KEY}`]
     },
     matic: {

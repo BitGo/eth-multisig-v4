@@ -36,13 +36,13 @@ jobs:
           result-encoding: string
           script: | 
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|gteth|matic|tmatic|bsc|tbsc)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc)$/;
             const network = tag.match(regex);
-            return network ? network[1] : "gteth";
+            return network ? network[1] : "hteth";
   deploy-to-test:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if:  ${{ (needs.get-network.outputs.network == 'gteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) }}
+    if:  ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) }}
     environment: testnet
     steps:
       - uses: actions/checkout@v2
