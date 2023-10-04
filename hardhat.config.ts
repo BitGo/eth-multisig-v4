@@ -19,7 +19,7 @@ const {
 } = process.env;
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.10',
+  solidity: '0.8.20',
   networks: {
     hardhat: {
       // If chainId is omitted, then there is no chain id validation

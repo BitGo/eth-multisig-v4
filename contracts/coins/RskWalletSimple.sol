@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 import '../Forwarder.sol';
 import '../ERC20Interface.sol';
 import '../WalletSimple.sol';

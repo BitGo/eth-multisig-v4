@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // from https://github.com/optionality/clone-factory
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 
 /*
     The MIT License (MIT)
