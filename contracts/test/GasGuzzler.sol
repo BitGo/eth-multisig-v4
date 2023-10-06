@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 
 contract GasGuzzler {
   uint256 public x = 1;

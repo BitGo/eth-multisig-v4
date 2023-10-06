@@ -19,7 +19,7 @@ async function main() {
     // https://chainlist.org/
     //eth
     case 1:
-    //gteth
+    //hteth
     case 5:
       walletImplementationContractName = 'WalletSimple';
       break;

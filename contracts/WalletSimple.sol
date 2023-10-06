@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 import './TransferHelper.sol';
 import './ERC20Interface.sol';
 import './IForwarder.sol';
@@ -93,7 +93,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getNetworkId() internal virtual pure returns (string memory) {
+  function getNetworkId() internal pure virtual returns (string memory) {
     return 'ETHER';
   }
 
@@ -105,7 +105,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getTokenNetworkId() internal virtual pure returns (string memory) {
+  function getTokenNetworkId() internal pure virtual returns (string memory) {
     return 'ERC20';
   }
 
@@ -117,7 +117,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getBatchNetworkId() internal virtual pure returns (string memory) {
+  function getBatchNetworkId() internal pure virtual returns (string memory) {
     return 'ETHER-Batch';
   }
 
@@ -133,7 +133,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   /**
    * Modifier that will execute internal code block only if the sender is an authorized signer on this wallet
    */
-  modifier onlySigner {
+  modifier onlySigner() {
     require(isSigner(msg.sender), 'Non-signer in onlySigner method');
     _;
   }
@@ -141,7 +141,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   /**
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
-  modifier onlyUninitialized {
+  modifier onlyUninitialized() {
     require(!initialized, 'Contract already initialized');
     _;
   }
@@ -557,9 +557,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     uint256 lowestValueIndex = 0;
     // fetch recentSequenceIds into memory for function context to avoid unnecessary sloads
 
-
-      uint256[SEQUENCE_ID_WINDOW_SIZE] memory _recentSequenceIds
-     = recentSequenceIds;
+    uint256[SEQUENCE_ID_WINDOW_SIZE]
+      memory _recentSequenceIds = recentSequenceIds;
     for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
       require(_recentSequenceIds[i] != sequenceId, 'Sequence ID already used');
 

@@ -74,7 +74,7 @@ Transfer batcher. Takes a list of recipients and amounts, and distributes ETH to
 
 ## Installation
 
-NodeJS 14 is required.
+NodeJS 16 is required.
 
 ```shell
 yarn

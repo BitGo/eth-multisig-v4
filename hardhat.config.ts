@@ -10,8 +10,10 @@ import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
 const {
-  PRIVATE_KEY,
-  ALCHEMY_ETHER_API_KEY,
+  MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
+  TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
+  QUICKNODE_ETH_MAINNET_API_KEY,
+  QUICKNODE_ETH_HOLESKY_API_KEY,
   ETHERSCAN_API_KEY,
   ALCHEMY_POLYGON_API_KEY,
   POLYGONSCAN_API_KEY,
@@ -19,7 +21,7 @@ const {
 } = process.env;
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.10',
+  solidity: '0.8.20',
   networks: {
     hardhat: {
       // If chainId is omitted, then there is no chain id validation
@@ -41,29 +43,29 @@ const config: HardhatUserConfig = {
       loggingEnabled: false
     },
     eth: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ETHER_API_KEY}`,
-      accounts: [`${PRIVATE_KEY}`]
+      url: `https://ultra-empty-sanctuary.quiknode.pro/${QUICKNODE_ETH_MAINNET_API_KEY}`,
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
-    gteth: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ETHER_API_KEY}`,
-      accounts: [`${PRIVATE_KEY}`]
+    hteth: {
+      url: `https://boldest-cosmological-mountain.ethereum-holesky.quiknode.pro/${QUICKNODE_ETH_HOLESKY_API_KEY}`,
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     matic: {
       url: `https://polygon-mainnet.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
-      accounts: [`${PRIVATE_KEY}`]
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     tmatic: {
       //https://polygon-mumbai.g.alchemy.com/
       url: `https://polygon-mumbai.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
-      accounts: [`${PRIVATE_KEY}`]
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     bsc: {
       url: `https://bsc-dataseed1.binance.org/`,
-      accounts: [`${PRIVATE_KEY}`]
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     tbsc: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
-      accounts: [`${PRIVATE_KEY}`]
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {

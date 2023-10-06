@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
@@ -52,7 +52,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
   /**
    * Modifier that will execute internal code block only if the sender is the parent address
    */
-  modifier onlyParent {
+  modifier onlyParent() {
     require(msg.sender == parentAddress, 'Only Parent');
     _;
   }
@@ -60,7 +60,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
   /**
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
-  modifier onlyUninitialized {
+  modifier onlyUninitialized() {
     require(parentAddress == address(0x0), 'Already initialized');
     _;
   }
@@ -313,9 +313,9 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
    */
   function supportsInterface(bytes4 interfaceId)
     public
+    view
     virtual
     override(ERC1155Receiver, IERC165)
-    view
     returns (bool)
   {
     return
