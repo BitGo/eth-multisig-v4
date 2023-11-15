@@ -14,10 +14,14 @@ const {
   TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
   QUICKNODE_ETH_MAINNET_API_KEY,
   QUICKNODE_ETH_HOLESKY_API_KEY,
+  QUICKNODE_ARBITRUM_SEPOLIA_API_KEY,
+  QUICKNODE_OPTIMISM_SEPOLIA_API_KEY,
   ETHERSCAN_API_KEY,
   ALCHEMY_POLYGON_API_KEY,
   POLYGONSCAN_API_KEY,
-  BSCSCAN_API_KEY
+  BSCSCAN_API_KEY,
+  ARBISCAN_API_KEY,
+  OPTIMISTIC_ETHERSCAN_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -66,6 +70,14 @@ const config: HardhatUserConfig = {
     tbsc: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
       accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+    },
+    tarbeth: {
+      url: `${QUICKNODE_ARBITRUM_SEPOLIA_API_KEY}`,
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+    },
+    topeth: {
+      url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {
@@ -77,12 +89,45 @@ const config: HardhatUserConfig = {
       //ethereum
       mainnet: `${ETHERSCAN_API_KEY}`,
       goerli: `${ETHERSCAN_API_KEY}`,
+      holesky: `${ETHERSCAN_API_KEY}`,
       //polygon
       polygon: `${POLYGONSCAN_API_KEY}`,
       polygonMumbai: `${POLYGONSCAN_API_KEY}`,
       bscTestnet: `${BSCSCAN_API_KEY}`,
-      bsc: `${BSCSCAN_API_KEY}`
-    }
+      bsc: `${BSCSCAN_API_KEY}`,
+      // arbitrum
+      arbitrumOne: `${ARBISCAN_API_KEY}`,
+      arbitrumSepolia: `${ARBISCAN_API_KEY}`,
+      // optimism
+      optimisticEthereum: `${OPTIMISTIC_ETHERSCAN_API_KEY}`,
+      optimisticSepolia: `${OPTIMISTIC_ETHERSCAN_API_KEY}`
+    },
+    customChains: [
+      {
+        network: 'holesky',
+        chainId: 17000,
+        urls: {
+          apiURL: 'https://api-holesky.etherscan.io/api',
+          browserURL: 'https://holesky.etherscan.io'
+        }
+      },
+      {
+        network: 'arbitrumSepolia',
+        chainId: 421614,
+        urls: {
+          apiURL: 'https://api-sepolia.arbiscan.io/api',
+          browserURL: 'https://sepolia.arbiscan.io'
+        }
+      },
+      {
+        network: 'optimisticSepolia',
+        chainId: 11155420,
+        urls: {
+          apiURL: 'https://api-sepolia-optimistic.etherscan.io/api',
+          browserURL: 'https://sepolia-optimism.etherscan.io'
+        }
+      }
+    ]
   },
   mocha: {
     timeout: 100000

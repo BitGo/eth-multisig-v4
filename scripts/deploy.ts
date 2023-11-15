@@ -20,7 +20,7 @@ async function main() {
     //eth
     case 1:
     //hteth
-    case 5:
+    case 17000:
       walletImplementationContractName = 'WalletSimple';
       break;
     //matic
@@ -35,6 +35,18 @@ async function main() {
     case 97:
       walletImplementationContractName = 'RecoveryWalletSimple';
       walletFactoryContractName = 'RecoveryWalletFactory';
+      break;
+    // arbeth
+    case 42161:
+    // tarbeth
+    case 421614:
+      walletImplementationContractName = 'ArbethWalletSimple';
+      break;
+    // opeth
+    case 10:
+    // topeth
+    case 11155420:
+      walletImplementationContractName = 'OpethWalletSimple';
       break;
   }
 
@@ -83,7 +95,11 @@ async function main() {
   await forwarderFactory.deployTransaction.wait(10);
 
   console.log('Done waiting, verifying');
-  await verifyContract('WalletSimple', walletSimple.address, []);
+  await verifyContract(
+    walletImplementationContractName,
+    walletSimple.address,
+    []
+  );
   await verifyContract('WalletFactory', walletFactory.address, [
     walletSimple.address
   ]);
