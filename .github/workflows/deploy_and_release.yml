@@ -24,6 +24,8 @@ jobs:
         ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
         POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
         BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
+        ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+        OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -38,13 +40,13 @@ jobs:
           result-encoding: string
           script: | 
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth)$/;
             const network = tag.match(regex);
             return network ? network[1] : "hteth";
   deploy-to-test:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if:  ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) }}
+    if:  ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) }}
     environment: testnet
     steps:
       - uses: actions/checkout@v2
@@ -64,6 +66,8 @@ jobs:
           ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
           POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
           BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
+          ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+          OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:
@@ -95,7 +99,7 @@ jobs:
   deploy-to-prod:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if:  ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) }}
+    if:  ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) }}
     environment: mainnet
     steps:
       - uses: actions/checkout@v2
@@ -115,6 +119,8 @@ jobs:
           ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
           POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
           BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
+          ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+          OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:

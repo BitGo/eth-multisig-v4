@@ -32,4 +32,6 @@ jobs:
         ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
         POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
         BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
+        ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+        OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
     - run: npm run lint
