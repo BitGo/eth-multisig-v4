@@ -49,9 +49,9 @@ const SAFE_MODE_ACTIVATE_EVENT = 'SafeModeActivated';
 const coins = [
   {
     name: 'Eth',
-    nativePrefix: '17000',
-    nativeBatchPrefix: '17000-Batch',
-    tokenPrefix: '17000-ERC20',
+    nativePrefix: '1',
+    nativeBatchPrefix: '1-Batch',
+    tokenPrefix: '1-ERC20',
     WalletSimple: EthWalletSimple
   },
   {

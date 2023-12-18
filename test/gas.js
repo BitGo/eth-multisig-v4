@@ -91,7 +91,7 @@ describe(`Wallet Operations Gas Usage`, function () {
     });
 
     const operationHash = helpers.getSha3ForConfirmationTx(
-      '17000',
+      '1',
       destinationAccount,
       amount,
       data,

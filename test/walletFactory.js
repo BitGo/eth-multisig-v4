@@ -97,7 +97,7 @@ describe('WalletFactory', function () {
     // Get the operation hash to be signed
     const expireTime = Math.floor(new Date().getTime() / 1000) + 60;
     const operationHash = helpers.getSha3ForConfirmationTx(
-      '17000',
+      '1',
       accounts[3].toLowerCase(),
       amount,
       '0x',
