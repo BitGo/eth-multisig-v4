@@ -49,9 +49,9 @@ const SAFE_MODE_ACTIVATE_EVENT = 'SafeModeActivated';
 const coins = [
   {
     name: 'Eth',
-    nativePrefix: 'ETHER',
-    nativeBatchPrefix: 'ETHER-Batch',
-    tokenPrefix: 'ERC20',
+    nativePrefix: '17000',
+    nativeBatchPrefix: '17000-Batch',
+    tokenPrefix: '17000-ERC20',
     WalletSimple: EthWalletSimple
   },
   {
@@ -77,23 +77,23 @@ const coins = [
   },
   {
     name: 'Polygon',
-    nativePrefix: 'POLYGON',
-    nativeBatchPrefix: 'POLYGON-Batch',
-    tokenPrefix: 'POLYGON-ERC20',
+    nativePrefix: '80001',
+    nativeBatchPrefix: '80001-Batch',
+    tokenPrefix: '80001-ERC20',
     WalletSimple: PolygonWalletSimple
   },
   {
     name: 'Arbeth',
-    nativePrefix: 'ARBETH',
-    nativeBatchPrefix: 'ARBETH-Batch',
-    tokenPrefix: 'ARBETH-ERC20',
+    nativePrefix: '11155111',
+    nativeBatchPrefix: '11155111-Batch',
+    tokenPrefix: '11155111-ERC20',
     WalletSimple: ArbethWalletSimple
   },
   {
     name: 'Opeth',
-    nativePrefix: 'OPETH',
-    nativeBatchPrefix: 'OPETH-Batch',
-    tokenPrefix: 'OPETH-ERC20',
+    nativePrefix: '11155420',
+    nativeBatchPrefix: '11155420-Batch',
+    tokenPrefix: '11155420-ERC20',
     WalletSimple: OpethWalletSimple
   }
 ];

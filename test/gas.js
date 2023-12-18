@@ -91,7 +91,7 @@ describe(`Wallet Operations Gas Usage`, function () {
     });
 
     const operationHash = helpers.getSha3ForConfirmationTx(
-      'ETHER',
+      '17000',
       destinationAccount,
       amount,
       data,
@@ -148,7 +148,7 @@ describe(`Wallet Operations Gas Usage`, function () {
 
     // Get the operation hash to be signed
     const operationHash = helpers.getSha3ForBatchTx(
-      'ETHER-Batch',
+      '17000-Batch',
       recipients.map((recipient) => recipient.address.toLowerCase()),
       recipients.map((recipient) => recipient.amount),
       expireTime,
