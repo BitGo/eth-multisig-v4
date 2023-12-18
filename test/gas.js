@@ -90,8 +90,9 @@ describe(`Wallet Operations Gas Usage`, function () {
       value: amount
     });
 
+    // By default the chain id of hardhat network is 31337
     const operationHash = helpers.getSha3ForConfirmationTx(
-      '1',
+      '31337',
       destinationAccount,
       amount,
       data,
@@ -120,7 +121,7 @@ describe(`Wallet Operations Gas Usage`, function () {
       .eq(destinationEndBalance)
       .should.be.true();
 
-    checkGasUsed(99555, transaction.receipt.gasUsed);
+    checkGasUsed(100585, transaction.receipt.gasUsed);
   });
 
   const sendBatchHelper = async (batchSize) => {
@@ -147,8 +148,9 @@ describe(`Wallet Operations Gas Usage`, function () {
     });
 
     // Get the operation hash to be signed
+    // By default the chain id of hardhat network is 31337
     const operationHash = helpers.getSha3ForBatchTx(
-      '17000-Batch',
+      '31337-Batch',
       recipients.map((recipient) => recipient.address.toLowerCase()),
       recipients.map((recipient) => recipient.amount),
       expireTime,
@@ -178,8 +180,8 @@ describe(`Wallet Operations Gas Usage`, function () {
 
   it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
     const gasUsageByBatchSize = [
-      101810, 113113, 124451, 135753, 147126, 158442, 169709, 181023, 192338,
-      203641
+      103386, 114701, 126027, 137341, 148655, 159971, 171285, 182599, 193902,
+      205205
     ];
 
     for (let batchSize = 1; batchSize <= 10; batchSize++) {

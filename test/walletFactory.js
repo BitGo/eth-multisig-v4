@@ -96,8 +96,9 @@ describe('WalletFactory', function () {
 
     // Get the operation hash to be signed
     const expireTime = Math.floor(new Date().getTime() / 1000) + 60;
+    // By default the chain id of hardhat network is 31337
     const operationHash = helpers.getSha3ForConfirmationTx(
-      '1',
+      '31337',
       accounts[3].toLowerCase(),
       amount,
       '0x',
