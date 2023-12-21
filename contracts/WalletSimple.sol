@@ -7,6 +7,7 @@ import './IForwarder.sol';
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  *
@@ -29,8 +30,8 @@ import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
  * Unlike eth_sign, the message is not prefixed.
  *
  * The operationHash the result of keccak256(prefix, toAddress, value, data, expireTime).
- * For ether transactions, `prefix` is "ETHER".
- * For token transaction, `prefix` is "ERC20" and `data` is the tokenContractAddress.
+ * For ether transactions, `prefix` is chain id of the coin i.e. for eth mainnet it is "1".
+ * For token transaction, `prefix` is chain id + "-ERC20" i.e. for mainnet it is "1-ERC20" and `data` is the tokenContractAddress.
  *
  *
  */
@@ -93,8 +94,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getNetworkId() internal pure virtual returns (string memory) {
-    return 'ETHER';
+  function getNetworkId() internal view virtual returns (string memory) {
+    return Strings.toString(block.chainid);
   }
 
   /**
@@ -105,8 +106,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getTokenNetworkId() internal pure virtual returns (string memory) {
-    return 'ERC20';
+  function getTokenNetworkId() internal view virtual returns (string memory) {
+    return string.concat(Strings.toString(block.chainid), '-ERC20');
   }
 
   /**
@@ -117,8 +118,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getBatchNetworkId() internal pure virtual returns (string memory) {
-    return 'ETHER-Batch';
+  function getBatchNetworkId() internal view virtual returns (string memory) {
+    return string.concat(Strings.toString(block.chainid), '-Batch');
   }
 
   /**

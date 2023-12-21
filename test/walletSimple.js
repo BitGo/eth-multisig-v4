@@ -46,12 +46,13 @@ const FORWARDER_DEPOSITED_EVENT = 'ForwarderDeposited';
 const TRANSACTED_EVENT = 'Transacted';
 const SAFE_MODE_ACTIVATE_EVENT = 'SafeModeActivated';
 
+// By default the chain id of hardhat network is 31337
 const coins = [
   {
     name: 'Eth',
-    nativePrefix: 'ETHER',
-    nativeBatchPrefix: 'ETHER-Batch',
-    tokenPrefix: 'ERC20',
+    nativePrefix: '31337',
+    nativeBatchPrefix: '31337-Batch',
+    tokenPrefix: '31337-ERC20',
     WalletSimple: EthWalletSimple
   },
   {
@@ -84,16 +85,16 @@ const coins = [
   },
   {
     name: 'Arbeth',
-    nativePrefix: 'ARBETH',
-    nativeBatchPrefix: 'ARBETH-Batch',
-    tokenPrefix: 'ARBETH-ERC20',
+    nativePrefix: '31337',
+    nativeBatchPrefix: '31337-Batch',
+    tokenPrefix: '31337-ERC20',
     WalletSimple: ArbethWalletSimple
   },
   {
     name: 'Opeth',
-    nativePrefix: 'OPETH',
-    nativeBatchPrefix: 'OPETH-Batch',
-    tokenPrefix: 'OPETH-ERC20',
+    nativePrefix: '31337',
+    nativeBatchPrefix: '31337-Batch',
+    tokenPrefix: '31337-ERC20',
     WalletSimple: OpethWalletSimple
   }
 ];
