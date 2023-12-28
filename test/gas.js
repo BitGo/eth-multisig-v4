@@ -180,8 +180,8 @@ describe(`Wallet Operations Gas Usage`, function () {
 
   it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
     const gasUsageByBatchSize = [
-      103386, 114701, 126027, 137341, 148655, 159971, 171285, 182599, 193902,
-      205205
+      103374, 114689, 126027, 137341, 148655, 159947, 171285, 182599, 193914,
+      205217
     ];
 
     for (let batchSize = 1; batchSize <= 10; batchSize++) {

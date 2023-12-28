@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 
-interface IForwarder is IERC165 {
+interface IForwarderV4 is IERC165 {
   /**
    * Sets the autoflush721 parameter.
    *
@@ -53,4 +53,12 @@ interface IForwarder is IERC165 {
     address tokenContractAddress,
     uint256[] calldata tokenIds
   ) external;
+
+  /**
+   * Execute a batch erc20 transfer from the forwarder to the parent address.
+   *
+   * @param tokenContractAddresses the addresses of the ERC20 token contracts
+   */
+  function batchFlushERC20Tokens(address[] calldata tokenContractAddresses)
+    external;
 }
