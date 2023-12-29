@@ -16,12 +16,14 @@ const {
   QUICKNODE_ETH_HOLESKY_API_KEY,
   QUICKNODE_ARBITRUM_SEPOLIA_API_KEY,
   QUICKNODE_OPTIMISM_SEPOLIA_API_KEY,
+  QUICKNODE_ZKSYNC_SEPOLIA_API_KEY,
   ETHERSCAN_API_KEY,
   ALCHEMY_POLYGON_API_KEY,
   POLYGONSCAN_API_KEY,
   BSCSCAN_API_KEY,
   ARBISCAN_API_KEY,
-  OPTIMISTIC_ETHERSCAN_API_KEY
+  OPTIMISTIC_ETHERSCAN_API_KEY,
+  ZKSYNC_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -78,6 +80,10 @@ const config: HardhatUserConfig = {
     topeth: {
       url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
       accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+    },
+    tzketh: {
+      url: `${QUICKNODE_ZKSYNC_SEPOLIA_API_KEY}`,
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {
@@ -100,7 +106,10 @@ const config: HardhatUserConfig = {
       arbitrumSepolia: `${ARBISCAN_API_KEY}`,
       // optimism
       optimisticEthereum: `${OPTIMISTIC_ETHERSCAN_API_KEY}`,
-      optimisticSepolia: `${OPTIMISTIC_ETHERSCAN_API_KEY}`
+      optimisticSepolia: `${OPTIMISTIC_ETHERSCAN_API_KEY}`,
+      // zksync
+      zksync: `${ZKSYNC_EXPLORER_API_KEY}`,
+      zksyncSepolia: `${ZKSYNC_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -125,6 +134,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-sepolia-optimistic.etherscan.io/api',
           browserURL: 'https://sepolia-optimism.etherscan.io'
+        }
+      },
+      {
+        network: 'zksync',
+        chainId: 324,
+        urls: {
+          apiURL: 'https://block-explorer-api.mainnet.zksync.io/api',
+          browserURL: 'https://explorer.zksync.io'
+        }
+      },
+      {
+        network: 'zksyncSepolia',
+        chainId: 300,
+        urls: {
+          apiURL: 'https://block-explorer-api.sepolia.zksync.dev/api',
+          browserURL: 'https://sepolia.explorer.zksync.io'
         }
       }
     ]

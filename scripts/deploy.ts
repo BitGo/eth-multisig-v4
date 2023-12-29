@@ -48,6 +48,12 @@ async function main() {
     case 11155420:
       walletImplementationContractName = 'OpethWalletSimple';
       break;
+    // zketh
+    case 324:
+    // tzketh
+    case 300:
+      walletImplementationContractName = 'ZkethWalletSimple';
+      break;
   }
 
   console.log(
