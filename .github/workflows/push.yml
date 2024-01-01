@@ -34,4 +34,5 @@ jobs:
         BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
         ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
         OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
+        ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
     - run: npm run lint
