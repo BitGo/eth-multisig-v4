@@ -104,7 +104,7 @@ const config: HardhatUserConfig = {
     },
     customChains: [
       {
-        network: 'holesky',
+        network: 'hteth',
         chainId: 17000,
         urls: {
           apiURL: 'https://api-holesky.etherscan.io/api',
