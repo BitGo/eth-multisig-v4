@@ -51,7 +51,7 @@ const config: HardhatUserConfig = {
       accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     hteth: {
-      url: `https://boldest-cosmological-mountain.ethereum-holesky.quiknode.pro/${QUICKNODE_ETH_HOLESKY_API_KEY}`,
+      url: `${QUICKNODE_ETH_HOLESKY_API_KEY}`,
       accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     matic: {
@@ -89,7 +89,7 @@ const config: HardhatUserConfig = {
       //ethereum
       mainnet: `${ETHERSCAN_API_KEY}`,
       goerli: `${ETHERSCAN_API_KEY}`,
-      holesky: `${ETHERSCAN_API_KEY}`,
+      hteth: `${ETHERSCAN_API_KEY}`,
       //polygon
       polygon: `${POLYGONSCAN_API_KEY}`,
       polygonMumbai: `${POLYGONSCAN_API_KEY}`,
@@ -104,7 +104,7 @@ const config: HardhatUserConfig = {
     },
     customChains: [
       {
-        network: 'holesky',
+        network: 'hteth',
         chainId: 17000,
         urls: {
           apiURL: 'https://api-holesky.etherscan.io/api',
