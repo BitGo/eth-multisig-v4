@@ -51,7 +51,7 @@ const config: HardhatUserConfig = {
       accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     hteth: {
-      url: `${QUICKNODE_ETH_HOLESKY_API_KEY}`,
+      url: `https://rpc.holesky.ethpandaops.io/`,
       accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     matic: {
