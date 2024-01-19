@@ -47,6 +47,14 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     uint256 value, // Amount of Wei sent to the address
     bytes data // Data sent when invoking the transaction
   );
+  event CallFailed(
+    address msgSender, // Address of the sender of the message initiating the transaction
+    address otherSigner, // Address of the signer (second signature) used to initiate the transaction
+    bytes32 operation, // Operation hash (see Data Formats)
+    address toAddress, // The address the transaction was sent to
+    uint256 value, // Amount of Wei sent to the address
+    bytes data // Data sent when invoking the transaction
+  );
 
   event BatchTransfer(address sender, address recipient, uint256 value);
   // this event shows the other signer and the operation hash that they signed
@@ -219,6 +227,72 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       value,
       data
     );
+  }
+
+  /**
+   * Execute a multi-signature transaction from this wallet using 2 signers: one from msg.sender and the other from ecrecover.
+   * Sequence IDs are numbers starting from 1. They are used to prevent replay attacks and may not be repeated.
+
+   * Note: Even if the call to the specified 'toAddress' fails, the sequence ID is still incremented.
+   * This ensures that each transaction attempt, whether successful or not, is uniquely identified,
+   * preventing the possibility of replay attacks using the same sequence ID.
+
+   * @param toAddress the destination address to send an outgoing transaction
+   * @param value the amount in Wei to be sent
+   * @param data the data to send to the toAddress when invoking the transaction
+   * @param expireTime the number of seconds since 1970 for which this transaction is valid
+   * @param sequenceId the unique sequence id obtainable from getNextSequenceId
+   * @param signature see Data Formats
+   */
+  function sendMultiSigInsertingSequenceId(
+    address toAddress,
+    uint256 value,
+    bytes calldata data,
+    uint256 expireTime,
+    uint256 sequenceId,
+    bytes calldata signature
+  ) external onlySigner {
+    // Verify the other signer
+    bytes32 operationHash = keccak256(
+      abi.encodePacked(
+        getNetworkId(),
+        toAddress,
+        value,
+        data,
+        expireTime,
+        sequenceId
+      )
+    );
+
+    address otherSigner = verifyMultiSig(
+      toAddress,
+      operationHash,
+      signature,
+      expireTime,
+      sequenceId
+    );
+
+    // Success, send the transaction
+    (bool success, ) = toAddress.call{ value: value }(data);
+    if (success) {
+      emit Transacted(
+        msg.sender,
+        otherSigner,
+        operationHash,
+        toAddress,
+        value,
+        data
+      );
+    } else {
+      emit CallFailed(
+        msg.sender,
+        otherSigner,
+        operationHash,
+        toAddress,
+        value,
+        data
+      );
+    }
   }
 
   /**
