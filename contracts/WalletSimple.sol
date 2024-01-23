@@ -6,7 +6,7 @@ import './IForwarder.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
@@ -35,7 +35,7 @@ import '@openzeppelin/contracts/utils/Strings.sol';
  *
  *
  */
-contract WalletSimple is IERC721Receiver, ERC1155Receiver {
+contract WalletSimple is IERC721Receiver, ERC1155Holder {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -472,28 +472,28 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155Received(
     address _operator,
     address _from,
     uint256 id,
     uint256 value,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     return this.onERC1155Received.selector;
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155BatchReceived(
     address _operator,
     address _from,
-    uint256[] calldata ids,
-    uint256[] calldata values,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    uint256[] memory ids,
+    uint256[] memory values,
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     return this.onERC1155BatchReceived.selector;
   }
 

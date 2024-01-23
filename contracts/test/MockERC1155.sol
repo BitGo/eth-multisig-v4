@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/token/ERC1155/ERC1155.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 
 contract MockERC1155 is ERC1155, Ownable {
-  constructor() ERC1155('https://app.bitgo-test.com/') {}
+  constructor() Ownable(msg.sender) ERC1155('https://app.bitgo-test.com/') {}
 
   function setURI(string memory newuri) public onlyOwner {
     _setURI(newuri);

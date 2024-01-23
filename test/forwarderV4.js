@@ -773,6 +773,7 @@ describe('ForwarderV4', function () {
     let reentryForwarderInstance;
     let forwarder;
     let tokenId = 1;
+    let tokenId1 = 2;
     const name = 'Non Fungible Token';
     const symbol = 'NFT';
     let owner;
@@ -860,7 +861,13 @@ describe('ForwarderV4', function () {
       await reentryForwarderInstance.setReentry(true);
 
       try {
-        await token1155.mintBatch(to, [tokenId], [amount], [], { from: owner });
+        await token1155.mintBatch(
+          to,
+          [tokenId, tokenId1],
+          [amount, amount],
+          [],
+          { from: owner }
+        );
       } catch (err) {
         assertVMException(
           err,

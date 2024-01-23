@@ -4,7 +4,7 @@ import '../IForwarder.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 
 /**
  *
@@ -14,7 +14,7 @@ import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
  * Basic singleSig wallet designed to recover funds.
  *
  */
-contract RecoveryWalletSimple is IERC721Receiver, ERC1155Receiver {
+contract RecoveryWalletSimple is IERC721Receiver, ERC1155Holder {
   // Public fields
   address public signer;
   bool public initialized = false; // True if the contract has been initialized
@@ -39,7 +39,7 @@ contract RecoveryWalletSimple is IERC721Receiver, ERC1155Receiver {
     require(!initialized, 'Contract already initialized');
     _;
   }
-  
+
   /**
    * Gets called when a transaction is received with ether and no data
    */
@@ -170,28 +170,28 @@ contract RecoveryWalletSimple is IERC721Receiver, ERC1155Receiver {
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155Received(
     address _operator,
     address _from,
     uint256 id,
     uint256 value,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     return this.onERC1155Received.selector;
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155BatchReceived(
     address _operator,
     address _from,
-    uint256[] calldata ids,
-    uint256[] calldata values,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    uint256[] memory ids,
+    uint256[] memory values,
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     return this.onERC1155BatchReceived.selector;
   }
 }
