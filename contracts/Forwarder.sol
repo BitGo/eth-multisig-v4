@@ -136,6 +136,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
     uint256 value,
     bytes calldata data
   ) external onlyParent returns (bytes memory) {
+    require(target != address(0), 'Invalid target address');
     (bool success, bytes memory returnedData) = target.call{ value: value }(
       data
     );

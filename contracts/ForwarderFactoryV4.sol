@@ -31,6 +31,10 @@ contract ForwarderFactoryV4 is CloneFactory {
    * @param _implementationAddress Address of the current forwarder implementation
    */
   constructor(address _implementationAddress) {
+    require(
+      _implementationAddress != address(0),
+      'Invalid implementation address'
+    );
     implementationAddress = _implementationAddress;
   }
 
@@ -67,6 +71,7 @@ contract ForwarderFactoryV4 is CloneFactory {
     bytes32 finalSalt = keccak256(abi.encodePacked(parent, feeAddress, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
+
     emit ForwarderCreated(
       clone,
       parent,

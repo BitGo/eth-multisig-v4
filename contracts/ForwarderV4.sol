@@ -96,6 +96,7 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
      * the sender to the forwarder itself
      */
     emit ForwarderDeposited(address(this), value, msg.data);
+
     (bool success, ) = parentAddress.call{ value: value }('');
     require(success, 'Flush failed');
   }
@@ -164,6 +165,7 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
     bytes calldata data
   ) external returns (bytes memory) {
     require(msg.sender == parentAddress, 'Only Parent');
+    require(target != address(0), 'Invalid target address');
     (bool success, bytes memory returnedData) = target.call{ value: value }(
       data
     );

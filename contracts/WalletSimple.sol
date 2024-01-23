@@ -187,6 +187,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     uint256 sequenceId,
     bytes calldata signature
   ) external onlySigner {
+    require(toAddress != address(0), 'Invalid destination address');
+
     // Verify the other signer
     bytes32 operationHash = keccak256(
       abi.encodePacked(

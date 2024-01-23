@@ -9,6 +9,10 @@ contract WalletFactory is CloneFactory {
   event WalletCreated(address newWalletAddress, address[] allowedSigners);
 
   constructor(address _implementationAddress) {
+    require(
+      _implementationAddress != address(0),
+      'Invalid implementation address'
+    );
     implementationAddress = _implementationAddress;
   }
 
