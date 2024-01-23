@@ -4,7 +4,7 @@ import './RecoveryWalletSimple.sol';
 import '../CloneFactory.sol';
 
 contract RecoveryWalletFactory is CloneFactory {
-  address public implementationAddress;
+  address public immutable implementationAddress;
 
   constructor(address _implementationAddress) {
     implementationAddress = _implementationAddress;
