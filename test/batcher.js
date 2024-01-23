@@ -530,7 +530,7 @@ describe('Batcher', () => {
         values: randVals,
         // costs roughly 40,000 gas to get to beginning of `distributeBatch`
         // and then another 10,000 gas for each subsequent iteration
-        gasLimit: 9e4
+        gasLimit: 10e4
       };
       await runTestBatcherDriver(params);
     });

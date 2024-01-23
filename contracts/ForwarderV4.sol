@@ -89,9 +89,6 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
       return;
     }
 
-    (bool success, ) = parentAddress.call{ value: value }('');
-    require(success, 'Flush failed');
-
     /**
      * Since we are forwarding on initialization,
      * we don't have the context of the original sender.
@@ -99,6 +96,8 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
      * the sender to the forwarder itself
      */
     emit ForwarderDeposited(address(this), value, msg.data);
+    (bool success, ) = parentAddress.call{ value: value }('');
+    require(success, 'Flush failed');
   }
 
   /**
@@ -359,9 +358,9 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
       return;
     }
 
+    emit ForwarderDeposited(msg.sender, value, msg.data);
     (bool success, ) = parentAddress.call{ value: value }('');
     require(success, 'Flush failed');
-    emit ForwarderDeposited(msg.sender, value, msg.data);
   }
 
   /**
