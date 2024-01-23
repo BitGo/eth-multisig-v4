@@ -207,10 +207,6 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       sequenceId
     );
 
-    // Success, send the transaction
-    (bool success, ) = toAddress.call{ value: value }(data);
-    require(success, 'Call execution failed');
-
     emit Transacted(
       msg.sender,
       otherSigner,
@@ -219,6 +215,10 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       value,
       data
     );
+
+    // Success, send the transaction
+    (bool success, ) = toAddress.call{ value: value }(data);
+    require(success, 'Call execution failed');
   }
 
   /**
@@ -268,8 +268,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       sequenceId
     );
 
-    batchTransfer(recipients, values);
     emit BatchTransacted(msg.sender, otherSigner, operationHash);
+    batchTransfer(recipients, values);
   }
 
   /**
@@ -286,10 +286,10 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], 'Insufficient funds');
 
+      emit BatchTransfer(msg.sender, recipients[i], values[i]);
+
       (bool success, ) = recipients[i].call{ value: values[i] }('');
       require(success, 'Call failed');
-
-      emit BatchTransfer(msg.sender, recipients[i], values[i]);
     }
   }
 

@@ -19,7 +19,7 @@ contract WalletFactory is CloneFactory {
     bytes32 finalSalt = keccak256(abi.encodePacked(allowedSigners, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
-    WalletSimple(clone).init(allowedSigners);
     emit WalletCreated(clone, allowedSigners);
+    WalletSimple(clone).init(allowedSigners);
   }
 }
