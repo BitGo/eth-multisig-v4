@@ -67,7 +67,7 @@ describe(`Wallet Operations Gas Usage`, function () {
       accounts[1],
       accounts[2]
     ]);
-    checkGasUsed(171030, transaction.receipt.gasUsed);
+    checkGasUsed(172810, transaction.receipt.gasUsed);
   });
 
   it('WalletSimple send [ @skip-on-coverage ]', async function () {
