@@ -71,12 +71,12 @@ contract Batcher {
     // Revert everything if any transfer fails
     for (uint8 i = 0; i < recipients.length; i++) {
       require(recipients[i] != address(0), 'Invalid recipient address');
+      emit BatchTransfer(msg.sender, recipients[i], values[i]);
       (bool success, ) = recipients[i].call{
         value: values[i],
         gas: transferGasLimit
       }('');
       require(success, 'Send failed');
-      emit BatchTransfer(msg.sender, recipients[i], values[i]);
     }
   }
 
@@ -91,6 +91,7 @@ contract Batcher {
     uint256 value,
     bytes calldata data
   ) external onlyOwner returns (bytes memory) {
+    require(to != address(0), 'Invalid recipient address');
     (bool success, bytes memory returnData) = to.call{ value: value }(data);
     require(success, 'Recover failed');
     return returnData;

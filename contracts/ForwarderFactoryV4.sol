@@ -8,7 +8,7 @@ import './CloneFactory.sol';
  * @notice This contract will deploy new forwarder contracts using the create2 opcode
  */
 contract ForwarderFactoryV4 is CloneFactory {
-  address public implementationAddress;
+  address public immutable implementationAddress;
 
   /**
    * @notice Event triggered when a new forwarder is deployed
@@ -31,6 +31,7 @@ contract ForwarderFactoryV4 is CloneFactory {
    * @param _implementationAddress Address of the current forwarder implementation
    */
   constructor(address _implementationAddress) {
+    require(_implementationAddress != address(0), 'Invalid implementation address');
     implementationAddress = _implementationAddress;
   }
 
@@ -67,14 +68,14 @@ contract ForwarderFactoryV4 is CloneFactory {
     bytes32 finalSalt = keccak256(abi.encodePacked(parent, feeAddress, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
-    ForwarderV4(clone).init(
+    emit ForwarderCreated(
+      clone,
       parent,
       feeAddress,
       shouldAutoFlushERC721,
       shouldAutoFlushERC1155
     );
-    emit ForwarderCreated(
-      clone,
+    ForwarderV4(clone).init(
       parent,
       feeAddress,
       shouldAutoFlushERC721,

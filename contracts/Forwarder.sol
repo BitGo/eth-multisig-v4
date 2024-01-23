@@ -39,14 +39,13 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
       return;
     }
 
-    (bool success, ) = parentAddress.call{ value: value }('');
-    require(success, 'Flush failed');
-
     // NOTE: since we are forwarding on initialization,
     // we don't have the context of the original sender.
     // We still emit an event about the forwarding but set
     // the sender to the forwarder itself
     emit ForwarderDeposited(address(this), value, msg.data);
+    (bool success, ) = parentAddress.call{ value: value }('');
+    require(success, 'Flush failed');
   }
 
   /**
@@ -136,6 +135,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
     uint256 value,
     bytes calldata data
   ) external onlyParent returns (bytes memory) {
+    require(target != address(0), 'Invalid target address');
     (bool success, bytes memory returnedData) = target.call{ value: value }(
       data
     );
@@ -303,9 +303,9 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
       return;
     }
 
+    emit ForwarderDeposited(msg.sender, value, msg.data);
     (bool success, ) = parentAddress.call{ value: value }('');
     require(success, 'Flush failed');
-    emit ForwarderDeposited(msg.sender, value, msg.data);
   }
 
   /**

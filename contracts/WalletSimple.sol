@@ -80,6 +80,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
 
     for (uint8 i = 0; i < allowedSigners.length; i++) {
       require(allowedSigners[i] != address(0), 'Invalid signer');
+      require(!signers[allowedSigners[i]], 'Duplicate signer');
+
       signers[allowedSigners[i]] = true;
     }
 
@@ -189,7 +191,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   ) external onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
-      abi.encodePacked(
+      abi.encode(
         getNetworkId(),
         toAddress,
         value,
@@ -207,10 +209,6 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       sequenceId
     );
 
-    // Success, send the transaction
-    (bool success, ) = toAddress.call{ value: value }(data);
-    require(success, 'Call execution failed');
-
     emit Transacted(
       msg.sender,
       otherSigner,
@@ -219,6 +217,10 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       value,
       data
     );
+    require(toAddress != address(0), 'Invalid destination address');
+    // Success, send the transaction
+    (bool success, ) = toAddress.call{ value: value }(data);
+    require(success, 'Call execution failed');
   }
 
   /**
@@ -248,7 +250,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
 
     // Verify the other signer
     bytes32 operationHash = keccak256(
-      abi.encodePacked(
+      abi.encode(
         getBatchNetworkId(),
         recipients,
         values,
@@ -268,8 +270,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       sequenceId
     );
 
-    batchTransfer(recipients, values);
     emit BatchTransacted(msg.sender, otherSigner, operationHash);
+    batchTransfer(recipients, values);
   }
 
   /**
@@ -282,14 +284,13 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   function batchTransfer(
     address[] calldata recipients,
     uint256[] calldata values
-  ) internal {
+  ) private {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], 'Insufficient funds');
 
+      emit BatchTransfer(msg.sender, recipients[i], values[i]);
       (bool success, ) = recipients[i].call{ value: values[i] }('');
       require(success, 'Call failed');
-
-      emit BatchTransfer(msg.sender, recipients[i], values[i]);
     }
   }
 
@@ -314,7 +315,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   ) external onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
-      abi.encodePacked(
+      abi.encode(
         getTokenNetworkId(),
         toAddress,
         value,
@@ -553,7 +554,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    * greater than the minimum element in the window.
    * @param sequenceId to insert into array of stored ids
    */
-  function tryInsertSequenceId(uint256 sequenceId) private onlySigner {
+  function tryInsertSequenceId(uint256 sequenceId) private {
     // Keep a pointer to the lowest value element in the window
     uint256 lowestValueIndex = 0;
     // fetch recentSequenceIds into memory for function context to avoid unnecessary sloads
