@@ -285,7 +285,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Holder {
   function batchTransfer(
     address[] calldata recipients,
     uint256[] calldata values
-  ) internal {
+  ) private {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], 'Insufficient funds');
 
