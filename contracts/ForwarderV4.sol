@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 import './ERC20Interface.sol';
 import './TransferHelper.sol';
 import './IForwarderV4.sol';
@@ -12,7 +12,7 @@ import './IForwarderV4.sol';
  * @title ForwarderV4
  * @notice This contract will forward any incoming Ether or token to the parent address of the contract
  */
-contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
+contract ForwarderV4 is IERC721Receiver, ERC1155Holder, IForwarderV4 {
   /// @notice Any funds sent to this contract will be forwarded to this address
   address public parentAddress;
   /// @notice Address which is allowed to call methods on this contract alongwith the parentAddress
@@ -175,15 +175,15 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155Received(
     address _operator,
     address _from,
     uint256 id,
     uint256 value,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     IERC1155 instance = IERC1155(msg.sender);
     require(
       instance.supportsInterface(type(IERC1155).interfaceId),
@@ -198,15 +198,15 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155BatchReceived(
     address _operator,
     address _from,
-    uint256[] calldata ids,
-    uint256[] calldata values,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    uint256[] memory ids,
+    uint256[] memory values,
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     IERC1155 instance = IERC1155(msg.sender);
     require(
       instance.supportsInterface(type(IERC1155).interfaceId),
@@ -372,7 +372,7 @@ contract ForwarderV4 is IERC721Receiver, ERC1155Receiver, IForwarderV4 {
     public
     view
     virtual
-    override(ERC1155Receiver, IERC165)
+    override(ERC1155Holder, IERC165)
     returns (bool)
   {
     return
