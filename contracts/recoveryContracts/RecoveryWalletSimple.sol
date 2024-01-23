@@ -39,12 +39,7 @@ contract RecoveryWalletSimple is IERC721Receiver, ERC1155Receiver {
     require(!initialized, 'Contract already initialized');
     _;
   }
-
-  /**
-   * Gets called when a transaction is received with data that does not match any other method
-   */
-  fallback() external payable {}
-
+  
   /**
    * Gets called when a transaction is received with ether and no data
    */
