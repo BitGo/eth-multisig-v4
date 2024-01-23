@@ -4,7 +4,7 @@ import './WalletSimple.sol';
 import './CloneFactory.sol';
 
 contract WalletFactory is CloneFactory {
-  address public implementationAddress;
+  address public immutable implementationAddress;
 
   event WalletCreated(address newWalletAddress, address[] allowedSigners);
 
