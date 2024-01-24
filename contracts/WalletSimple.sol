@@ -556,7 +556,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Holder {
    * greater than the minimum element in the window.
    * @param sequenceId to insert into array of stored ids
    */
-  function tryInsertSequenceId(uint256 sequenceId) private onlySigner {
+  function tryInsertSequenceId(uint256 sequenceId) private {
     // Keep a pointer to the lowest value element in the window
     uint256 lowestValueIndex = 0;
     // fetch recentSequenceIds into memory for function context to avoid unnecessary sloads
