@@ -120,7 +120,7 @@ describe(`Wallet Operations Gas Usage`, function () {
       .plus(amount)
       .eq(destinationEndBalance)
       .should.be.true();
-    checkGasUsed(100620, transaction.receipt.gasUsed);
+    checkGasUsed(100347, transaction.receipt.gasUsed);
   });
 
   const sendBatchHelper = async (batchSize) => {
@@ -179,8 +179,8 @@ describe(`Wallet Operations Gas Usage`, function () {
 
   it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
     const gasUsageByBatchSize = [
-      103362, 114677, 125991, 137341, 148631, 159971, 171261, 182563, 193878,
-      205181
+      103101, 114416, 125730, 137044, 148370, 159650, 171000, 182302, 193617,
+      204920
     ];
 
     for (let batchSize = 1; batchSize <= 10; batchSize++) {
