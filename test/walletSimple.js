@@ -135,10 +135,10 @@ coins.forEach(
           isSafeMode.should.eql(false);
 
           const isSignerArray = await Promise.all([
-            wallet.isSigner.call(accounts[0]),
-            wallet.isSigner.call(accounts[1]),
-            wallet.isSigner.call(accounts[2]),
-            wallet.isSigner.call(accounts[3])
+            wallet.signers.call(accounts[0]),
+            wallet.signers.call(accounts[1]),
+            wallet.signers.call(accounts[2]),
+            wallet.signers.call(accounts[3])
           ]);
 
           isSignerArray.length.should.eql(4);
