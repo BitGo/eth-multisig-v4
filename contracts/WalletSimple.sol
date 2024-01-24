@@ -123,19 +123,10 @@ contract WalletSimple is IERC721Receiver, ERC1155Holder {
   }
 
   /**
-   * Determine if an address is a signer on this wallet
-   * @param signer address to check
-   * returns boolean indicating whether address is signer or not
-   */
-  function isSigner(address signer) public view returns (bool) {
-    return signers[signer];
-  }
-
-  /**
    * Modifier that will execute internal code block only if the sender is an authorized signer on this wallet
    */
   modifier onlySigner() {
-    require(isSigner(msg.sender), 'Non-signer in onlySigner method');
+    require(signers[msg.sender], 'Non-signer in onlySigner method');
     _;
   }
 
@@ -439,7 +430,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Holder {
     address otherSigner = recoverAddressFromSignature(operationHash, signature);
 
     // Verify if we are in safe mode. In safe mode, the wallet can only send to signers
-    require(!safeMode || isSigner(toAddress), 'External transfer in safe mode');
+    require(!safeMode || signers[toAddress], 'External transfer in safe mode');
 
     // Verify that the transaction has not expired
     require(expireTime >= block.timestamp, 'Transaction expired');
@@ -447,7 +438,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Holder {
     // Try to insert the sequence ID. Will revert if the sequence id was invalid
     tryInsertSequenceId(sequenceId);
 
-    require(isSigner(otherSigner), 'Invalid signer');
+    require(signers[otherSigner], 'Invalid signer');
 
     require(otherSigner != msg.sender, 'Signers cannot be equal');
 
