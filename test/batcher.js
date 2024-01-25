@@ -8,6 +8,7 @@ const GasGuzzler = artifacts.require('./GasGuzzler.sol');
 const GasHeavy = artifacts.require('./GasHeavy.sol');
 const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
+const truffleAssert = require('truffle-assertions');
 
 const BatcherTransferEvent =
   '0xc42fa155158786a1dd6ccc3a785f35845467353c3cc700e0e31a79f90e22227d';
@@ -21,12 +22,11 @@ const recipientsValuesMismatchErrMsg = 'Unequal recipients and values';
 const fallbackErrMsg = 'Invalid fallback';
 const plainReceiveErrMsg = 'Invalid receive';
 const invalidRecipientErrMsg = 'Invalid recipient address';
-const onlyOwnerErrMsg = 'Not owner';
 const maxRecipientsExceededErrMsg = 'Too many recipients';
-const unsuccessfulCallErrMsg = 'Call was not successful';
 const zeroAddrOwnerChangeErrMsg = 'Invalid new owner';
 const newGasTransferLimitTooLowErrMsg = 'Transfer gas limit too low';
-const totalSentMustEqualTotalReceivedErrMsg = 'Total sent out must equal total received';
+const totalSentMustEqualTotalReceivedErrMsg =
+  'Total sent out must equal total received';
 
 // always between 1 and max included
 const randInt = (max) => {
@@ -316,7 +316,7 @@ describe('Batcher', () => {
           accounts[3],
           accounts[4]
         ],
-        values: createRandIntArr(6),
+        values: createRandIntArr(6)
       };
       await runTestBatcherDriver(params);
     });
@@ -555,17 +555,37 @@ describe('Batcher', () => {
         const {
           logs: [
             {
-              args: { prevOwner, newOwner }
+              args: { previousOwner, newOwner }
             }
           ]
         } = tx;
         assert.strictEqual(
-          prevOwner,
+          previousOwner,
+          oldBatcherOwner,
+          "Log emitted for ownership change initiation doesn't reflect old owner"
+        );
+        assert.strictEqual(
+          newOwner,
+          newBatcherOwner,
+          "Log emitted for ownership change initiation doesn't reflect new owner"
+        );
+        const tx2 = await batcherInstance.acceptOwnership({
+          from: newBatcherOwner
+        });
+        const {
+          logs: [
+            {
+              args: { previousOwner: previousOwner2, newOwner: newOwner2 }
+            }
+          ]
+        } = tx2;
+        assert.strictEqual(
+          previousOwner2,
           oldBatcherOwner,
           "Log emitted for ownership change doesn't reflect old owner"
         );
         assert.strictEqual(
-          newOwner,
+          newOwner2,
           newBatcherOwner,
           "Log emitted for ownership change doesn't reflect new owner"
         );
@@ -600,16 +620,8 @@ describe('Batcher', () => {
       });
 
       it('Fails to transfer ownership for non-owner', async () => {
-        await assertVMException(
-          setBatcherOwner(otherBatcherOwner, batcherOwner),
-          onlyOwnerErrMsg
-        );
-      });
-
-      it('Fails to transfer ownership to zero address', async () => {
-        await assertVMException(
-          setBatcherOwner(batcherOwner, zeroAddr),
-          zeroAddrOwnerChangeErrMsg
+        await truffleAssert.reverts(
+          setBatcherOwner(otherBatcherOwner, batcherOwner)
         );
       });
 
@@ -639,9 +651,8 @@ describe('Batcher', () => {
       });
 
       it('Fails to set transfer gas limit for non-owner', async () => {
-        await assertVMException(
-          setTransferGasLimit(otherBatcherOwner, 2e4),
-          onlyOwnerErrMsg
+        await truffleAssert.reverts(
+          setTransferGasLimit(otherBatcherOwner, 2e4)
         );
       });
 
@@ -768,11 +779,10 @@ describe('Batcher', () => {
 
       it("Doesn't allow an address other than the owner to transfer tokens", async () => {
         const tokenTransferData = getTokenTransferData(accounts[1], 5);
-        await assertVMException(
+        await truffleAssert.reverts(
           batcherInstance.recover(tokenContract.address, 0, tokenTransferData, {
             from: accounts[1]
-          }),
-          onlyOwnerErrMsg
+          })
         );
       });
 
