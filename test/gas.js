@@ -99,7 +99,10 @@ describe(`Wallet Operations Gas Usage`, function () {
       expireTime,
       sequenceId
     );
-    const sig = util.ecsign(operationHash, privateKeyForAccount(accounts[1]));
+    const sig = util.ecsign(
+      Buffer.from(operationHash.replace('0x', ''), 'hex'),
+      privateKeyForAccount(accounts[1])
+    );
 
     const destinationStartBalance = await web3.eth.getBalance(
       destinationAccount
@@ -120,7 +123,7 @@ describe(`Wallet Operations Gas Usage`, function () {
       .plus(amount)
       .eq(destinationEndBalance)
       .should.be.true();
-    checkGasUsed(100271, transaction.receipt.gasUsed);
+    checkGasUsed(100214, transaction.receipt.gasUsed);
   });
 
   const sendBatchHelper = async (batchSize) => {
@@ -155,7 +158,10 @@ describe(`Wallet Operations Gas Usage`, function () {
       expireTime,
       sequenceId
     );
-    const sig = util.ecsign(operationHash, privateKeyForAccount(accounts[1]));
+    const sig = util.ecsign(
+      Buffer.from(operationHash.replace('0x', ''), 'hex'),
+      privateKeyForAccount(accounts[1])
+    );
 
     const destinationStartBalance = await web3.eth.getBalance(destination);
 
@@ -179,8 +185,8 @@ describe(`Wallet Operations Gas Usage`, function () {
 
   it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
     const gasUsageByBatchSize = [
-      103015, 114330, 125644, 136958, 148284, 159564, 170914, 182216, 193531,
-      204834
+      103143, 114458, 125772, 137086, 148413, 159692, 171042, 182344, 193659,
+      204962
     ];
 
     for (let batchSize = 1; batchSize <= 10; batchSize++) {

@@ -105,7 +105,10 @@ describe('WalletFactory', function () {
       expireTime,
       1
     );
-    const sig = util.ecsign(operationHash, privateKeyForAccount(accounts[1]));
+    const sig = util.ecsign(
+      Buffer.from(operationHash.replace('0x', ''), 'hex'),
+      privateKeyForAccount(accounts[1])
+    );
 
     await wallet.sendMultiSig(
       accounts[3].toLowerCase(),
