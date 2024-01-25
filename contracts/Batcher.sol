@@ -1,4 +1,5 @@
 pragma solidity 0.8.20;
+import '@openzeppelin/contracts/access/Ownable2Step.sol';
 
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,22 +17,18 @@ pragma solidity 0.8.20;
  *
  */
 
-contract Batcher {
+contract Batcher is Ownable2Step {
   event BatchTransfer(address sender, address recipient, uint256 value);
-  event OwnerChange(address prevOwner, address newOwner);
   event TransferGasLimitChange(
     uint256 prevTransferGasLimit,
     uint256 newTransferGasLimit
   );
 
-  address public owner;
   uint256 public lockCounter;
   uint256 public transferGasLimit;
 
-  constructor(uint256 _transferGasLimit) {
+  constructor(uint256 _transferGasLimit) Ownable(msg.sender) {
     lockCounter = 1;
-    owner = msg.sender;
-    emit OwnerChange(address(0), owner);
     transferGasLimit = _transferGasLimit;
     emit TransferGasLimitChange(0, transferGasLimit);
   }
@@ -41,11 +38,6 @@ contract Batcher {
     uint256 localCounter = lockCounter;
     _;
     require(localCounter == lockCounter, 'Reentrancy attempt detected');
-  }
-
-  modifier onlyOwner() {
-    require(msg.sender == owner, 'Not owner');
-    _;
   }
 
   /**
@@ -68,7 +60,6 @@ contract Batcher {
     require(recipients.length < 256, 'Too many recipients');
 
     uint256 totalSent = 0;
-
 
     // Try to send all given amounts to all given recipients
     // Revert everything if any transfer fails
@@ -101,16 +92,6 @@ contract Batcher {
     (bool success, bytes memory returnData) = to.call{ value: value }(data);
     require(success, 'Recover failed');
     return returnData;
-  }
-
-  /**
-   * Transfers ownership of the contract ot the new owner
-   * @param newOwner The address to transfer ownership of the contract to
-   */
-  function transferOwnership(address newOwner) external onlyOwner {
-    require(newOwner != address(0), 'Invalid new owner');
-    emit OwnerChange(owner, newOwner);
-    owner = newOwner;
   }
 
   /**
