@@ -183,14 +183,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Holder {
 
     // Verify the other signer
     bytes32 operationHash = keccak256(
-      abi.encodePacked(
-        getNetworkId(),
-        toAddress,
-        value,
-        data,
-        expireTime,
-        sequenceId
-      )
+      abi.encode(getNetworkId(), toAddress, value, data, expireTime, sequenceId)
     );
 
     address otherSigner = verifyMultiSig(
@@ -242,7 +235,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Holder {
 
     // Verify the other signer
     bytes32 operationHash = keccak256(
-      abi.encodePacked(
+      abi.encode(
         getBatchNetworkId(),
         recipients,
         values,
