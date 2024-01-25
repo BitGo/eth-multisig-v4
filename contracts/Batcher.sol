@@ -11,7 +11,7 @@ pragma solidity 0.8.20;
  * funnel off those funds to the correct accounts in a single transaction. This is useful for saving on gas when a
  * bunch of funds need to be transferred to different accounts.
  *
- * If more ETH is sent to `batch` than it is instructed to transfer, contact the contract owner in order to recover the excess.
+ * If more ETH is sent to `batch` than it is instructed to transfer, then the entire transaction will revert
  * If any tokens are accidentally transferred to this account, contact the contract owner in order to recover them.
  *
  */
@@ -28,11 +28,11 @@ contract Batcher {
   uint256 public lockCounter;
   uint256 public transferGasLimit;
 
-  constructor() {
+  constructor(uint256 _transferGasLimit) {
     lockCounter = 1;
     owner = msg.sender;
     emit OwnerChange(address(0), owner);
-    transferGasLimit = 20000;
+    transferGasLimit = _transferGasLimit;
     emit TransferGasLimitChange(0, transferGasLimit);
   }
 
@@ -67,6 +67,9 @@ contract Batcher {
     );
     require(recipients.length < 256, 'Too many recipients');
 
+    uint256 totalSent = 0;
+
+
     // Try to send all given amounts to all given recipients
     // Revert everything if any transfer fails
     for (uint8 i = 0; i < recipients.length; i++) {
@@ -77,7 +80,11 @@ contract Batcher {
         gas: transferGasLimit
       }('');
       require(success, 'Send failed');
+
+      totalSent += values[i];
     }
+
+    require(totalSent == msg.value, 'Total sent out must equal total received');
   }
 
   /**
