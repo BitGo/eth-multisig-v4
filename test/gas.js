@@ -67,7 +67,7 @@ describe(`Wallet Operations Gas Usage`, function () {
       accounts[1],
       accounts[2]
     ]);
-    checkGasUsed(170677, transaction.receipt.gasUsed);
+    checkGasUsed(163180, transaction.receipt.gasUsed);
   });
 
   it('WalletSimple send [ @skip-on-coverage ]', async function () {
@@ -123,7 +123,7 @@ describe(`Wallet Operations Gas Usage`, function () {
       .plus(amount)
       .eq(destinationEndBalance)
       .should.be.true();
-    checkGasUsed(100214, transaction.receipt.gasUsed);
+    checkGasUsed(96455, transaction.receipt.gasUsed);
   });
 
   const sendBatchHelper = async (batchSize) => {
@@ -185,8 +185,8 @@ describe(`Wallet Operations Gas Usage`, function () {
 
   it('WalletSimple send batch [ @skip-on-coverage ]', async function () {
     const gasUsageByBatchSize = [
-      103143, 114458, 125772, 137086, 148413, 159692, 171042, 182344, 193659,
-      204962
+      98637, 108706, 118786, 128854, 138923, 148968, 159060, 169117, 179185,
+      189255
     ];
 
     for (let batchSize = 1; batchSize <= 10; batchSize++) {

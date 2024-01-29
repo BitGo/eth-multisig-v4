@@ -32,7 +32,11 @@ const config: HardhatUserConfig = {
       {
         version: '0.8.20',
         settings: {
-          evmVersion: 'paris'
+          evmVersion: 'paris',
+          optimizer: {
+            enabled: true,
+            runs: 1000
+          }
         }
       }
     ]
