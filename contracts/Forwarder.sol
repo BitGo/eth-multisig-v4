@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 import './ERC20Interface.sol';
 import './TransferHelper.sol';
 import './IForwarder.sol';
@@ -12,7 +12,7 @@ import './IForwarder.sol';
  * Contract that will forward any incoming Ether to the creator of the contract
  *
  */
-contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
+contract Forwarder is IERC721Receiver, ERC1155Holder, IForwarder {
   // Address to which any funds sent to this contract will be forwarded
   address public parentAddress;
   bool public autoFlush721 = true;
@@ -39,14 +39,14 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
       return;
     }
 
-    (bool success, ) = parentAddress.call{ value: value }('');
-    require(success, 'Flush failed');
-
     // NOTE: since we are forwarding on initialization,
     // we don't have the context of the original sender.
     // We still emit an event about the forwarding but set
     // the sender to the forwarder itself
     emit ForwarderDeposited(address(this), value, msg.data);
+
+    (bool success, ) = parentAddress.call{ value: value }('');
+    require(success, 'Flush failed');
   }
 
   /**
@@ -145,15 +145,15 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155Received(
     address _operator,
     address _from,
     uint256 id,
     uint256 value,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     IERC1155 instance = IERC1155(msg.sender);
     require(
       instance.supportsInterface(type(IERC1155).interfaceId),
@@ -168,15 +168,15 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155BatchReceived(
     address _operator,
     address _from,
-    uint256[] calldata ids,
-    uint256[] calldata values,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    uint256[] memory ids,
+    uint256[] memory values,
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     IERC1155 instance = IERC1155(msg.sender);
     require(
       instance.supportsInterface(type(IERC1155).interfaceId),
@@ -303,9 +303,9 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
       return;
     }
 
+    emit ForwarderDeposited(msg.sender, value, msg.data);
     (bool success, ) = parentAddress.call{ value: value }('');
     require(success, 'Flush failed');
-    emit ForwarderDeposited(msg.sender, value, msg.data);
   }
 
   /**
@@ -315,7 +315,7 @@ contract Forwarder is IERC721Receiver, ERC1155Receiver, IForwarder {
     public
     view
     virtual
-    override(ERC1155Receiver, IERC165)
+    override(ERC1155Holder, IERC165)
     returns (bool)
   {
     return

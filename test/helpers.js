@@ -3,6 +3,7 @@ const util = require('ethereumjs-util');
 const BN = require('bn.js');
 const Promise = require('bluebird');
 const _ = require('lodash');
+const ethers = require('ethers');
 
 const Forwarder = artifacts.require('./Forwarder.sol');
 const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
@@ -61,17 +62,18 @@ exports.getSha3ForConfirmationTx = function (
   expireTime,
   sequenceId
 ) {
-  return abi.soliditySHA3(
+  const encoded = ethers.utils.defaultAbiCoder.encode(
     ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
     [
       prefix,
-      new BN(toAddress.replace('0x', ''), 16),
+      toAddress,
       amount,
       Buffer.from(data.replace('0x', ''), 'hex'),
       expireTime,
       sequenceId
     ]
   );
+  return ethers.utils.keccak256(encoded);
 };
 
 // Helper to get sha3 for solidity tightly-packed arguments
@@ -82,10 +84,11 @@ exports.getSha3ForBatchTx = function (
   expireTime,
   sequenceId
 ) {
-  return abi.soliditySHA3(
+  const encoded = ethers.utils.defaultAbiCoder.encode(
     ['string', 'address[]', 'uint[]', 'uint', 'uint'],
     [prefix, recipients, values, expireTime, sequenceId]
   );
+  return ethers.utils.keccak256(encoded);
 };
 
 // Helper to get token transactions sha3 for solidity tightly-packed arguments

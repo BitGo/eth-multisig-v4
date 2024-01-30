@@ -4,7 +4,7 @@ import './Forwarder.sol';
 import './CloneFactory.sol';
 
 contract ForwarderFactory is CloneFactory {
-  address public implementationAddress;
+  address public immutable implementationAddress;
 
   event ForwarderCreated(
     address newForwarderAddress,
@@ -31,13 +31,14 @@ contract ForwarderFactory is CloneFactory {
     bytes32 finalSalt = keccak256(abi.encodePacked(parent, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
-    Forwarder(clone).init(
+
+    emit ForwarderCreated(
+      clone,
       parent,
       shouldAutoFlushERC721,
       shouldAutoFlushERC1155
     );
-    emit ForwarderCreated(
-      clone,
+    Forwarder(clone).init(
       parent,
       shouldAutoFlushERC721,
       shouldAutoFlushERC1155

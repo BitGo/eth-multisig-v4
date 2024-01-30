@@ -8,6 +8,7 @@ const GasGuzzler = artifacts.require('./GasGuzzler.sol');
 const GasHeavy = artifacts.require('./GasHeavy.sol');
 const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
+const truffleAssert = require('truffle-assertions');
 
 const BatcherTransferEvent =
   '0xc42fa155158786a1dd6ccc3a785f35845467353c3cc700e0e31a79f90e22227d';
@@ -21,11 +22,11 @@ const recipientsValuesMismatchErrMsg = 'Unequal recipients and values';
 const fallbackErrMsg = 'Invalid fallback';
 const plainReceiveErrMsg = 'Invalid receive';
 const invalidRecipientErrMsg = 'Invalid recipient address';
-const onlyOwnerErrMsg = 'Not owner';
 const maxRecipientsExceededErrMsg = 'Too many recipients';
-const unsuccessfulCallErrMsg = 'Call was not successful';
 const zeroAddrOwnerChangeErrMsg = 'Invalid new owner';
 const newGasTransferLimitTooLowErrMsg = 'Transfer gas limit too low';
+const totalSentMustEqualTotalReceivedErrMsg =
+  'Total sent out must equal total received';
 
 // always between 1 and max included
 const randInt = (max) => {
@@ -79,7 +80,7 @@ describe('Batcher', () => {
     sender = accounts[0];
     batcherOwner = accounts[8];
 
-    batcherInstance = await Batcher.new({ from: batcherOwner });
+    batcherInstance = await Batcher.new(21000, { from: batcherOwner });
     reentryInstance = await Reentry.new(batcherInstance.address);
     failInstance = await Fail.new();
     gasGuzzlerInstance = await GasGuzzler.new();
@@ -279,11 +280,13 @@ describe('Batcher', () => {
       await runTestBatcherDriver(params);
     });
 
-    it('Correctly sends with extra value', async () => {
+    it('Revert sends with extra value', async () => {
       const params = {
         recipients: accounts.slice(1, 4),
         values: createRandIntArr(3),
-        extraValue: 50
+        extraValue: 50,
+        expectOverallFailure: true,
+        expectedErrMsg: totalSentMustEqualTotalReceivedErrMsg
       };
       await runTestBatcherDriver(params);
     });
@@ -303,7 +306,7 @@ describe('Batcher', () => {
       await runTestBatcherDriver(params);
     });
 
-    it('Correctly sends with duplicate recipients and extra value', async () => {
+    it('Correctly sends with duplicate recipients', async () => {
       const params = {
         recipients: [
           accounts[1],
@@ -313,8 +316,7 @@ describe('Batcher', () => {
           accounts[3],
           accounts[4]
         ],
-        values: createRandIntArr(6),
-        extraValue: 100
+        values: createRandIntArr(6)
       };
       await runTestBatcherDriver(params);
     });
@@ -530,87 +532,13 @@ describe('Batcher', () => {
         values: randVals,
         // costs roughly 40,000 gas to get to beginning of `distributeBatch`
         // and then another 10,000 gas for each subsequent iteration
-        gasLimit: 9e4
+        gasLimit: 10e4
       };
       await runTestBatcherDriver(params);
     });
   });
 
   describe('Only owner functions', () => {
-    const recoverAddress = '0xeE223B2C6E49AE6F235A2B928c355454152d6ecc';
-
-    it('Removing all stuck eth from batcher contract', async () => {
-      const extraValue = 50;
-
-      const params = {
-        recipients: accounts.slice(1, 4),
-        values: [5, 5, 10],
-        extraValue
-      };
-      await runTestBatcherDriver(params);
-
-      const beforeWalletBalance = await getBalance(recoverAddress);
-
-      await batcherInstance.recover(recoverAddress, extraValue, '0x', {
-        from: batcherOwner
-      });
-
-      const recoverWalletBalance = await getBalance(recoverAddress);
-      assert.strictEqual(
-        extraValue + parseInt(beforeWalletBalance),
-        parseInt(recoverWalletBalance),
-        'Recover stuck funds failed'
-      );
-    });
-
-    it('Removing some stuck eth from batcher contract', async () => {
-      const extraValue = 50;
-
-      const params = {
-        recipients: accounts.slice(1, 4),
-        values: [5, 5, 10],
-        extraValue
-      };
-      await runTestBatcherDriver(params);
-
-      const beforeWalletBalance = await getBalance(recoverAddress);
-
-      await batcherInstance.recover(recoverAddress, 30, '0x', {
-        from: batcherOwner
-      });
-
-      const recoverWalletBalance = await getBalance(recoverAddress);
-      assert.strictEqual(
-        30 + parseInt(beforeWalletBalance),
-        parseInt(recoverWalletBalance),
-        'Recover stuck funds failed'
-      );
-    });
-
-    it('Fail to withdraw more funds than are stuck in batcher contract', async () => {
-      const params = {
-        recipients: accounts.slice(1, 4),
-        values: [5, 5, 10],
-        extraValue: 50
-      };
-      await runTestBatcherDriver(params);
-      const beforeWalletBalance = await getBalance(recoverAddress);
-
-      await assertVMException(
-        batcherInstance.recover(recoverAddress, 60, 0, {
-          from: batcherOwner
-        }),
-        'Recover failed'
-      );
-
-      const recoverWalletBalance = await getBalance(recoverAddress);
-      assert.strictEqual(
-        parseInt(beforeWalletBalance),
-        parseInt(recoverWalletBalance),
-        'Recover stuck funds failed'
-      );
-    });
-
     describe('Transferring ownership and setting gas transfer limit', () => {
       // note: at the start of every test, the Batcher owner should be `batcherOwner`
       // and the transfer gas limit should be the default
@@ -627,17 +555,37 @@ describe('Batcher', () => {
         const {
           logs: [
             {
-              args: { prevOwner, newOwner }
+              args: { previousOwner, newOwner }
             }
           ]
         } = tx;
         assert.strictEqual(
-          prevOwner,
+          previousOwner,
+          oldBatcherOwner,
+          "Log emitted for ownership change initiation doesn't reflect old owner"
+        );
+        assert.strictEqual(
+          newOwner,
+          newBatcherOwner,
+          "Log emitted for ownership change initiation doesn't reflect new owner"
+        );
+        const tx2 = await batcherInstance.acceptOwnership({
+          from: newBatcherOwner
+        });
+        const {
+          logs: [
+            {
+              args: { previousOwner: previousOwner2, newOwner: newOwner2 }
+            }
+          ]
+        } = tx2;
+        assert.strictEqual(
+          previousOwner2,
           oldBatcherOwner,
           "Log emitted for ownership change doesn't reflect old owner"
         );
         assert.strictEqual(
-          newOwner,
+          newOwner2,
           newBatcherOwner,
           "Log emitted for ownership change doesn't reflect new owner"
         );
@@ -672,16 +620,8 @@ describe('Batcher', () => {
       });
 
       it('Fails to transfer ownership for non-owner', async () => {
-        await assertVMException(
-          setBatcherOwner(otherBatcherOwner, batcherOwner),
-          onlyOwnerErrMsg
-        );
-      });
-
-      it('Fails to transfer ownership to zero address', async () => {
-        await assertVMException(
-          setBatcherOwner(batcherOwner, zeroAddr),
-          zeroAddrOwnerChangeErrMsg
+        await truffleAssert.reverts(
+          setBatcherOwner(otherBatcherOwner, batcherOwner)
         );
       });
 
@@ -711,9 +651,8 @@ describe('Batcher', () => {
       });
 
       it('Fails to set transfer gas limit for non-owner', async () => {
-        await assertVMException(
-          setTransferGasLimit(otherBatcherOwner, 2e4),
-          onlyOwnerErrMsg
+        await truffleAssert.reverts(
+          setTransferGasLimit(otherBatcherOwner, 2e4)
         );
       });
 
@@ -840,11 +779,10 @@ describe('Batcher', () => {
 
       it("Doesn't allow an address other than the owner to transfer tokens", async () => {
         const tokenTransferData = getTokenTransferData(accounts[1], 5);
-        await assertVMException(
+        await truffleAssert.reverts(
           batcherInstance.recover(tokenContract.address, 0, tokenTransferData, {
             from: accounts[1]
-          }),
-          onlyOwnerErrMsg
+          })
         );
       });
 

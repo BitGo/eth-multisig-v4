@@ -135,10 +135,10 @@ coins.forEach(
           isSafeMode.should.eql(false);
 
           const isSignerArray = await Promise.all([
-            wallet.isSigner.call(accounts[0]),
-            wallet.isSigner.call(accounts[1]),
-            wallet.isSigner.call(accounts[2]),
-            wallet.isSigner.call(accounts[3])
+            wallet.signers.call(accounts[0]),
+            wallet.signers.call(accounts[1]),
+            wallet.signers.call(accounts[2]),
+            wallet.signers.call(accounts[3])
           ]);
 
           isSignerArray.length.should.eql(4);
@@ -342,7 +342,7 @@ coins.forEach(
           params.sequenceId
         );
         const sig = util.ecsign(
-          operationHash,
+          Buffer.from(operationHash.replace('0x', ''), 'hex'),
           privateKeyForAccount(params.otherSignerAddress)
         );
         await wallet.sendMultiSig(
@@ -399,7 +399,7 @@ coins.forEach(
           otherSignerArgs.sequenceId
         );
         const sig = util.ecsign(
-          operationHash,
+          Buffer.from(operationHash.replace('0x', ''), 'hex'),
           privateKeyForAccount(params.otherSignerAddress)
         );
 
@@ -519,7 +519,7 @@ coins.forEach(
             sequenceId
           );
           const sig = util.ecsign(
-            operationHash,
+            Buffer.from(operationHash.replace('0x', ''), 'hex'),
             privateKeyForAccount(accounts[1])
           );
 
@@ -564,10 +564,7 @@ coins.forEach(
         it('Stress test: 20 rounds of sendMultiSig', async function () {
           for (let round = 0; round < 20; round++) {
             const destinationAccount = accounts[2];
-            const amount = web3.utils.toWei(
-              web3.utils.toBN(_.random(1, 9)),
-              'ether'
-            );
+            const amount = web3.utils.toWei('1', 'ether');
             let expireTime = calculateFutureExpireTime(120);
             const data = util.addHexPrefix(
               crypto.randomBytes(20).toString('hex')
@@ -582,7 +579,7 @@ coins.forEach(
               sequenceId
             );
             const sig = util.ecsign(
-              operationHash,
+              Buffer.from(operationHash.replace('0x', ''), 'hex'),
               privateKeyForAccount(accounts[0])
             );
 
@@ -641,7 +638,7 @@ coins.forEach(
               sequenceId
             );
             const sig = util.ecsign(
-              operationHash,
+              Buffer.from(operationHash.replace('0x', ''), 'hex'),
               privateKeyForAccount(accounts[0])
             );
 
@@ -698,7 +695,7 @@ coins.forEach(
               sequenceId
             );
             const sig = util.ecsign(
-              operationHash,
+              Buffer.from(operationHash.replace('0x', ''), 'hex'),
               privateKeyForAccount(accounts[5 + (round % 5)])
             );
 
@@ -955,7 +952,7 @@ coins.forEach(
 
           // 2) sign tx with another account and modify the signature to make it invalid
           const sig = util.ecsign(
-            operationHash,
+            Buffer.from(operationHash.replace('0x', ''), 'hex'),
             privateKeyForAccount(otherSignerAddress)
           );
           sig.v = 0x666;
@@ -1053,7 +1050,7 @@ coins.forEach(
           otherSignerArgs.sequenceId
         );
         const sig = util.ecsign(
-          operationHash,
+          Buffer.from(operationHash.replace('0x', ''), 'hex'),
           privateKeyForAccount(params.otherSignerAddress)
         );
 
@@ -2532,7 +2529,7 @@ coins.forEach(
           );
 
           const sig = util.ecsign(
-            operationHash,
+            Buffer.from(operationHash.replace('0x', ''), 'hex'),
             privateKeyForAccount(accounts[1])
           );
           const signature = helpers.serializeSignature(sig);
@@ -2571,7 +2568,7 @@ coins.forEach(
             sequenceId
           );
           const sig = util.ecsign(
-            operationHash,
+            Buffer.from(operationHash.replace('0x', ''), 'hex'),
             privateKeyForAccount(accounts[1])
           );
           const signature = helpers.serializeSignature(sig);
@@ -2614,7 +2611,7 @@ coins.forEach(
           );
 
           const sig = util.ecsign(
-            operationHash,
+            Buffer.from(operationHash.replace('0x', ''), 'hex'),
             privateKeyForAccount(accounts[1])
           );
           const signature = helpers.serializeSignature(sig);
@@ -2653,7 +2650,7 @@ coins.forEach(
           );
 
           const sig = util.ecsign(
-            operationHash,
+            Buffer.from(operationHash.replace('0x', ''), 'hex'),
             privateKeyForAccount(accounts[1])
           );
           const signature = helpers.serializeSignature(sig);
@@ -2698,7 +2695,7 @@ coins.forEach(
           );
 
           const sig = util.ecsign(
-            operationHash,
+            Buffer.from(operationHash.replace('0x', ''), 'hex'),
             privateKeyForAccount(accounts[1])
           );
           const signature = helpers.serializeSignature(sig);
@@ -2728,7 +2725,7 @@ coins.forEach(
           let amount = web3.utils.toWei('1', 'ether');
           let toAddress = accounts[3];
           let tokenContractAddress = reentryInstance.address;
-          const operationHash = helpers.getSha3ForConfirmationTx(
+          const operationHash = helpers.getSha3ForConfirmationTokenTx(
             tokenPrefix,
             toAddress,
             amount,
