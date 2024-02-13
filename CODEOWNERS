@@ -1,0 +1,5 @@
+# Github Actions
+.github @BitGo/git-admins
+
+## Donot add anything below codeowners line ##
+CODEOWNERS @BitGo/git-admins
