@@ -1,6 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>BitGo/gha-renovate-bot//presets/onboarding#v1.15.1"],
+  "extends": [
+    "github>BitGo/gha-renovate-bot//presets/default",
+    "github>BitGo/gha-renovate-bot//presets/nodejs-security"
+  ],
   "baseBranches": ["master"],
-  "enabledManagers": ["github-actions", "regex"],
+  "enabledManagers": ["github-actions", "regex"]
 }
