@@ -10,6 +10,12 @@ async function main() {
     forwarderFactory: ''
   };
 
+  const feeData = await ethers.provider.getFeeData();
+  const eip1559GasParams = {
+    maxFeePerGas: feeData.maxFeePerGas,
+    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
+  };
+
   const [deployer] = await ethers.getSigners();
 
   let walletImplementationContractName = '';
@@ -63,7 +69,7 @@ async function main() {
   const WalletSimple = await ethers.getContractFactory(
     walletImplementationContractName
   );
-  const walletSimple = await WalletSimple.deploy();
+  const walletSimple = await WalletSimple.deploy(eip1559GasParams);
   await walletSimple.deployed();
   output.walletImplementation = walletSimple.address;
   console.log('WalletSimple deployed at ' + walletSimple.address);
@@ -71,22 +77,30 @@ async function main() {
   const WalletFactory = await ethers.getContractFactory(
     walletFactoryContractName
   );
-  const walletFactory = await WalletFactory.deploy(walletSimple.address);
+  const walletFactory = await WalletFactory.deploy(
+    walletSimple.address,
+    eip1559GasParams
+  );
   await walletFactory.deployed();
   output.walletFactory = walletFactory.address;
   console.log('WalletFactory deployed at ' + walletFactory.address);
 
-  const Forwarder = await ethers.getContractFactory('Forwarder');
+  // In case of new coins like arbeth, opeth, zketh, we need to deploy new forwarder and forwarder factory i.e.
+  // ForwarderV4 and ForwarderFactoryV4.
+  // If we have to deploy contracts for the older coins like eth, avax, polygon, we need to deploy Forwarder and ForwarderFactory
+  const Forwarder = await ethers.getContractFactory('ForwarderV4');
   const forwarder = await Forwarder.deploy();
   await forwarder.deployed();
   output.forwarderImplementation = forwarder.address;
-  console.log('Forwarder deployed at ' + forwarder.address);
+  console.log('ForwarderV4 deployed at ' + forwarder.address);
 
-  const ForwarderFactory = await ethers.getContractFactory('ForwarderFactory');
+  const ForwarderFactory = await ethers.getContractFactory(
+    'ForwarderFactoryV4'
+  );
   const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
   await forwarderFactory.deployed();
   output.forwarderFactory = forwarderFactory.address;
-  console.log('ForwarderFactory deployed at ' + forwarderFactory.address);
+  console.log('ForwarderFactoryV4 deployed at ' + forwarderFactory.address);
 
   fs.writeFileSync('output.json', JSON.stringify(output));
 
@@ -104,13 +118,14 @@ async function main() {
   await verifyContract(
     walletImplementationContractName,
     walletSimple.address,
-    []
+    [],
+    `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`
   );
   await verifyContract('WalletFactory', walletFactory.address, [
     walletSimple.address
   ]);
-  await verifyContract('Forwarder', forwarder.address, []);
-  await verifyContract('ForwarderFactory', forwarderFactory.address, [
+  await verifyContract('ForwarderV4', forwarder.address, []);
+  await verifyContract('ForwarderFactoryV4', forwarderFactory.address, [
     forwarder.address
   ]);
   console.log('Contracts verified');
@@ -119,13 +134,24 @@ async function main() {
 async function verifyContract(
   contractName: string,
   contractAddress: string,
-  constructorArguments: string[]
+  constructorArguments: string[],
+  contract?: string
 ) {
   try {
-    await hre.run('verify:verify', {
+    const verifyContractArgs: {
+      address: string;
+      constructorArguments: string[];
+      contract?: string;
+    } = {
       address: contractAddress,
       constructorArguments: constructorArguments
-    });
+    };
+
+    if (contract) {
+      verifyContractArgs.contract = contract;
+    }
+
+    await hre.run('verify:verify', verifyContractArgs);
   } catch (e) {
     // @ts-ignore
     // We get a failure API response if the source code has already been uploaded, don't throw in this case.

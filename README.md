@@ -118,7 +118,9 @@ On first run:
 1. Create a file called `.env` in the root directory. 
 2. Add the following variable:
    ```
-   PRIVATE_KEY=<Your private key>
+   TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT=<Your private key>
+   MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT=<Your private key>
+   PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT=<Your private key>
    ```
 Note: `<your private key>` can be from a wallet like Metamask.
 
@@ -138,3 +140,4 @@ You need to add the following to the extra mocha options
 ## Notes
 - wallet creation salt should include [a hash of] the signers associated with the wallet. 
 - forwarder creation salt should include [a hash of] the parentAddress.
+- new forwarderv4 creation salt should include [a hash of] the parentAddress and feeAddress. 
