@@ -4,6 +4,5 @@
     "github>BitGo/gha-renovate-bot//presets/default",
     "github>BitGo/gha-renovate-bot//presets/nodejs-security"
   ],
-  "baseBranches": ["master"],
-  "enabledManagers": ["github-actions", "regex"]
+  "baseBranches": ["master"]
 }
