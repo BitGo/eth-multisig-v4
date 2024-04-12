@@ -1,3 +1,4 @@
+import { use } from 'chai';
 import { ethers } from 'hardhat';
 const hre = require('hardhat');
 const fs = require('fs');
@@ -19,6 +20,8 @@ async function main() {
 
   let walletImplementationContractName = '';
   let walletFactoryContractName = 'WalletFactory';
+  let forwarderContractName = 'Forwarder';
+  let forwarderFactoryContractName = 'ForwarderFactory';
   const chainId = await deployer.getChainId();
   switch (await deployer.getChainId()) {
     // https://chainlist.org/
@@ -27,6 +30,8 @@ async function main() {
     //hteth
     case 17000:
       walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
     //matic
     case 137:
@@ -87,14 +92,14 @@ async function main() {
   // In case of new coins like arbeth, opeth, zketh, we need to deploy new forwarder and forwarder factory i.e.
   // ForwarderV4 and ForwarderFactoryV4.
   // If we have to deploy contracts for the older coins like eth, avax, polygon, we need to deploy Forwarder and ForwarderFactory
-  const Forwarder = await ethers.getContractFactory('ForwarderV4');
+  const Forwarder = await ethers.getContractFactory(forwarderContractName);
   const forwarder = await Forwarder.deploy(gasParams);
   await forwarder.deployed();
   output.forwarderImplementation = forwarder.address;
-  console.log('ForwarderV4 deployed at ' + forwarder.address);
+  console.log(`${forwarderContractName} deployed at ` + forwarder.address);
 
   const ForwarderFactory = await ethers.getContractFactory(
-    'ForwarderFactoryV4'
+    forwarderFactoryContractName
   );
   const forwarderFactory = await ForwarderFactory.deploy(
     forwarder.address,
@@ -102,7 +107,9 @@ async function main() {
   );
   await forwarderFactory.deployed();
   output.forwarderFactory = forwarderFactory.address;
-  console.log('ForwarderFactoryV4 deployed at ' + forwarderFactory.address);
+  console.log(
+    `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address
+  );
 
   fs.writeFileSync('output.json', JSON.stringify(output));
 
@@ -121,13 +128,13 @@ async function main() {
     walletImplementationContractName,
     walletSimple.address,
     [],
-    `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`
+    `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`
   );
   await verifyContract('WalletFactory', walletFactory.address, [
     walletSimple.address
   ]);
-  await verifyContract('ForwarderV4', forwarder.address, []);
-  await verifyContract('ForwarderFactoryV4', forwarderFactory.address, [
+  await verifyContract(forwarderContractName, forwarder.address, []);
+  await verifyContract(forwarderFactoryContractName, forwarderFactory.address, [
     forwarder.address
   ]);
   console.log('Contracts verified');
