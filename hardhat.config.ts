@@ -77,8 +77,8 @@ const config: HardhatUserConfig = {
       accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     tmatic: {
-      //https://polygon-mumbai.g.alchemy.com/
-      url: `https://polygon-mumbai.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
+      // https://polygon-amoy.g.alchemy.com
+      url: `https://polygon-amoy-bor-rpc.publicnode.com`,
       accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     bsc: {
@@ -122,7 +122,7 @@ const config: HardhatUserConfig = {
       holesky: `${ETHERSCAN_API_KEY}`,
       //polygon
       polygon: `${POLYGONSCAN_API_KEY}`,
-      polygonMumbai: `${POLYGONSCAN_API_KEY}`,
+      polygonAmoy: `${POLYGONSCAN_API_KEY}`,
       bscTestnet: `${BSCSCAN_API_KEY}`,
       bsc: `${BSCSCAN_API_KEY}`,
       // arbitrum
@@ -174,6 +174,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://block-explorer-api.sepolia.zksync.dev/api',
           browserURL: 'https://sepolia.explorer.zksync.io'
+        }
+      },
+      {
+        network: 'polygonAmoy',
+        chainId: 80002,
+        urls: {
+          apiURL: 'https://api-amoy.polygonscan.com/api',
+          browserURL: 'https://amoy.polygonscan.com'
         }
       }
     ]

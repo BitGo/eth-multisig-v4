@@ -36,8 +36,10 @@ async function main() {
     //matic
     case 137:
     //tmatic
-    case 80001:
+    case 80002:
       walletImplementationContractName = 'PolygonWalletSimple';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
       break;
     // bsc
     case 56:
@@ -128,7 +130,7 @@ async function main() {
     walletImplementationContractName,
     walletSimple.address,
     [],
-    `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`
+    `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`
   );
   await verifyContract('WalletFactory', walletFactory.address, [
     walletSimple.address
