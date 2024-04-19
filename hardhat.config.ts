@@ -69,7 +69,7 @@ const config: HardhatUserConfig = {
       accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     hteth: {
-      url: `https://boldest-cosmological-mountain.ethereum-holesky.quiknode.pro/${QUICKNODE_ETH_HOLESKY_API_KEY}`,
+      url: `https://rpc.holesky.ethpandaops.io/`,
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     matic: {
