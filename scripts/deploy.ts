@@ -22,8 +22,9 @@ async function main() {
   let walletFactoryContractName = 'WalletFactory';
   let forwarderContractName = 'Forwarder';
   let forwarderFactoryContractName = 'ForwarderFactory';
+  let contractPath = `contracts/WalletSimple.sol:WalletSimple`;
   const chainId = await deployer.getChainId();
-  switch (await deployer.getChainId()) {
+  switch (chainId) {
     // https://chainlist.org/
     //eth
     case 1:
@@ -32,6 +33,7 @@ async function main() {
       walletImplementationContractName = 'WalletSimple';
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     //matic
     case 137:
@@ -40,6 +42,7 @@ async function main() {
       walletImplementationContractName = 'PolygonWalletSimple';
       forwarderContractName = 'Forwarder';
       forwarderFactoryContractName = 'ForwarderFactory';
+      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // bsc
     case 56:
@@ -53,18 +56,21 @@ async function main() {
     // tarbeth
     case 421614:
       walletImplementationContractName = 'ArbethWalletSimple';
+      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // opeth
     case 10:
     // topeth
     case 11155420:
       walletImplementationContractName = 'OpethWalletSimple';
+      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // zketh
     case 324:
     // tzketh
     case 300:
       walletImplementationContractName = 'ZkethWalletSimple';
+      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
   }
 
@@ -130,7 +136,7 @@ async function main() {
     walletImplementationContractName,
     walletSimple.address,
     [],
-    `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`
+    contractPath
   );
   await verifyContract('WalletFactory', walletFactory.address, [
     walletSimple.address
