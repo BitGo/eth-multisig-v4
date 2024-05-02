@@ -79,7 +79,7 @@ const config: HardhatUserConfig = {
     tmatic: {
       // https://polygon-amoy.g.alchemy.com
       url: `https://polygon-amoy-bor-rpc.publicnode.com`,
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     bsc: {
       url: `https://bsc-dataseed1.binance.org/`,
@@ -87,7 +87,7 @@ const config: HardhatUserConfig = {
     },
     tbsc: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     tarbeth: {
       url: `${QUICKNODE_ARBITRUM_SEPOLIA_API_KEY}`,
