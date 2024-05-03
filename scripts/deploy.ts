@@ -40,16 +40,18 @@ async function main() {
     //tmatic
     case 80002:
       walletImplementationContractName = 'PolygonWalletSimple';
-      forwarderContractName = 'Forwarder';
-      forwarderFactoryContractName = 'ForwarderFactory';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // bsc
     case 56:
     // tbsc
     case 97:
-      walletImplementationContractName = 'RecoveryWalletSimple';
-      walletFactoryContractName = 'RecoveryWalletFactory';
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // arbeth
     case 42161:
