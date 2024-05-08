@@ -66,7 +66,7 @@ const config: HardhatUserConfig = {
     },
     eth: {
       url: `https://ultra-empty-sanctuary.quiknode.pro/${QUICKNODE_ETH_MAINNET_API_KEY}`,
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     hteth: {
       url: `https://rpc.holesky.ethpandaops.io/`,
