@@ -57,15 +57,19 @@ async function main() {
     case 42161:
     // tarbeth
     case 421614:
-      walletImplementationContractName = 'ArbethWalletSimple';
-      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // opeth
     case 10:
     // topeth
     case 11155420:
-      walletImplementationContractName = 'OpethWalletSimple';
-      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // zketh
     case 324:
