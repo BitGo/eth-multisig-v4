@@ -10,7 +10,7 @@
   },
   "scripts": {
     "deploy-prod": "hardhat run scripts/deploy.ts --network",
-    "deploy-test": "hardhat run scripts/deploy.ts --network",
+    "deploy-test": "hardhat run scripts/deployV1Forwarder.ts --network",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
