@@ -14,7 +14,7 @@ const {
   TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
   PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT,
   QUICKNODE_ETH_MAINNET_API_KEY,
-  QUICKNODE_ETH_HOLESKY_API_KEY,
+  PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP,
   QUICKNODE_ARBITRUM_SEPOLIA_API_KEY,
   QUICKNODE_OPTIMISM_SEPOLIA_API_KEY,
   QUICKNODE_ARBITRUM_ONE_API_KEY,
@@ -70,7 +70,7 @@ const config: HardhatUserConfig = {
     },
     hteth: {
       url: `https://rpc.holesky.ethpandaops.io/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`]
     },
     matic: {
       url: `https://polygon-mainnet.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
