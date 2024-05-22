@@ -95,7 +95,7 @@ const config: HardhatUserConfig = {
     },
     arbeth: {
       url: `${QUICKNODE_ARBITRUM_ONE_API_KEY}`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     topeth: {
       url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
@@ -103,7 +103,7 @@ const config: HardhatUserConfig = {
     },
     opeth: {
       url: `${QUICKNODE_OPTIMISM_API_KEY}`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     tzketh: {
       url: `${QUICKNODE_ZKSYNC_SEPOLIA_API_KEY}`,
