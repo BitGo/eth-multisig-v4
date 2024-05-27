@@ -92,19 +92,31 @@ const config: HardhatUserConfig = {
     },
     tarbeth: {
       url: `${QUICKNODE_ARBITRUM_SEPOLIA_API_KEY}`,
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     arbeth: {
       url: `${QUICKNODE_ARBITRUM_ONE_API_KEY}`,
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     topeth: {
       url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
-      accounts: [`${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     opeth: {
       url: `${QUICKNODE_OPTIMISM_API_KEY}`,
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     tzketh: {
       url: `${QUICKNODE_ZKSYNC_SEPOLIA_API_KEY}`,

@@ -5,19 +5,24 @@ const fs = require('fs');
 async function main() {
   const output = {
     walletImplementation: '',
-    walletFactory: ''
+    walletFactory: '',
+    forwarderImplementation: '',
+    forwarderFactory: ''
   };
 
   const feeData = await ethers.provider.getFeeData();
-  const gasParams = {
-    gasPrice: feeData.gasPrice!
-  };
-  const [deployer] = await ethers.getSigners();
-  const selfTransactions = 2;
 
-  for (let i = 0; i < selfTransactions; i++) {
-    const tx = await deployer.sendTransaction({
-      to: deployer.address,
+  const [walletDeployer, forwarderDeployer] = await ethers.getSigners();
+
+  const gasParams = {
+    gasPrice: feeData.gasPrice!.mul('2')
+  };
+
+  console.log('Deploying wallet contracts....');
+  const walletSelfTransactions = 2;
+  for (let i = 0; i < walletSelfTransactions; i++) {
+    const tx = await walletDeployer.sendTransaction({
+      to: walletDeployer.address,
       value: ethers.utils.parseEther('0'),
       gasPrice: gasParams.gasPrice
     });
@@ -29,7 +34,8 @@ async function main() {
   const walletFactoryContractName = 'WalletFactory';
 
   const WalletImplementation = await ethers.getContractFactory(
-    walletImplementationContractName
+    walletImplementationContractName,
+    walletDeployer
   );
   const walletImplementation = await WalletImplementation.deploy(gasParams);
   await walletImplementation.deployed();
@@ -40,7 +46,8 @@ async function main() {
   );
 
   const WalletFactory = await ethers.getContractFactory(
-    walletFactoryContractName
+    walletFactoryContractName,
+    walletDeployer
   );
   const walletFactory = await WalletFactory.deploy(
     walletImplementation.address,
@@ -50,6 +57,54 @@ async function main() {
   output.walletFactory = walletFactory.address;
   console.log(
     `${walletFactoryContractName} deployed at ` + walletFactory.address
+  );
+
+  const forwarderSelfTransactions = 234;
+  console.log('Deploying forwarder contracts....');
+
+  for (let i = 0; i < forwarderSelfTransactions; i++) {
+    const tx = await forwarderDeployer.sendTransaction({
+      to: forwarderDeployer.address,
+      value: ethers.utils.parseEther('0'),
+      gasPrice: gasParams.gasPrice
+    });
+    await tx.wait();
+    console.log(`Self transaction with nonce: ${i} complete`);
+  }
+
+  const forwarderImplementationContractName = 'Forwarder';
+  const forwarderFactoryContractName = 'ForwarderFactory';
+
+  const ForwarderImplementation = await ethers.getContractFactory(
+    forwarderImplementationContractName,
+    forwarderDeployer
+  );
+
+  const forwarderImplementation = await ForwarderImplementation.deploy(
+    gasParams
+  );
+  await forwarderImplementation.deployed();
+  output.forwarderImplementation = forwarderImplementation.address;
+
+  console.log(
+    `${forwarderImplementationContractName} deployed at ` +
+      forwarderImplementation.address,
+    forwarderDeployer
+  );
+
+  const ForwarderFactory = await ethers.getContractFactory(
+    forwarderFactoryContractName
+  );
+
+  const forwarderFactory = await ForwarderFactory.deploy(
+    forwarderImplementation.address,
+    gasParams
+  );
+
+  await forwarderFactory.deployed();
+  output.forwarderFactory = forwarderFactory.address;
+  console.log(
+    `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address
   );
 
   fs.writeFileSync('output.json', JSON.stringify(output));
@@ -62,6 +117,8 @@ async function main() {
 
   await walletImplementation.deployTransaction.wait(10);
   await walletFactory.deployTransaction.wait(10);
+  await forwarderImplementation.deployTransaction.wait(10);
+  await forwarderFactory.deployTransaction.wait(10);
 
   console.log('Done waiting, verifying');
   await verifyContract(
@@ -71,6 +128,16 @@ async function main() {
   );
   await verifyContract('WalletFactory', walletFactory.address, [
     walletImplementation.address
+  ]);
+
+  await verifyContract(
+    forwarderImplementationContractName,
+    forwarderImplementation.address,
+    []
+  );
+
+  await verifyContract('ForwarderFactory', forwarderFactory.address, [
+    forwarderImplementation.address
   ]);
 
   console.log('Contracts verified');
