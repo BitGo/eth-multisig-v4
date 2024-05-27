@@ -9,8 +9,8 @@
     "test": "test"
   },
   "scripts": {
-    "deploy-prod": "hardhat run scripts/deploy.ts --network",
-    "deploy-test": "hardhat run scripts/deployV1Wallet.ts --network",
+    "deploy-prod": "hardhat run scripts/deployV1FactoryContracts.ts --network",
+    "deploy-test": "hardhat run scripts/deployV1FactoryContracts.ts --network",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
