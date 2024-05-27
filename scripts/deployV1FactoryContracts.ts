@@ -17,9 +17,11 @@ async function main() {
   const gasParams = {
     gasPrice: feeData.gasPrice!.mul('2')
   };
+  const walletTxCount = await walletDeployer.getTransactionCount();
 
   console.log('Deploying wallet contracts....');
-  const walletSelfTransactions = 2;
+  console.log('Wallet Tx Count: ', walletTxCount);
+  const walletSelfTransactions = 2 - walletTxCount;
   for (let i = 0; i < walletSelfTransactions; i++) {
     const tx = await walletDeployer.sendTransaction({
       to: walletDeployer.address,
@@ -59,8 +61,11 @@ async function main() {
     `${walletFactoryContractName} deployed at ` + walletFactory.address
   );
 
-  const forwarderSelfTransactions = 234;
+  const forwarderTxCount = await forwarderDeployer.getTransactionCount();
+
   console.log('Deploying forwarder contracts....');
+  console.log('Forwarder Tx Count: ', forwarderTxCount);
+  const forwarderSelfTransactions = 234 - forwarderTxCount;
 
   for (let i = 0; i < forwarderSelfTransactions; i++) {
     const tx = await forwarderDeployer.sendTransaction({
@@ -88,12 +93,12 @@ async function main() {
 
   console.log(
     `${forwarderImplementationContractName} deployed at ` +
-      forwarderImplementation.address,
-    forwarderDeployer
+      forwarderImplementation.address
   );
 
   const ForwarderFactory = await ethers.getContractFactory(
-    forwarderFactoryContractName
+    forwarderFactoryContractName,
+    forwarderDeployer
   );
 
   const forwarderFactory = await ForwarderFactory.deploy(
