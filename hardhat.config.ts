@@ -10,6 +10,8 @@ import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
 const {
+  PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT,
+  PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP,
   MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
   TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
   QUICKNODE_ETH_MAINNET_API_KEY,
@@ -51,8 +53,11 @@ const config: HardhatUserConfig = {
       accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     hteth: {
-      url: `https://boldest-cosmological-mountain.ethereum-holesky.quiknode.pro/${QUICKNODE_ETH_HOLESKY_API_KEY}`,
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      url: `https://rpc.holesky.ethpandaops.io/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     matic: {
       url: `https://polygon-mainnet.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
