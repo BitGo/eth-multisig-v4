@@ -10,6 +10,8 @@ import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
 const {
+  PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT,
+  PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP,
   MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
   TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
   QUICKNODE_ETH_MAINNET_API_KEY,
@@ -51,8 +53,11 @@ const config: HardhatUserConfig = {
       accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     hteth: {
-      url: `https://boldest-cosmological-mountain.ethereum-holesky.quiknode.pro/${QUICKNODE_ETH_HOLESKY_API_KEY}`,
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      url: `https://rpc.holesky.ethpandaops.io/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     matic: {
       url: `https://polygon-mainnet.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
@@ -78,6 +83,20 @@ const config: HardhatUserConfig = {
     topeth: {
       url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
       accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+    },
+    tavaxc: {
+      url: 'https://api.avax-test.network/ext/C/rpc',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
+    },
+    avaxc: {
+      url: 'https://api.avax.network/ext/bc/C/rpc',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     }
   },
   gasReporter: {
@@ -100,7 +119,10 @@ const config: HardhatUserConfig = {
       arbitrumSepolia: `${ARBISCAN_API_KEY}`,
       // optimism
       optimisticEthereum: `${OPTIMISTIC_ETHERSCAN_API_KEY}`,
-      optimisticSepolia: `${OPTIMISTIC_ETHERSCAN_API_KEY}`
+      optimisticSepolia: `${OPTIMISTIC_ETHERSCAN_API_KEY}`,
+      // there is free api key for avaxc, so make use of 2 req/sec
+      avaxc: 'sampleapikey',
+      avaxcTestnet: 'sampleapikey'
     },
     customChains: [
       {
@@ -125,6 +147,24 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-sepolia-optimistic.etherscan.io/api',
           browserURL: 'https://sepolia-optimism.etherscan.io'
+        }
+      },
+      {
+        network: 'avaxc',
+        chainId: 43114,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api',
+          browserURL: 'https://snowtrace.io/'
+        }
+      },
+      {
+        network: 'avaxcTestnet',
+        chainId: 43113,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api',
+          browserURL: 'https://testnet.snowtrace.io/'
         }
       }
     ]
