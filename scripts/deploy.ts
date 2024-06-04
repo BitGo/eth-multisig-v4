@@ -39,10 +39,10 @@ async function main() {
     case 137:
     //tmatic
     case 80002:
-      walletImplementationContractName = 'PolygonWalletSimple';
+      walletImplementationContractName = 'WalletSimple';
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
-      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // bsc
     case 56:

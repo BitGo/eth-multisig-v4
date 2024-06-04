@@ -74,8 +74,8 @@ const config: HardhatUserConfig = {
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`]
     },
     matic: {
-      url: `https://polygon-mainnet.g.alchemyapi.io/v2/${ALCHEMY_POLYGON_API_KEY}`,
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      url: `https://polygon-rpc.com/`,
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     tmatic: {
       // https://polygon-amoy.g.alchemy.com
@@ -84,7 +84,7 @@ const config: HardhatUserConfig = {
     },
     bsc: {
       url: `https://bsc-dataseed1.binance.org/`,
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     tbsc: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
