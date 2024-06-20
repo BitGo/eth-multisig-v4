@@ -7,73 +7,27 @@ async function main() {
     walletImplementation: '',
     walletFactory: '',
     forwarderImplementation: '',
-    forwarderFactory: ''
+    forwarderFactory: '',
+    batcher: ''
   };
 
-  const feeData = await ethers.provider.getFeeData();
+  const contractName = 'Batcher';
+  const transferGasLimit = '75000';
 
-  const [walletDeployer, forwarderDeployer] = await ethers.getSigners();
-
-  const gasParams = {
-    gasPrice: feeData.gasPrice!.mul('2')
-  };
-
-  const forwarderImplementationContractName = 'Forwarder';
-  const forwarderFactoryContractName = 'Batcher';
-
-  const ForwarderImplementation = await ethers.getContractFactory(
-    forwarderImplementationContractName,
-    forwarderDeployer
-  );
-
-  const forwarderImplementation = await ForwarderImplementation.deploy(
-    gasParams
-  );
-  await forwarderImplementation.deployed();
-  output.forwarderImplementation = forwarderImplementation.address;
-
-  console.log(
-    `${forwarderImplementationContractName} deployed at ` +
-      forwarderImplementation.address
-  );
-
-  const ForwarderFactory = await ethers.getContractFactory(
-    forwarderFactoryContractName,
-    forwarderDeployer
-  );
-
-  const forwarderFactory = await ForwarderFactory.deploy(
-    forwarderImplementation.address,
-    gasParams
-  );
-
-  await forwarderFactory.deployed();
-  output.forwarderFactory = forwarderFactory.address;
-  console.log(
-    `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address
-  );
+  const Batcher = await ethers.getContractFactory(contractName);
+  const batcher = await Batcher.deploy(transferGasLimit);
+  await batcher.deployed();
+  output.batcher = batcher.address;
+  console.log('Batcher deployed at ' + batcher.address);
 
   fs.writeFileSync('output.json', JSON.stringify(output));
 
   // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
-  console.log('Waiting for 5 minutes before verifying....');
+  console.log('Waiting for 5 minutes before verifying.....');
   await new Promise((r) => setTimeout(r, 1000 * 300));
 
-  // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
-  await forwarderFactory.deployTransaction.wait(10);
-
   console.log('Done waiting, verifying');
-
-  await verifyContract(
-    forwarderImplementationContractName,
-    forwarderImplementation.address,
-    []
-  );
-
-  await verifyContract('ForwarderFactory', forwarderFactory.address, [
-    forwarderImplementation.address
-  ]);
-
+  await verifyContract(contractName, batcher.address, [transferGasLimit]);
   console.log('Contracts verified');
 }
 
