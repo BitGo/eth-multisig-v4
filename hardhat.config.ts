@@ -27,7 +27,8 @@ const {
   BSCSCAN_API_KEY,
   ARBISCAN_API_KEY,
   OPTIMISTIC_ETHERSCAN_API_KEY,
-  ZKSYNC_EXPLORER_API_KEY
+  ZKSYNC_EXPLORER_API_KEY,
+  BASESCAN_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -121,6 +122,14 @@ const config: HardhatUserConfig = {
     tzketh: {
       url: `${QUICKNODE_ZKSYNC_SEPOLIA_API_KEY}`,
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+    },
+    tbaseeth: {
+      url: 'https://sepolia.base.org',
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+    },
+    baseeth: {
+      url: 'https://mainnet.base.org/',
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {
@@ -146,7 +155,10 @@ const config: HardhatUserConfig = {
       optimisticSepolia: `${OPTIMISTIC_ETHERSCAN_API_KEY}`,
       // zksync
       zksync: `${ZKSYNC_EXPLORER_API_KEY}`,
-      zksyncSepolia: `${ZKSYNC_EXPLORER_API_KEY}`
+      zksyncSepolia: `${ZKSYNC_EXPLORER_API_KEY}`,
+      // base chain
+      baseSepolia: `${BASESCAN_API_KEY}`,
+      base: `${BASESCAN_API_KEY}`
     },
     customChains: [
       {
@@ -195,6 +207,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-amoy.polygonscan.com/api',
           browserURL: 'https://amoy.polygonscan.com'
+        }
+      },
+      {
+        network: 'baseSepolia',
+        chainId: 84532,
+        urls: {
+          apiURL: 'https://api-sepolia.basescan.org/api',
+          browserURL: 'https://sepolia.basescan.org/'
+        }
+      },
+      {
+        network: 'base',
+        chainId: 8453,
+        urls: {
+          apiURL: 'https://api.basescan.org/api',
+          browserURL: 'https://basescan.org/'
         }
       }
     ]
