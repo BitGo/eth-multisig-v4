@@ -66,7 +66,7 @@ const config: HardhatUserConfig = {
       loggingEnabled: false
     },
     eth: {
-      url: `https://ultra-empty-sanctuary.quiknode.pro/${QUICKNODE_ETH_MAINNET_API_KEY}`,
+      url: `https://ethereum-rpc.publicnode.com`,
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     hteth: {
