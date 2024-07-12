@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js 
+    - name: Use Node.js
       uses: actions/setup-node@v3
       with:
         cache: 'npm'
@@ -38,20 +38,26 @@ jobs:
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
-    outputs: 
+    outputs:
       network: ${{steps.network-name.outputs.result}}
+      version: ${{steps.network-name.outputs.result}}
     steps:
       - name: GET NETWORK NAME
-        id: network-name      
+        id: network-name
         uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           result-encoding: string
           script: | 
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh)$/;
-            const network = tag.match(regex);
-            return network ? network[1] : "hteth";
+            const regex = (v[\d\.]+)\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh)$
+            const tagArray = tag.match(regex);
+            const network = tagArray ? tagArray[2] : "hteth";
+            const version = tarArray ? tagArray[1] : "v1.0";
+            return {
+              network: network,
+              version: version
+            };
   deploy-to-test:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
@@ -82,7 +88,9 @@ jobs:
           BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
           ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
           OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
-          ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
+          ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }},
+          VERSION: ${{ needs.get-network.outputs.version }},
+          ENV: 'TEST'
       - name: Update release notes
         uses: actions/github-script@v6
         with:
@@ -140,7 +148,9 @@ jobs:
           OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
           ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
           QUICKNODE_ARBITRUM_ONE_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_ONE_API_KEY }}
-          QUICKNODE_OPTIMISM_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_API_KEY }}
+          QUICKNODE_OPTIMISM_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_API_KEY }},
+          VERSION: ${{ needs.get-network.outputs.version }},
+          ENV: 'PROD'
       - name: Update release notes
         uses: actions/github-script@v6
         with:
