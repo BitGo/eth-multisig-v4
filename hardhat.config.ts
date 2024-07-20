@@ -27,8 +27,38 @@ const {
   BSCSCAN_API_KEY,
   ARBISCAN_API_KEY,
   OPTIMISTIC_ETHERSCAN_API_KEY,
-  ZKSYNC_EXPLORER_API_KEY
+  ZKSYNC_EXPLORER_API_KEY,
+  VERSION,
+  ENV
 } = process.env;
+
+const version = VERSION ? VERSION.split('.')[0] : 'v1';
+
+const privateKey: { [key: string]: string } = {
+  v4Prod: PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT ?? '',
+  v4Test: PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT ?? '',
+  v2Prod: MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT ?? '',
+  v2Test: TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT ?? '',
+  v1ProdTestWallet: PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT ?? '',
+  v1ProdTestForwarder: PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP ?? ''
+};
+
+function getPrivateKey(version: string): string[] {
+  switch (version) {
+    case 'v1':
+      return [
+        privateKey['v1ProdTestWallet'],
+        privateKey['v1ProdTestForwarder']
+      ];
+    case 'v2':
+      return ENV === 'TEST' ? [privateKey['v2Test']] : [privateKey['v2Prod']];
+    case 'v4':
+      return ENV === 'TEST' ? [privateKey['v4Test']] : [privateKey['v4Prod']];
+    default:
+      console.error('Invalid Version Number or Tag');
+      process.exit(1);
+  }
+}
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -67,60 +97,48 @@ const config: HardhatUserConfig = {
     },
     eth: {
       url: `https://ethereum-rpc.publicnode.com`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: getPrivateKey(version)
     },
     hteth: {
       url: `https://rpc.holesky.ethpandaops.io/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`]
+      accounts: getPrivateKey(version)
     },
     matic: {
       url: `https://polygon-rpc.com/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: getPrivateKey(version)
     },
     tmatic: {
       // https://polygon-amoy.g.alchemy.com
       url: `https://polygon-amoy-bor-rpc.publicnode.com`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: getPrivateKey(version)
     },
     bsc: {
       url: `https://bsc-dataseed1.binance.org/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: getPrivateKey(version)
     },
     tbsc: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: getPrivateKey(version)
     },
     tarbeth: {
       url: `${QUICKNODE_ARBITRUM_SEPOLIA_API_KEY}`,
-      accounts: [
-        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
-      ]
+      accounts: getPrivateKey(version)
     },
     arbeth: {
       url: `${QUICKNODE_ARBITRUM_ONE_API_KEY}`,
-      accounts: [
-        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
-      ]
+      accounts: getPrivateKey(version)
     },
     topeth: {
       url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
-      accounts: [
-        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
-      ]
+      accounts: getPrivateKey(version)
     },
     opeth: {
       url: `${QUICKNODE_OPTIMISM_API_KEY}`,
-      accounts: [
-        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
-      ]
+      accounts: getPrivateKey(version)
     },
     tzketh: {
       url: `${QUICKNODE_ZKSYNC_SEPOLIA_API_KEY}`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: getPrivateKey(version)
     }
   },
   gasReporter: {
