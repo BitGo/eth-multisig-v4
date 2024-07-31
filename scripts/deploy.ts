@@ -48,10 +48,11 @@ async function main() {
     case 56:
     // tbsc
     case 97:
-      walletImplementationContractName = 'WalletSimple';
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      walletImplementationContractName = 'RecoveryWalletSimple';
+      walletFactoryContractName = 'RecoveryWalletFactory';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
+      contractPath = `contracts/recoveryContracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // arbeth
     case 42161:
