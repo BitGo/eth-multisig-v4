@@ -27,7 +27,8 @@ const {
   BSCSCAN_API_KEY,
   ARBISCAN_API_KEY,
   OPTIMISTIC_ETHERSCAN_API_KEY,
-  ZKSYNC_EXPLORER_API_KEY
+  ZKSYNC_EXPLORER_API_KEY,
+  BARTIO_BERA_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -121,6 +122,10 @@ const config: HardhatUserConfig = {
     tzketh: {
       url: `${QUICKNODE_ZKSYNC_SEPOLIA_API_KEY}`,
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+    },
+    tbera: {
+      url: `${BARTIO_BERA_EXPLORER_API_KEY}`,
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {
@@ -146,7 +151,9 @@ const config: HardhatUserConfig = {
       optimisticSepolia: `${OPTIMISTIC_ETHERSCAN_API_KEY}`,
       // zksync
       zksync: `${ZKSYNC_EXPLORER_API_KEY}`,
-      zksyncSepolia: `${ZKSYNC_EXPLORER_API_KEY}`
+      zksyncSepolia: `${ZKSYNC_EXPLORER_API_KEY}`,
+      // bera
+      bartioBera: `${BARTIO_BERA_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -187,6 +194,15 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://block-explorer-api.sepolia.zksync.dev/api',
           browserURL: 'https://sepolia.explorer.zksync.io'
+        }
+      },
+      {
+        network: 'berachainBartio',
+        chainId: 80084,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/',
+          browserURL: 'https://bartio.beratrail.io/'
         }
       },
       {

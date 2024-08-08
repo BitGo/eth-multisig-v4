@@ -79,6 +79,12 @@ async function main() {
       walletImplementationContractName = 'ZkethWalletSimple';
       contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    case 80084:
+      walletImplementationContractName = 'BeraWalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
   }
 
   console.log(
