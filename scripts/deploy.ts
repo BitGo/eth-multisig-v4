@@ -12,8 +12,10 @@ async function main() {
   };
 
   const feeData = await ethers.provider.getFeeData();
-  const gasParams = {
-    gasPrice: feeData.gasPrice
+
+  const eip1559GasParams = {
+    maxFeePerGas: feeData.maxFeePerGas,
+    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
   };
 
   const [deployer] = await ethers.getSigners();
@@ -98,11 +100,10 @@ async function main() {
   console.log(
     'Deployed wallet contract called: ' + walletImplementationContractName
   );
-
   const WalletSimple = await ethers.getContractFactory(
     walletImplementationContractName
   );
-  const walletSimple = await WalletSimple.deploy(gasParams);
+  const walletSimple = await WalletSimple.deploy(eip1559GasParams);
   await walletSimple.deployed();
   output.walletImplementation = walletSimple.address;
   console.log('WalletSimple deployed at ' + walletSimple.address);
@@ -112,7 +113,7 @@ async function main() {
   );
   const walletFactory = await WalletFactory.deploy(
     walletSimple.address,
-    gasParams
+    eip1559GasParams
   );
   await walletFactory.deployed();
   output.walletFactory = walletFactory.address;
@@ -122,7 +123,7 @@ async function main() {
   // ForwarderV4 and ForwarderFactoryV4.
   // If we have to deploy contracts for the older coins like eth, avax, polygon, we need to deploy Forwarder and ForwarderFactory
   const Forwarder = await ethers.getContractFactory(forwarderContractName);
-  const forwarder = await Forwarder.deploy(gasParams);
+  const forwarder = await Forwarder.deploy();
   await forwarder.deployed();
   output.forwarderImplementation = forwarder.address;
   console.log(`${forwarderContractName} deployed at ` + forwarder.address);
@@ -130,10 +131,7 @@ async function main() {
   const ForwarderFactory = await ethers.getContractFactory(
     forwarderFactoryContractName
   );
-  const forwarderFactory = await ForwarderFactory.deploy(
-    forwarder.address,
-    gasParams
-  );
+  const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
   await forwarderFactory.deployed();
   output.forwarderFactory = forwarderFactory.address;
   console.log(
