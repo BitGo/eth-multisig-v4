@@ -44,4 +44,5 @@ jobs:
         OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
         ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
         BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
+        BARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.BARTIO_BERA_EXPLORER_API_KEY }}
     - run: npm run lint
