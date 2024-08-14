@@ -57,7 +57,7 @@ jobs:
   deploy-to-test:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if:  ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' || (needs.get-network.outputs.network == 'tbera' ) }}
+    if:  ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' ) || (needs.get-network.outputs.network == 'tbera' ) }}
     environment: testnet
     steps:
       - uses: actions/checkout@v2
@@ -118,7 +118,7 @@ jobs:
   deploy-to-prod:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if:  ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth'|| (needs.get-network.outputs.network == 'bera' )}}
+    if:  ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth' ) || (needs.get-network.outputs.network == 'bera' )}}
     environment: mainnet
     steps:
       - uses: actions/checkout@v2
