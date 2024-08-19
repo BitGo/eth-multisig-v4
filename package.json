@@ -11,8 +11,6 @@
   "scripts": {
     "deploy-prod": "hardhat run scripts/deploy.ts --network",
     "deploy-test": "hardhat run scripts/deploy.ts --network",
-    "deploy-batcher-test" : "hardhat run scripts/deployBatcherContract.js --network",
-    "deploy-batcher-prod" : "hardhat run scripts/deployBatcherContract.js --network",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
