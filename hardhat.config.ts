@@ -126,11 +126,17 @@ const config: HardhatUserConfig = {
     },
     tbaseeth: {
       url: 'https://sepolia.base.org',
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     baseeth: {
       url: 'https://mainnet.base.org/',
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     tbera: {
       url: `https://bartio.rpc.berachain.com/`,
