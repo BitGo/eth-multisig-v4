@@ -68,6 +68,7 @@ jobs:
           cache: 'npm'
       - run: npm install
       - run: npm run deploy-test --network ${{ needs.get-network.outputs.network }}
+      - run: npm run deploy-batcher-test --network ${{ needs.get-network.outputs.network }}
         env:
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
           TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
@@ -129,6 +130,7 @@ jobs:
           cache: 'npm'
       - run: npm install
       - run: npm run deploy-prod --network ${{ needs.get-network.outputs.network }}
+      - run: npm run deploy-batcher-prod --network ${{ needs.get-network.outputs.network }}
         env:
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
           TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
