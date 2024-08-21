@@ -134,7 +134,10 @@ const config: HardhatUserConfig = {
     },
     tbera: {
       url: `https://bartio.rpc.berachain.com/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     }
   },
   gasReporter: {
