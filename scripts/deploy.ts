@@ -86,8 +86,8 @@ async function main() {
     // base
     case 8453:
       walletImplementationContractName = 'WalletSimple';
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     case 80084:
