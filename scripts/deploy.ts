@@ -18,7 +18,21 @@ async function main() {
     maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
   };
 
+  let deployWalletContracts = false,
+    deployForwarderContracts = false;
   const [deployer] = await ethers.getSigners();
+  const txCount = await deployer.getTransactionCount();
+
+  if (txCount === 1 || txCount === 3) {
+    throw Error('Cannot deploy contracts, please update the script');
+  }
+
+  if (txCount === 0) {
+    deployWalletContracts = true;
+    deployForwarderContracts = true;
+  } else if (txCount === 2) {
+    deployForwarderContracts = true;
+  }
 
   let walletImplementationContractName = '';
   let walletFactoryContractName = 'WalletFactory';
@@ -98,74 +112,93 @@ async function main() {
       break;
   }
 
-  console.log(
-    'Deployed wallet contract called: ' + walletImplementationContractName
-  );
-  const WalletSimple = await ethers.getContractFactory(
-    walletImplementationContractName
-  );
-  const walletSimple = await WalletSimple.deploy(eip1559GasParams);
-  await walletSimple.deployed();
-  output.walletImplementation = walletSimple.address;
-  console.log('WalletSimple deployed at ' + walletSimple.address);
+  if (deployWalletContracts) {
+    console.log(
+      'Deploying wallet contract called: ' + walletImplementationContractName
+    );
+    const WalletSimple = await ethers.getContractFactory(
+      walletImplementationContractName
+    );
+    const walletSimple = await WalletSimple.deploy(eip1559GasParams);
+    await walletSimple.deployed();
+    output.walletImplementation = walletSimple.address;
+    console.log('WalletSimple deployed at ' + walletSimple.address);
 
-  const WalletFactory = await ethers.getContractFactory(
-    walletFactoryContractName
-  );
-  const walletFactory = await WalletFactory.deploy(
-    walletSimple.address,
-    eip1559GasParams
-  );
-  await walletFactory.deployed();
-  output.walletFactory = walletFactory.address;
-  console.log('WalletFactory deployed at ' + walletFactory.address);
+    const WalletFactory = await ethers.getContractFactory(
+      walletFactoryContractName
+    );
+    const walletFactory = await WalletFactory.deploy(
+      walletSimple.address,
+      eip1559GasParams
+    );
+    await walletFactory.deployed();
+    output.walletFactory = walletFactory.address;
+    console.log('WalletFactory deployed at ' + walletFactory.address);
 
-  // In case of new coins like arbeth, opeth, zketh, we need to deploy new forwarder and forwarder factory i.e.
-  // ForwarderV4 and ForwarderFactoryV4.
-  // If we have to deploy contracts for the older coins like eth, avax, polygon, we need to deploy Forwarder and ForwarderFactory
-  const Forwarder = await ethers.getContractFactory(forwarderContractName);
-  const forwarder = await Forwarder.deploy();
-  await forwarder.deployed();
-  output.forwarderImplementation = forwarder.address;
-  console.log(`${forwarderContractName} deployed at ` + forwarder.address);
+    // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
+    console.log('Waiting for 5 minutes before verifying.....');
+    await new Promise((r) => setTimeout(r, 1000 * 300));
 
-  const ForwarderFactory = await ethers.getContractFactory(
-    forwarderFactoryContractName
-  );
-  const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
-  await forwarderFactory.deployed();
-  output.forwarderFactory = forwarderFactory.address;
-  console.log(
-    `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address
-  );
+    // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
+    await walletSimple.deployTransaction.wait(10);
+    await walletFactory.deployTransaction.wait(10);
 
-  fs.writeFileSync('output.json', JSON.stringify(output));
+    console.log('Done waiting, verifying wallet contracts');
 
-  // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
-  console.log('Waiting for 5 minutes before verifying.....');
-  await new Promise((r) => setTimeout(r, 1000 * 300));
+    await verifyContract(
+      walletImplementationContractName,
+      walletSimple.address,
+      [],
+      contractPath
+    );
+    await verifyContract('WalletFactory', walletFactory.address, [
+      walletSimple.address
+    ]);
 
-  // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
-  await walletSimple.deployTransaction.wait(10);
-  await walletFactory.deployTransaction.wait(10);
-  await forwarder.deployTransaction.wait(10);
-  await forwarderFactory.deployTransaction.wait(10);
+    console.log('Wallet Contracts verified');
+  }
 
-  console.log('Done waiting, verifying');
-  await verifyContract(
-    walletImplementationContractName,
-    walletSimple.address,
-    [],
-    contractPath
-  );
-  await verifyContract('WalletFactory', walletFactory.address, [
-    walletSimple.address
-  ]);
-  await verifyContract(forwarderContractName, forwarder.address, []);
-  await verifyContract(forwarderFactoryContractName, forwarderFactory.address, [
-    forwarder.address
-  ]);
-  console.log('Contracts verified');
+  if (deployForwarderContracts) {
+    // In case of new coins like arbeth, opeth, zketh, we need to deploy new forwarder and forwarder factory i.e.
+    // ForwarderV4 and ForwarderFactoryV4.
+    // If we have to deploy contracts for the older coins like eth, avax, polygon, we need to deploy Forwarder and ForwarderFactory
+    console.log('Deploying Forwarder contracts');
+    const Forwarder = await ethers.getContractFactory(forwarderContractName);
+    const forwarder = await Forwarder.deploy();
+    await forwarder.deployed();
+    output.forwarderImplementation = forwarder.address;
+    console.log(`${forwarderContractName} deployed at ` + forwarder.address);
+
+    const ForwarderFactory = await ethers.getContractFactory(
+      forwarderFactoryContractName
+    );
+    const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
+    await forwarderFactory.deployed();
+    output.forwarderFactory = forwarderFactory.address;
+    console.log(
+      `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address
+    );
+
+    fs.writeFileSync('output.json', JSON.stringify(output));
+
+    // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
+    console.log('Waiting for 5 minutes before verifying.....');
+    await new Promise((r) => setTimeout(r, 1000 * 300));
+
+    // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
+    await forwarder.deployTransaction.wait(10);
+    await forwarderFactory.deployTransaction.wait(10);
+
+    console.log('Done waiting, verifying forwarder contracts');
+
+    await verifyContract(forwarderContractName, forwarder.address, []);
+    await verifyContract(
+      forwarderFactoryContractName,
+      forwarderFactory.address,
+      [forwarder.address]
+    );
+    console.log('Forwarder Contracts verified');
+  }
 }
 
 async function verifyContract(
