@@ -97,11 +97,8 @@ const config: HardhatUserConfig = {
       accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     arbeth: {
-      url: `${QUICKNODE_ARBITRUM_ONE_API_KEY}`,
-      accounts: [
-        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
-      ]
+      url: `https://arb1.arbitrum.io/rpc`,
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     },
     topeth: {
       url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
