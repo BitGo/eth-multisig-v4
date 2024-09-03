@@ -98,7 +98,10 @@ const config: HardhatUserConfig = {
     },
     arbeth: {
       url: `https://arb1.arbitrum.io/rpc`,
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
+      ]
     },
     topeth: {
       url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
