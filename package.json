@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "deploy-prod": "hardhat run scripts/deploy.ts --network",
+    "deploy-prod": "hardhat run scripts/deployV1FactoryContractsts --network",
     "deploy-test": "hardhat run scripts/deploy.ts --network",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
