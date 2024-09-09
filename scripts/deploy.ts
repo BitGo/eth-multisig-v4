@@ -1,4 +1,4 @@
-import { use } from 'chai';
+import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 const hre = require('hardhat');
 const fs = require('fs');
@@ -13,11 +13,14 @@ async function main() {
 
   const feeData = await ethers.provider.getFeeData();
 
-  const eip1559GasParams = {
+  const eip1559GasParams: {
+    maxFeePerGas: BigNumber | null;
+    maxPriorityFeePerGas: BigNumber | null;
+    gasLimit?: number;
+  } = {
     maxFeePerGas: feeData.maxFeePerGas,
     maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
   };
-
   let deployWalletContracts = false,
     deployForwarderContracts = false;
   const [deployer] = await ethers.getSigners();
@@ -108,6 +111,16 @@ async function main() {
       walletImplementationContractName = 'WalletSimple';
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
+    //avaxc
+    case 43114:
+    //tavaxc
+    case 43113:
+      eip1559GasParams.gasLimit = 3000000;
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
   }
