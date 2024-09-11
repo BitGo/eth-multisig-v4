@@ -132,6 +132,14 @@ const config: HardhatUserConfig = {
     tbera: {
       url: `https://bartio.rpc.berachain.com/`,
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+    },
+    tavaxc: {
+      url: 'https://api.avax-test.network/ext/C/rpc',
+      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+    },
+    avaxc: {
+      url: 'https://api.avax.network/ext/bc/C/rpc',
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {
@@ -162,7 +170,11 @@ const config: HardhatUserConfig = {
       baseSepolia: `${BASESCAN_API_KEY}`,
       base: `${BASESCAN_API_KEY}`,
       // bera
-      bartioBera: `${BARTIO_BERA_EXPLORER_API_KEY}`
+      bartioBera: `${BARTIO_BERA_EXPLORER_API_KEY}`,
+      //avaxc
+      // there is free api key for avaxc, so make use of 2 req/sec
+      axaxc: 'sampleapikey',
+      avaxcTestnet: 'sampleapikey'
     },
     customChains: [
       {
@@ -236,6 +248,24 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.basescan.org/api',
           browserURL: 'https://basescan.org/'
+        }
+      },
+      {
+        network: 'avaxc',
+        chainId: 43114,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api',
+          browserURL: 'https://snowtrace.io/'
+        }
+      },
+      {
+        network: 'avaxcTestnet',
+        chainId: 43113,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api',
+          browserURL: 'https://testnet.snowtrace.io/'
         }
       }
     ]
