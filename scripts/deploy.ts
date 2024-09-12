@@ -119,8 +119,8 @@ async function main() {
     case 43113:
       eip1559GasParams.gasLimit = 3000000;
       walletImplementationContractName = 'WalletSimple';
-      forwarderContractName = 'Forwarder';
-      forwarderFactoryContractName = 'ForwarderFactory';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
   }
