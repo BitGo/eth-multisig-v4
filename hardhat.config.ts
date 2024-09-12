@@ -135,11 +135,11 @@ const config: HardhatUserConfig = {
     },
     tavaxc: {
       url: 'https://api.avax-test.network/ext/C/rpc',
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     avaxc: {
       url: 'https://api.avax.network/ext/bc/C/rpc',
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {
