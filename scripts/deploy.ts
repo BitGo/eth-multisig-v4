@@ -102,11 +102,15 @@ async function main() {
     case 84532:
     // base
     case 8453:
+      eip1559GasParams.gasLimit = 3000000;
+      eip1559GasParams.maxFeePerGas = BigNumber.from('10000000000');
+      eip1559GasParams.maxPriorityFeePerGas = BigNumber.from('10000000000');
       walletImplementationContractName = 'WalletSimple';
       forwarderContractName = 'Forwarder';
       forwarderFactoryContractName = 'ForwarderFactory';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    // bera
     case 80084:
       walletImplementationContractName = 'WalletSimple';
       forwarderContractName = 'ForwarderV4';
