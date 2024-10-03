@@ -174,7 +174,7 @@ const config: HardhatUserConfig = {
       bartioBera: `${BARTIO_BERA_EXPLORER_API_KEY}`,
       //avaxc
       // there is free api key for avaxc, so make use of 2 req/sec
-      axaxc: 'sampleapikey',
+      avaxc: 'sampleapikey',
       avaxcTestnet: 'sampleapikey'
     },
     customChains: [
