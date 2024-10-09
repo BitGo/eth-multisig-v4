@@ -17,7 +17,7 @@ async function main() {
 
   const gasParams = {
     gasPrice: feeData.gasPrice!.mul('2'),
-    gasLimit: 5000000
+    gasLimit: 4500000
   };
   const walletTxCount = await walletDeployer.getTransactionCount();
 
@@ -34,27 +34,27 @@ async function main() {
     console.log(`Self transaction with nonce: ${i} complete`);
   }
 
-  const walletImplementationContractName = 'AvaxcWalletSimple';
+  // const walletImplementationContractName = 'AvaxcWalletSimple';
   const walletFactoryContractName = 'WalletFactory';
 
-  const WalletImplementation = await ethers.getContractFactory(
-    walletImplementationContractName,
-    walletDeployer
-  );
-  const walletImplementation = await WalletImplementation.deploy(gasParams);
-  await walletImplementation.deployed();
-  output.walletImplementation = walletImplementation.address;
-  console.log(
-    `${walletImplementationContractName} deployed at ` +
-      walletImplementation.address
-  );
+  // const WalletImplementation = await ethers.getContractFactory(
+  //   walletImplementationContractName,
+  //   walletDeployer
+  // );
+  // const walletImplementation = await WalletImplementation.deploy(gasParams);
+  // await walletImplementation.deployed();
+  // output.walletImplementation = walletImplementation.address;
+  // console.log(
+  //   `${walletImplementationContractName} deployed at ` +
+  //     walletImplementation.address
+  // );
 
   const WalletFactory = await ethers.getContractFactory(
     walletFactoryContractName,
     walletDeployer
   );
   const walletFactory = await WalletFactory.deploy(
-    walletImplementation.address,
+    '0xE8E847cf573Fc8ed75621660A36AffD18c543d7E',
     gasParams
   );
   await walletFactory.deployed();
@@ -122,19 +122,19 @@ async function main() {
 
   // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
 
-  await walletImplementation.deployTransaction.wait(10);
+  //await walletImplementation.deployTransaction.wait(10);
   await walletFactory.deployTransaction.wait(10);
   await forwarderImplementation.deployTransaction.wait(10);
   await forwarderFactory.deployTransaction.wait(10);
 
   console.log('Done waiting, verifying');
-  await verifyContract(
-    walletImplementationContractName,
-    walletImplementation.address,
-    []
-  );
+  // await verifyContract(
+  //   walletImplementationContractName,
+  //   walletImplementation.address,
+  //   []
+  // );
   await verifyContract('WalletFactory', walletFactory.address, [
-    walletImplementation.address
+    '0xE8E847cf573Fc8ed75621660A36AffD18c543d7E'
   ]);
 
   await verifyContract(
