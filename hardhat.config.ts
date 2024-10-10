@@ -93,10 +93,7 @@ const config: HardhatUserConfig = {
     },
     avaxc: {
       url: 'https://api.avax.network/ext/bc/C/rpc',
-      accounts: [
-        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`
-      ]
+      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
     }
   },
   gasReporter: {

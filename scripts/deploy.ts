@@ -10,12 +10,19 @@ async function main() {
     forwarderFactory: ''
   };
 
+  const feeData = await ethers.provider.getFeeData();
+
+  const gasParams = {
+    gasPrice: feeData.gasPrice!.mul('2'),
+    gasLimit: 4500000
+  };
+
   const [deployer] = await ethers.getSigners();
 
   let walletImplementationContractName = '';
   let walletFactoryContractName = 'WalletFactory';
   const chainId = await deployer.getChainId();
-  switch (await deployer.getChainId()) {
+  switch (chainId) {
     // https://chainlist.org/
     //eth
     case 1:
@@ -48,36 +55,47 @@ async function main() {
     case 11155420:
       walletImplementationContractName = 'OpethWalletSimple';
       break;
+    //avaxc
+    case 43114:
+    //tavaxc
+    case 43113:
+      walletImplementationContractName = 'AvaxcWalletSimple';
   }
 
   console.log(
     'Deployed wallet contract called: ' + walletImplementationContractName
   );
 
-  const WalletSimple = await ethers.getContractFactory(
-    walletImplementationContractName
-  );
-  const walletSimple = await WalletSimple.deploy();
-  await walletSimple.deployed();
-  output.walletImplementation = walletSimple.address;
-  console.log('WalletSimple deployed at ' + walletSimple.address);
+  // const WalletSimple = await ethers.getContractFactory(
+  //   walletImplementationContractName
+  // );
+  // const walletSimple = await WalletSimple.deploy(gasParams);
+  // await walletSimple.deployed();
+  // output.walletImplementation = walletSimple.address;
+  // console.log('WalletSimple deployed at ' + walletSimple.address);
 
   const WalletFactory = await ethers.getContractFactory(
     walletFactoryContractName
   );
-  const walletFactory = await WalletFactory.deploy(walletSimple.address);
+  const walletFactory = await WalletFactory.deploy(
+    '0xe5DcdC13B628c2df813DB1080367E929c1507Ca0',
+    gasParams
+  );
   await walletFactory.deployed();
   output.walletFactory = walletFactory.address;
   console.log('WalletFactory deployed at ' + walletFactory.address);
 
   const Forwarder = await ethers.getContractFactory('Forwarder');
-  const forwarder = await Forwarder.deploy();
+  const forwarder = await Forwarder.deploy(gasParams);
   await forwarder.deployed();
   output.forwarderImplementation = forwarder.address;
   console.log('Forwarder deployed at ' + forwarder.address);
 
   const ForwarderFactory = await ethers.getContractFactory('ForwarderFactory');
-  const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
+  const forwarderFactory = await ForwarderFactory.deploy(
+    forwarder.address,
+    gasParams
+  );
   await forwarderFactory.deployed();
   output.forwarderFactory = forwarderFactory.address;
   console.log('ForwarderFactory deployed at ' + forwarderFactory.address);
@@ -89,19 +107,19 @@ async function main() {
   await new Promise((r) => setTimeout(r, 1000 * 300));
 
   // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
-  await walletSimple.deployTransaction.wait(10);
+  //await walletSimple.deployTransaction.wait(10);
   await walletFactory.deployTransaction.wait(10);
   await forwarder.deployTransaction.wait(10);
   await forwarderFactory.deployTransaction.wait(10);
 
   console.log('Done waiting, verifying');
-  await verifyContract(
-    walletImplementationContractName,
-    walletSimple.address,
-    []
-  );
+  // await verifyContract(
+  //   walletImplementationContractName,
+  //   walletSimple.address,
+  //   []
+  // );
   await verifyContract('WalletFactory', walletFactory.address, [
-    walletSimple.address
+    '0xe5DcdC13B628c2df813DB1080367E929c1507Ca0'
   ]);
   await verifyContract('Forwarder', forwarder.address, []);
   await verifyContract('ForwarderFactory', forwarderFactory.address, [
