@@ -10,12 +10,19 @@ async function main() {
     forwarderFactory: ''
   };
 
+  const feeData = await ethers.provider.getFeeData();
+
+  const gasParams = {
+    gasPrice: feeData.gasPrice!.mul('2'),
+    gasLimit: 4500000
+  };
+
   const [deployer] = await ethers.getSigners();
 
   let walletImplementationContractName = '';
   let walletFactoryContractName = 'WalletFactory';
   const chainId = await deployer.getChainId();
-  switch (await deployer.getChainId()) {
+  switch (chainId) {
     // https://chainlist.org/
     //eth
     case 1:
@@ -48,6 +55,11 @@ async function main() {
     case 11155420:
       walletImplementationContractName = 'OpethWalletSimple';
       break;
+    //avaxc
+    case 43114:
+    //tavaxc
+    case 43113:
+      walletImplementationContractName = 'AvaxcWalletSimple';
   }
 
   console.log(
@@ -57,7 +69,7 @@ async function main() {
   const WalletSimple = await ethers.getContractFactory(
     walletImplementationContractName
   );
-  const walletSimple = await WalletSimple.deploy();
+  const walletSimple = await WalletSimple.deploy(gasParams);
   await walletSimple.deployed();
   output.walletImplementation = walletSimple.address;
   console.log('WalletSimple deployed at ' + walletSimple.address);
@@ -65,19 +77,25 @@ async function main() {
   const WalletFactory = await ethers.getContractFactory(
     walletFactoryContractName
   );
-  const walletFactory = await WalletFactory.deploy(walletSimple.address);
+  const walletFactory = await WalletFactory.deploy(
+    walletSimple.address,
+    gasParams
+  );
   await walletFactory.deployed();
   output.walletFactory = walletFactory.address;
   console.log('WalletFactory deployed at ' + walletFactory.address);
 
   const Forwarder = await ethers.getContractFactory('Forwarder');
-  const forwarder = await Forwarder.deploy();
+  const forwarder = await Forwarder.deploy(gasParams);
   await forwarder.deployed();
   output.forwarderImplementation = forwarder.address;
   console.log('Forwarder deployed at ' + forwarder.address);
 
   const ForwarderFactory = await ethers.getContractFactory('ForwarderFactory');
-  const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
+  const forwarderFactory = await ForwarderFactory.deploy(
+    forwarder.address,
+    gasParams
+  );
   await forwarderFactory.deployed();
   output.forwarderFactory = forwarderFactory.address;
   console.log('ForwarderFactory deployed at ' + forwarderFactory.address);
