@@ -30,7 +30,9 @@ const {
   OPTIMISTIC_ETHERSCAN_API_KEY,
   ZKSYNC_EXPLORER_API_KEY,
   BASESCAN_API_KEY,
-  BARTIO_BERA_EXPLORER_API_KEY
+  BARTIO_BERA_EXPLORER_API_KEY,
+  OAS_EXPLORER_API_KEY,
+  CORE_DAO_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -134,6 +136,14 @@ const config: HardhatUserConfig = {
       url: `https://bartio.rpc.berachain.com/`,
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
+    toas: {
+      url: `https://rpc.testnet.oasys.games`,
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+    },
+    tcoredao: {
+      url: `https://rpc.test.btcs.network`,
+      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+    },
     tavaxc: {
       url: 'https://api.avax-test.network/ext/C/rpc',
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
@@ -172,6 +182,10 @@ const config: HardhatUserConfig = {
       base: `${BASESCAN_API_KEY}`,
       // bera
       bartioBera: `${BARTIO_BERA_EXPLORER_API_KEY}`,
+      //OAS
+      oasTestnet: `${OAS_EXPLORER_API_KEY}`,
+      //Core Dao
+      coredaoTestnet: `${CORE_DAO_EXPLORER_API_KEY}`,
       //avaxc
       // there is free api key for avaxc, so make use of 2 req/sec
       avaxc: 'sampleapikey',
@@ -225,6 +239,22 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api',
           browserURL: 'https://bartio.beratrail.io'
+        }
+      },
+      {
+        network: 'oasTestnet',
+        chainId: 9372,
+        urls: {
+          apiURL: 'https://explorer.testnet.oasys.games/api',
+          browserURL: 'https://explorer.testnet.oasys.games'
+        }
+      },
+      {
+        network: 'coredaoTestnet',
+        chainId: 1115,
+        urls: {
+          apiURL: 'https://scan.test.btcs.network/api',
+          browserURL: 'https://scan.test.btcs.network'
         }
       },
       {

@@ -112,6 +112,11 @@ async function main() {
       break;
     // bera
     case 80084:
+    // coredao
+    case 1115:
+    // oas
+    case 9372:
+      eip1559GasParams.gasLimit = 3000000;
       walletImplementationContractName = 'WalletSimple';
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
