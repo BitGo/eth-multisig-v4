@@ -33,6 +33,8 @@ jobs:
         ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
         BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
         BARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.BARTIO_BERA_EXPLORER_API_KEY }}
+        OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
+        CORE_DAO_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_EXPLORER_API_KEY }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -47,7 +49,7 @@ jobs:
           result-encoding: string
           script: |
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|tcoredao)$/;
             const matchedNetwork = tag.match(regex);
             if (!matchedNetwork) {
               console.log("No match found for the network name, defaulting to 'hteth'.");
@@ -57,7 +59,7 @@ jobs:
   deploy-batcher-contract-to-test:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if:  ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' ) || (needs.get-network.outputs.network == 'tbera' ) || (needs.get-network.outputs.network == 'tavaxc' ) }}
+    if:  ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' ) || (needs.get-network.outputs.network == 'tbera' ) || (needs.get-network.outputs.network == 'tavaxc' ) || (needs.get-network.outputs.network == 'tcoredao' ) || (needs.get-network.outputs.network == 'toas' ) }}
     environment: testnet
     steps:
       - uses: actions/checkout@v4
@@ -83,6 +85,8 @@ jobs:
           ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
           BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
           BARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.BARTIO_BERA_EXPLORER_API_KEY }}
+          OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
+          CORE_DAO_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
