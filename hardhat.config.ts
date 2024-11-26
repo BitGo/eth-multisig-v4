@@ -32,7 +32,7 @@ const {
   BASESCAN_API_KEY,
   BARTIO_BERA_EXPLORER_API_KEY,
   OAS_EXPLORER_API_KEY,
-  CORE_DAO_EXPLORER_API_KEY
+  CORE_DAO_TESTNET_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -138,11 +138,19 @@ const config: HardhatUserConfig = {
     },
     toas: {
       url: `https://rpc.testnet.oasys.games`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     tcoredao: {
       url: `https://rpc.test.btcs.network`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     tavaxc: {
       url: 'https://api.avax-test.network/ext/C/rpc',
@@ -185,7 +193,7 @@ const config: HardhatUserConfig = {
       //OAS
       oasTestnet: `${OAS_EXPLORER_API_KEY}`,
       //Core Dao
-      coredaoTestnet: `${CORE_DAO_EXPLORER_API_KEY}`,
+      coredaoTestnet: `${CORE_DAO_TESTNET_EXPLORER_API_KEY}`,
       //avaxc
       // there is free api key for avaxc, so make use of 2 req/sec
       avaxc: 'sampleapikey',
@@ -253,7 +261,7 @@ const config: HardhatUserConfig = {
         network: 'coredaoTestnet',
         chainId: 1115,
         urls: {
-          apiURL: 'https://scan.test.btcs.network/api',
+          apiURL: 'https://api.test.btcs.network/api',
           browserURL: 'https://scan.test.btcs.network'
         }
       },

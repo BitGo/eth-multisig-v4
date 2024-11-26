@@ -10,7 +10,12 @@ async function main() {
   const contractName = 'Batcher';
   const transferGasLimit = '200000';
 
-  const Batcher = await ethers.getContractFactory(contractName);
+  const signers = await ethers.getSigners();
+  const batcherDeployer = signers[2];
+  const Batcher = await ethers.getContractFactory(
+    contractName,
+    batcherDeployer
+  );
   const batcher = await Batcher.deploy(transferGasLimit);
   await batcher.deployed();
   output.batcher = batcher.address;
