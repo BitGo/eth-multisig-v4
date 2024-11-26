@@ -16,7 +16,7 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners
     # Consider using larger runners for possible analysis time improvements.
-    runs-on: 'ubuntu-latest-4-cores'
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -48,7 +48,7 @@ jobs:
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-        continue-on-error: true          
+        continue-on-error: true
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
