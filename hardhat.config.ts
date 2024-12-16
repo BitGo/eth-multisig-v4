@@ -32,7 +32,8 @@ const {
   BASESCAN_API_KEY,
   BARTIO_BERA_EXPLORER_API_KEY,
   OAS_EXPLORER_API_KEY,
-  CORE_DAO_TESTNET_EXPLORER_API_KEY
+  CORE_DAO_TESTNET_EXPLORER_API_KEY,
+  CORE_DAO_MAINNET_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -144,8 +145,24 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    oas: {
+      url: `https://rpc.mainnet.oasys.games`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tcoredao: {
       url: `https://rpc.test.btcs.network`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    coredao: {
+      url: `https://rpc.coredao.org`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
@@ -192,8 +209,10 @@ const config: HardhatUserConfig = {
       bartioBera: `${BARTIO_BERA_EXPLORER_API_KEY}`,
       //OAS
       oasTestnet: `${OAS_EXPLORER_API_KEY}`,
+      oasMainnet: `${OAS_EXPLORER_API_KEY}`,
       //Core Dao
       coredaoTestnet: `${CORE_DAO_TESTNET_EXPLORER_API_KEY}`,
+      coredaoMainnet: `${CORE_DAO_MAINNET_EXPLORER_API_KEY}`,
       //avaxc
       // there is free api key for avaxc, so make use of 2 req/sec
       avaxc: 'sampleapikey',
@@ -258,11 +277,27 @@ const config: HardhatUserConfig = {
         }
       },
       {
+        network: 'oasMainnet',
+        chainId: 248,
+        urls: {
+          apiURL: 'https://explorer.oasys.games/api',
+          browserURL: 'https://explorer.oasys.games/'
+        }
+      },
+      {
         network: 'coredaoTestnet',
         chainId: 1115,
         urls: {
           apiURL: 'https://api.test.btcs.network/api',
           browserURL: 'https://scan.test.btcs.network'
+        }
+      },
+      {
+        network: 'coredaoMainnet',
+        chainId: 1116,
+        urls: {
+          apiURL: 'https://openapi.coredao.org/api',
+          browserURL: 'https://scan.coredao.org/'
         }
       },
       {

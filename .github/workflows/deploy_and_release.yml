@@ -40,6 +40,7 @@ jobs:
           BARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.BARTIO_BERA_EXPLORER_API_KEY }}
           OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
           CORE_DAO_TESTNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_TESTNET_EXPLORER_API_KEY }}
+          CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -78,9 +79,12 @@ jobs:
           PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP: ${{ secrets.PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP }}
           PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT }}
           PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT }}
+          QUICKNODE_ETH_MAINNET_API_KEY: ${{ secrets.QUICKNODE_ETH_MAINNET_API_KEY }}
           QUICKNODE_ETH_HOLESKY_API_KEY: ${{ secrets.QUICKNODE_ETH_HOLESKY_API_KEY }}
           QUICKNODE_ARBITRUM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_SEPOLIA_API_KEY }}
+          QUICKNODE_ARBITRUM_ONE_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_ONE_API_KEY }}
           QUICKNODE_OPTIMISM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_SEPOLIA_API_KEY }}
+          QUICKNODE_OPTIMISM_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_API_KEY }}
           QUICKNODE_ZKSYNC_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ZKSYNC_SEPOLIA_API_KEY }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
@@ -93,6 +97,7 @@ jobs:
           BARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.BARTIO_BERA_EXPLORER_API_KEY }}
           OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
           CORE_DAO_TESTNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_TESTNET_EXPLORER_API_KEY }}
+          CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:
@@ -124,7 +129,7 @@ jobs:
   deploy-to-prod:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if: ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth' ) || (needs.get-network.outputs.network == 'bera' ) || (needs.get-network.outputs.network == 'avaxc' )}}
+    if: ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth' ) || (needs.get-network.outputs.network == 'bera' ) || (needs.get-network.outputs.network == 'avaxc' ) || (needs.get-network.outputs.network == 'coredao' ) || (needs.get-network.outputs.network == 'oas' ) }}
     environment: mainnet
     steps:
       - uses: actions/checkout@v2
@@ -143,6 +148,12 @@ jobs:
           PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT }}
           PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT }}
           QUICKNODE_ETH_MAINNET_API_KEY: ${{ secrets.QUICKNODE_ETH_MAINNET_API_KEY }}
+          QUICKNODE_ETH_HOLESKY_API_KEY: ${{ secrets.QUICKNODE_ETH_HOLESKY_API_KEY }}
+          QUICKNODE_ARBITRUM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_SEPOLIA_API_KEY }}
+          QUICKNODE_ARBITRUM_ONE_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_ONE_API_KEY }}
+          QUICKNODE_OPTIMISM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_SEPOLIA_API_KEY }}
+          QUICKNODE_OPTIMISM_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_API_KEY }}
+          QUICKNODE_ZKSYNC_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ZKSYNC_SEPOLIA_API_KEY }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
           POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
@@ -150,12 +161,11 @@ jobs:
           ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
           OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
           ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
+          BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
           BARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.BARTIO_BERA_EXPLORER_API_KEY }}
           OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
-          CORE_DAO_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_EXPLORER_API_KEY }}
-          QUICKNODE_ARBITRUM_ONE_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_ONE_API_KEY }}
-          QUICKNODE_OPTIMISM_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_API_KEY }}
-          BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
+          CORE_DAO_TESTNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_TESTNET_EXPLORER_API_KEY }}
+          CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:

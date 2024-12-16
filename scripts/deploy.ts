@@ -114,8 +114,18 @@ async function main() {
     case 80084:
     // coredao
     case 1115:
+    case 1116:
+      eip1559GasParams.gasLimit = 3000000;
+      eip1559GasParams.maxFeePerGas = BigNumber.from('30000000000');
+      eip1559GasParams.maxPriorityFeePerGas = BigNumber.from('30000000000');
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
     // oas
     case 9372:
+    case 248:
       eip1559GasParams.gasLimit = 3000000;
       walletImplementationContractName = 'WalletSimple';
       forwarderContractName = 'ForwarderV4';
