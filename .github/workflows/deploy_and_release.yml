@@ -55,7 +55,7 @@ jobs:
           result-encoding: string
           script: |
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|tbera|tavaxc|avaxc|toas|tcoredao)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao)$/;
             const network = tag.match(regex);
             return network ? network[1] : "hteth";
   deploy-to-test:
