@@ -33,7 +33,9 @@ const {
   BARTIO_BERA_EXPLORER_API_KEY,
   OAS_EXPLORER_API_KEY,
   CORE_DAO_TESTNET_EXPLORER_API_KEY,
-  CORE_DAO_MAINNET_EXPLORER_API_KEY
+  CORE_DAO_MAINNET_EXPLORER_API_KEY,
+  FLARE_EXPLORER_API_KEY,
+  SONGBIRD_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -169,6 +171,38 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    tflare: {
+      url: `https://coston2-api.flare.network/ext/C/rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tsongbird: {
+      url: `https://coston-api.flare.network/ext/C/rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    flare: {
+      url: `https://flare-api.flare.network/ext/C/rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    songbird: {
+      url: `https://songbird-api.flare.network/ext/C/rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tavaxc: {
       url: 'https://api.avax-test.network/ext/C/rpc',
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
@@ -213,6 +247,12 @@ const config: HardhatUserConfig = {
       //Core Dao
       coredaoTestnet: `${CORE_DAO_TESTNET_EXPLORER_API_KEY}`,
       coredaoMainnet: `${CORE_DAO_MAINNET_EXPLORER_API_KEY}`,
+      //Flare
+      flareTestnet: `${FLARE_EXPLORER_API_KEY}`,
+      flareMainnet: `${FLARE_EXPLORER_API_KEY}`,
+      //Songbird
+      songbirdTestnet: `${SONGBIRD_EXPLORER_API_KEY}`,
+      songbirdMainnet: `${SONGBIRD_EXPLORER_API_KEY}`,
       //avaxc
       // there is free api key for avaxc, so make use of 2 req/sec
       avaxc: 'sampleapikey',
@@ -340,6 +380,38 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api',
           browserURL: 'https://testnet.snowtrace.io/'
+        }
+      },
+      {
+        network: 'flareTestnet',
+        chainId: 114,
+        urls: {
+          apiURL: 'https://coston2-explorer.flare.network/api',
+          browserURL: 'https://coston2-explorer.flare.network'
+        }
+      },
+      {
+        network: 'flareMainnet',
+        chainId: 14,
+        urls: {
+          apiURL: 'https://flare-explorer.flare.network/api',
+          browserURL: 'https://flare-explorer.flare.network'
+        }
+      },
+      {
+        network: 'songbirdTestnet',
+        chainId: 16,
+        urls: {
+          apiURL: 'https://coston-explorer.flare.network/api',
+          browserURL: 'https://coston-explorer.flare.network'
+        }
+      },
+      {
+        network: 'songbirdMainnet',
+        chainId: 19,
+        urls: {
+          apiURL: 'https://songbird-explorer.flare.network/api ',
+          browserURL: 'https://songbird.flarescan.com'
         }
       }
     ]

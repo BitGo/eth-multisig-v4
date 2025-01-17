@@ -123,6 +123,12 @@ async function main() {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    //Flare
+    case 14:
+    case 114:
+    //Songbird
+    case 19:
+    case 16:
     // oas
     case 9372:
     case 248:
