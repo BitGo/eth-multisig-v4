@@ -51,4 +51,5 @@ jobs:
           CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}
           FLARE_EXPLORER_API_KEY: ${{ secrets.FLARE_EXPLORER_API_KEY }}
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
+          XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
       - run: npm run lint

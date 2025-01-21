@@ -13,14 +13,28 @@ async function main() {
 
   const feeData = await ethers.provider.getFeeData();
 
-  const eip1559GasParams: {
+  type LegacyGasParams = {
+    gasPrice: BigNumber | null;
+    gasLimit?: number;
+  };
+
+  const legacyGasParams: LegacyGasParams = {
+    gasPrice: feeData.gasPrice
+  };
+
+  type Eip1559GasParams = {
     maxFeePerGas: BigNumber | null;
     maxPriorityFeePerGas: BigNumber | null;
     gasLimit?: number;
-  } = {
+  };
+
+  const eip1559GasParams: Eip1559GasParams = {
     maxFeePerGas: feeData.maxFeePerGas,
     maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
   };
+
+  let gasParams: Eip1559GasParams | LegacyGasParams = eip1559GasParams;
+
   let deployWalletContracts = false,
     deployForwarderContracts = false;
   const [deployer] = await ethers.getSigners();
@@ -148,6 +162,16 @@ async function main() {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    //XDC
+    case 50:
+    case 51:
+      legacyGasParams.gasLimit = 3000000;
+      gasParams = legacyGasParams;
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
   }
 
   if (deployWalletContracts) {
@@ -157,7 +181,7 @@ async function main() {
     const WalletSimple = await ethers.getContractFactory(
       walletImplementationContractName
     );
-    const walletSimple = await WalletSimple.deploy(eip1559GasParams);
+    const walletSimple = await WalletSimple.deploy(gasParams);
     await walletSimple.deployed();
     output.walletImplementation = walletSimple.address;
     console.log('WalletSimple deployed at ' + walletSimple.address);
@@ -167,7 +191,7 @@ async function main() {
     );
     const walletFactory = await WalletFactory.deploy(
       walletSimple.address,
-      eip1559GasParams
+      gasParams
     );
     await walletFactory.deployed();
     output.walletFactory = walletFactory.address;
@@ -263,11 +287,11 @@ async function verifyContract(
   } catch (e) {
     // @ts-ignore
     // We get a failure API response if the source code has already been uploaded, don't throw in this case.
-    if (!e.message.includes('Reason: Already Verified')) {
+    if (!e.message.toLowerCase().includes('already verified')) {
       throw e;
     }
   }
-  console.log(`Verified ${contractName} on Etherscan!`);
+  console.log(`Verified ${contractName} on explorer!`);
 }
 
 main().catch((error) => {
