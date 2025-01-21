@@ -125,7 +125,7 @@ async function main() {
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // bera
-    case 80084:
+    case 80000:
     // coredao
     case 1115:
     case 1116:
