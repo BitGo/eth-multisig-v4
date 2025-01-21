@@ -56,11 +56,11 @@ async function verifyContract(
   } catch (e) {
     // @ts-ignore
     // We get a failure API response if the source code has already been uploaded, don't throw in this case.
-    if (!e.message.includes('Reason: Already Verified')) {
+    if (!e.message.toLowerCase().includes('already verified')) {
       throw e;
     }
   }
-  console.log(`Verified ${contractName} on Etherscan!`);
+  console.log(`Verified ${contractName} on explorer!`);
 }
 
 main().catch((error) => {

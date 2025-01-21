@@ -35,7 +35,8 @@ const {
   CORE_DAO_TESTNET_EXPLORER_API_KEY,
   CORE_DAO_MAINNET_EXPLORER_API_KEY,
   FLARE_EXPLORER_API_KEY,
-  SONGBIRD_EXPLORER_API_KEY
+  SONGBIRD_EXPLORER_API_KEY,
+  XDC_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -210,6 +211,22 @@ const config: HardhatUserConfig = {
     avaxc: {
       url: 'https://api.avax.network/ext/bc/C/rpc',
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+    },
+    txdc: {
+      url: `https://rpc.apothem.network`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    xdc: {
+      url: `https://erpc.xinfin.network`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -256,7 +273,10 @@ const config: HardhatUserConfig = {
       //avaxc
       // there is free api key for avaxc, so make use of 2 req/sec
       avaxc: 'sampleapikey',
-      avaxcTestnet: 'sampleapikey'
+      avaxcTestnet: 'sampleapikey',
+      //XDC
+      xdcTestnet: `${XDC_EXPLORER_API_KEY}`,
+      xdcMainnet: `${XDC_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -412,6 +432,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://songbird-explorer.flare.network/api ',
           browserURL: 'https://songbird.flarescan.com'
+        }
+      },
+      {
+        network: 'xdcTestnet',
+        chainId: 51,
+        urls: {
+          apiURL: 'https://api-apothem.xdcscan.io/api',
+          browserURL: 'https://apothem.xdcscan.io'
+        }
+      },
+      {
+        network: 'xdcMainnet',
+        chainId: 50,
+        urls: {
+          apiURL: 'https://api-xdc.blocksscan.io/api',
+          browserURL: 'https://xdcscan.io'
         }
       }
     ]
