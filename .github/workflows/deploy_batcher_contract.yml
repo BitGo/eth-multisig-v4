@@ -1,7 +1,7 @@
 name: Deploy Batcher Contract and Update Release
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+
 jobs:
   lint-and-test:
     environment: dev
