@@ -172,6 +172,23 @@ async function main() {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    //wemix
+    case 1112:
+    case 1111:
+      if (
+        eip1559GasParams.maxPriorityFeePerGas?.lt(
+          legacyGasParams.gasPrice as BigNumber
+        )
+      ) {
+        eip1559GasParams.maxPriorityFeePerGas = legacyGasParams.gasPrice;
+        eip1559GasParams.maxFeePerGas = legacyGasParams.gasPrice;
+      }
+      eip1559GasParams.gasLimit = 3000000;
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
   }
 
   if (deployWalletContracts) {
@@ -226,7 +243,7 @@ async function main() {
     // If we have to deploy contracts for the older coins like eth, avax, polygon, we need to deploy Forwarder and ForwarderFactory
     console.log('Deploying Forwarder contracts');
     const Forwarder = await ethers.getContractFactory(forwarderContractName);
-    const forwarder = await Forwarder.deploy();
+    const forwarder = await Forwarder.deploy(gasParams);
     await forwarder.deployed();
     output.forwarderImplementation = forwarder.address;
     console.log(`${forwarderContractName} deployed at ` + forwarder.address);
@@ -234,7 +251,10 @@ async function main() {
     const ForwarderFactory = await ethers.getContractFactory(
       forwarderFactoryContractName
     );
-    const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
+    const forwarderFactory = await ForwarderFactory.deploy(
+      forwarder.address,
+      gasParams
+    );
     await forwarderFactory.deployed();
     output.forwarderFactory = forwarderFactory.address;
     console.log(

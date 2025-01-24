@@ -44,6 +44,7 @@ jobs:
           FLARE_EXPLORER_API_KEY: ${{ secrets.FLARE_EXPLORER_API_KEY }}
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
+          WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -58,13 +59,13 @@ jobs:
           result-encoding: string
           script: |
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|tflr|flr|tsgb|sgb|txdc|xdc)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|tflr|flr|tsgb|sgb|txdc|xdc|twemix|wemix)$/;
             const network = tag.match(regex);
             return network ? network[1] : "hteth";
   deploy-to-test:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if: ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' ) || (needs.get-network.outputs.network == 'tbera' ) || (needs.get-network.outputs.network == 'tavaxc' ) || (needs.get-network.outputs.network == 'toas' ) || (needs.get-network.outputs.network == 'tcoredao' ) || (needs.get-network.outputs.network == 'tflr' ) || (needs.get-network.outputs.network == 'tsgb' ) || (needs.get-network.outputs.network == 'txdc' ) }}
+    if: ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' ) || (needs.get-network.outputs.network == 'tbera' ) || (needs.get-network.outputs.network == 'tavaxc' ) || (needs.get-network.outputs.network == 'toas' ) || (needs.get-network.outputs.network == 'tcoredao' ) || (needs.get-network.outputs.network == 'tflr' ) || (needs.get-network.outputs.network == 'tsgb' ) || (needs.get-network.outputs.network == 'txdc' ) || (needs.get-network.outputs.network == 'twemix' ) }}
     environment: testnet
     steps:
       - uses: actions/checkout@v2
@@ -104,6 +105,7 @@ jobs:
           FLARE_EXPLORER_API_KEY: ${{ secrets.FLARE_EXPLORER_API_KEY }}
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
+          WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:
@@ -135,7 +137,7 @@ jobs:
   deploy-to-prod:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if: ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth' ) || (needs.get-network.outputs.network == 'bera' ) || (needs.get-network.outputs.network == 'avaxc' ) || (needs.get-network.outputs.network == 'coredao' ) || (needs.get-network.outputs.network == 'oas' ) || (needs.get-network.outputs.network == 'flr' ) || (needs.get-network.outputs.network == 'sgb' ) || (needs.get-network.outputs.network == 'xdc' ) }}
+    if: ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth' ) || (needs.get-network.outputs.network == 'bera' ) || (needs.get-network.outputs.network == 'avaxc' ) || (needs.get-network.outputs.network == 'coredao' ) || (needs.get-network.outputs.network == 'oas' ) || (needs.get-network.outputs.network == 'flr' ) || (needs.get-network.outputs.network == 'sgb' ) || (needs.get-network.outputs.network == 'xdc' ) || (needs.get-network.outputs.network == 'wemix' ) }}
     environment: mainnet
     steps:
       - uses: actions/checkout@v2
@@ -175,6 +177,7 @@ jobs:
           FLARE_EXPLORER_API_KEY: ${{ secrets.FLARE_EXPLORER_API_KEY }}
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
+          WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:

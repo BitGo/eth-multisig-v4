@@ -1,4 +1,7 @@
 import { ethers } from 'hardhat';
+import { BigNumber } from 'ethers';
+import { Overrides } from '@ethersproject/contracts/src.ts';
+import { BigNumberish } from '@ethersproject/bignumber';
 const hre = require('hardhat');
 const fs = require('fs');
 
@@ -16,7 +19,35 @@ async function main() {
     contractName,
     batcherDeployer
   );
-  const batcher = await Batcher.deploy(transferGasLimit);
+
+  let gasParams: Overrides | undefined = undefined;
+
+  const chainId = await signers[0].getChainId();
+  switch (chainId) {
+    //WEMIX
+    case 1112:
+    case 1111:
+      const feeData = await ethers.provider.getFeeData();
+      gasParams = {
+        maxFeePerGas: (feeData.maxFeePerGas?.lt(feeData.gasPrice as BigNumber)
+          ? feeData.gasPrice
+          : feeData.maxFeePerGas) as BigNumberish,
+        maxPriorityFeePerGas: (feeData.maxFeePerGas?.lt(
+          feeData.gasPrice as BigNumber
+        )
+          ? feeData.gasPrice
+          : feeData.maxPriorityFeePerGas) as BigNumberish,
+        gasLimit: BigNumber.from('3000000')
+      };
+      break;
+  }
+
+  let batcher = null;
+  if (gasParams != undefined) {
+    batcher = await Batcher.deploy(transferGasLimit, gasParams);
+  } else {
+    batcher = await Batcher.deploy(transferGasLimit);
+  }
   await batcher.deployed();
   output.batcher = batcher.address;
   console.log('Batcher deployed at ' + batcher.address);

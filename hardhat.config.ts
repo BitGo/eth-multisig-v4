@@ -36,7 +36,8 @@ const {
   CORE_DAO_MAINNET_EXPLORER_API_KEY,
   FLARE_EXPLORER_API_KEY,
   SONGBIRD_EXPLORER_API_KEY,
-  XDC_EXPLORER_API_KEY
+  XDC_EXPLORER_API_KEY,
+  WEMIX_EXPLORER_API_KEY
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -172,7 +173,7 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
-    tflare: {
+    tflr: {
       url: `https://coston2-api.flare.network/ext/C/rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
@@ -180,15 +181,7 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
-    tsongbird: {
-      url: `https://coston-api.flare.network/ext/C/rpc`,
-      accounts: [
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
-      ]
-    },
-    flare: {
+    flr: {
       url: `https://flare-api.flare.network/ext/C/rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
@@ -196,7 +189,15 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
-    songbird: {
+    tsgb: {
+      url: `https://coston-api.flare.network/ext/C/rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    sgb: {
       url: `https://songbird-api.flare.network/ext/C/rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
@@ -222,6 +223,22 @@ const config: HardhatUserConfig = {
     },
     xdc: {
       url: `https://erpc.xinfin.network`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    twemix: {
+      url: `https://api.test.wemix.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    wemix: {
+      url: `https://api.wemix.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
@@ -276,7 +293,9 @@ const config: HardhatUserConfig = {
       avaxcTestnet: 'sampleapikey',
       //XDC
       xdcTestnet: `${XDC_EXPLORER_API_KEY}`,
-      xdcMainnet: `${XDC_EXPLORER_API_KEY}`
+      xdcMainnet: `${XDC_EXPLORER_API_KEY}`,
+      wemixTestnet: `${WEMIX_EXPLORER_API_KEY}`,
+      wemixMainnet: `${WEMIX_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -448,6 +467,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-xdc.blocksscan.io/api',
           browserURL: 'https://xdcscan.io'
+        }
+      },
+      {
+        network: 'wemixTestnet',
+        chainId: 1112,
+        urls: {
+          apiURL: 'https://api-testnet.wemixscan.com/api',
+          browserURL: 'https://testnet.wemixscan.com/'
+        }
+      },
+      {
+        network: 'wemixMainnet',
+        chainId: 1111,
+        urls: {
+          apiURL: 'https://api.wemixscan.com/api',
+          browserURL: 'https://wemixscan.com/'
         }
       }
     ]
