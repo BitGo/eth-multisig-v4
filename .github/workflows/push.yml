@@ -52,4 +52,5 @@ jobs:
           FLARE_EXPLORER_API_KEY: ${{ secrets.FLARE_EXPLORER_API_KEY }}
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
+          WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
       - run: npm run lint
