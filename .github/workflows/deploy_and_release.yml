@@ -38,6 +38,7 @@ jobs:
           ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
           BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
           CARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.CARTIO_BERA_EXPLORER_API_KEY }}
+          BERA_EXPLORER_API_KEY: ${{ secrets.BERA_EXPLORER_API_KEY }}
           OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
           CORE_DAO_TESTNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_TESTNET_EXPLORER_API_KEY }}
           CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}
@@ -59,7 +60,7 @@ jobs:
           result-encoding: string
           script: |
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|tflr|flr|tsgb|sgb|txdc|xdc|twemix|wemix)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|tflr|flr|tsgb|sgb|txdc|xdc|twemix|wemix)$/;
             const network = tag.match(regex);
             return network ? network[1] : "hteth";
   deploy-to-test:
@@ -99,6 +100,7 @@ jobs:
           ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
           BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
           CARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.CARTIO_BERA_EXPLORER_API_KEY }}
+          BERA_EXPLORER_API_KEY: ${{ secrets.BERA_EXPLORER_API_KEY }}
           OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
           CORE_DAO_TESTNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_TESTNET_EXPLORER_API_KEY }}
           CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}
@@ -171,6 +173,7 @@ jobs:
           ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
           BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
           CARTIO_BERA_EXPLORER_API_KEY: ${{ secrets.CARTIO_BERA_EXPLORER_API_KEY }}
+          BERA_EXPLORER_API_KEY: ${{ secrets.BERA_EXPLORER_API_KEY }}
           OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
           CORE_DAO_TESTNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_TESTNET_EXPLORER_API_KEY }}
           CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}

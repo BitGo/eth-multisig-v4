@@ -31,6 +31,7 @@ const {
   ZKSYNC_EXPLORER_API_KEY,
   BASESCAN_API_KEY,
   CARTIO_BERA_EXPLORER_API_KEY,
+  BERA_EXPLORER_API_KEY,
   OAS_EXPLORER_API_KEY,
   CORE_DAO_TESTNET_EXPLORER_API_KEY,
   CORE_DAO_MAINNET_EXPLORER_API_KEY,
@@ -139,7 +140,17 @@ const config: HardhatUserConfig = {
     },
     tbera: {
       url: `https://rockbeard-eth-cartio.berachain.com/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    bera: {
+      url: `http://bera-node-proxy.app-microservices-fullnodes.svc.cluster.local:4000`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     toas: {
       url: `https://rpc.testnet.oasys.games`,
@@ -275,6 +286,7 @@ const config: HardhatUserConfig = {
       base: `${BASESCAN_API_KEY}`,
       // bera
       cartioBera: `${CARTIO_BERA_EXPLORER_API_KEY}`,
+      bera: `${BERA_EXPLORER_API_KEY}`,
       //OAS
       oasTestnet: `${OAS_EXPLORER_API_KEY}`,
       oasMainnet: `${OAS_EXPLORER_API_KEY}`,
@@ -345,6 +357,15 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/80000/etherscan/api',
           browserURL: 'https://80000.testnet.routescan.io'
+        }
+      },
+      {
+        network: 'bera',
+        chainId: 80094,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/mainnet/evm/80094/etherscan/api',
+          browserURL: 'https://80094.routescan.io'
         }
       },
       {

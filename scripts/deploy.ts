@@ -124,8 +124,10 @@ async function main() {
       forwarderFactoryContractName = 'ForwarderFactory';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
-    // bera
+    // cartio bera
     case 80000:
+    // bera
+    case 80094:
     // coredao
     case 1115:
     case 1116:
