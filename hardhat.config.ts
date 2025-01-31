@@ -38,7 +38,8 @@ const {
   FLARE_EXPLORER_API_KEY,
   SONGBIRD_EXPLORER_API_KEY,
   XDC_EXPLORER_API_KEY,
-  WEMIX_EXPLORER_API_KEY
+  WEMIX_EXPLORER_API_KEY,
+  BERA_RPC_URL
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -146,8 +147,9 @@ const config: HardhatUserConfig = {
       ]
     },
     bera: {
-      url: `http://bera-node-proxy.app-microservices-fullnodes.svc.cluster.local:4000`,
+      url: `${BERA_RPC_URL}`,
       accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
