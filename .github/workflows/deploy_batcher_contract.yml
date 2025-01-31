@@ -46,6 +46,7 @@ jobs:
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
           WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
+          BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -109,6 +110,7 @@ jobs:
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
           WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
+          BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
@@ -159,6 +161,7 @@ jobs:
           SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
           WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
+          BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
