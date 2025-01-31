@@ -146,7 +146,7 @@ const config: HardhatUserConfig = {
       ]
     },
     bera: {
-      url: `http://bera-node-proxy.app-microservices-fullnodes.svc.cluster.local:4000`,
+      url: `https://tmp-node.bitgo-prod.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
