@@ -41,6 +41,27 @@ const createRandIntArr = (len) => {
   return arr;
 };
 
+const assertCustomError = async (promise, expectedErrorName) => {
+  let succeeded = false;
+  try {
+    await promise;
+    succeeded = true;
+  } catch (err) {
+    // Custom errors are reported in the form:
+    // "VM Exception while processing transaction: reverted with custom error 'ErrorName(param1,param2)'"
+    assert(
+      err.message.includes(`custom error`) &&
+        err.message.includes(`${expectedErrorName}`),
+      `Expected custom error ${expectedErrorName} but got: ${err.message}`
+    );
+  }
+  if (succeeded) {
+    assert.fail(
+      `Expected custom error ${expectedErrorName} but transaction succeeded`
+    );
+  }
+};
+
 const assertVMException = async (promise, expectedExceptionMsg) => {
   let badSucceed = false;
   try {
@@ -80,7 +101,7 @@ describe('Batcher', () => {
     sender = accounts[0];
     batcherOwner = accounts[8];
 
-    batcherInstance = await Batcher.new(21000, { from: batcherOwner });
+    batcherInstance = await Batcher.new(21000, 256, { from: batcherOwner });
     reentryInstance = await Reentry.new(batcherInstance.address);
     failInstance = await Fail.new();
     gasGuzzlerInstance = await GasGuzzler.new();
@@ -661,6 +682,339 @@ describe('Batcher', () => {
           setTransferGasLimit(batcherOwner, 2e3),
           newGasTransferLimitTooLowErrMsg
         );
+      });
+    });
+
+    describe('Batch Transfer Limit', () => {
+      it('Successfully changes batch transfer limit', async () => {
+        const newLimit = 100;
+        const tx = await batcherInstance.changeBatchTransferLimit(newLimit, {
+          from: batcherOwner
+        });
+
+        const {
+          logs: [
+            {
+              args: { prevBatchTransferLimit, newBatchTransferLimit }
+            }
+          ]
+        } = tx;
+
+        assert.strictEqual(
+          prevBatchTransferLimit.toNumber(),
+          256,
+          'Previous limit incorrect'
+        );
+        assert.strictEqual(
+          newBatchTransferLimit.toNumber(),
+          newLimit,
+          'New limit incorrect'
+        );
+
+        const currentLimit = await batcherInstance.batchTransferLimit();
+        assert.strictEqual(
+          currentLimit.toNumber(),
+          newLimit,
+          'Limit not updated correctly'
+        );
+      });
+
+      it('Fails to set batch transfer limit to zero', async () => {
+        await assertVMException(
+          batcherInstance.changeBatchTransferLimit(0, { from: batcherOwner }),
+          'Batch transfer limit too low'
+        );
+      });
+
+      it('Fails when non-owner tries to change batch transfer limit', async () => {
+        await truffleAssert.reverts(
+          batcherInstance.changeBatchTransferLimit(100, { from: accounts[1] })
+        );
+      });
+    });
+
+    describe('Batch ERC20 Token Transfers', () => {
+      let tokenContract;
+      let totalSupply;
+      let tokenContractOwner;
+
+      beforeEach(async () => {
+        tokenContractOwner = accounts[9];
+        tokenContract = await FixedSupplyToken.new({
+          from: tokenContractOwner
+        });
+        totalSupply = await tokenContract.totalSupply();
+      });
+
+      const checkBalance = async (address, expectedAmt) => {
+        const balance = await tokenContract.balanceOf(address);
+        assert.strictEqual(
+          balance.toString(),
+          expectedAmt.toString(),
+          `Token balance of ${address} was ${balance.toString()} when ${expectedAmt.toString()} was expected`
+        );
+      };
+
+      it('Successfully transfers tokens to multiple recipients', async () => {
+        const sender = accounts[1];
+        const recipients = [accounts[2], accounts[3], accounts[4]];
+        const amounts = [100, 200, 300];
+
+        // Transfer tokens to sender
+        await tokenContract.transfer(sender, 1000, {
+          from: tokenContractOwner
+        });
+        await checkBalance(sender, 1000);
+
+        // Approve batcher to spend tokens
+        await tokenContract.approve(batcherInstance.address, 1000, {
+          from: sender
+        });
+
+        // Execute batch transfer
+        await batcherInstance.batchTransferFrom(
+          tokenContract.address,
+          recipients,
+          amounts,
+          { from: sender }
+        );
+
+        // Verify balances
+        await checkBalance(sender, 400); // 1000 - (100 + 200 + 300)
+        await checkBalance(recipients[0], 100);
+        await checkBalance(recipients[1], 200);
+        await checkBalance(recipients[2], 300);
+      });
+
+      it('Fails when sender has insufficient balance', async () => {
+        const sender = accounts[1];
+        const recipients = [accounts[2], accounts[3]];
+        const amounts = [500, 600];
+
+        // Transfer fewer tokens than needed to sender
+        await tokenContract.transfer(sender, 500, { from: tokenContractOwner });
+        await tokenContract.approve(batcherInstance.address, 1100, {
+          from: sender
+        });
+
+        await checkBalance(sender, 500);
+        await checkBalance(recipients[0], 0);
+        await checkBalance(recipients[1], 0);
+
+        await assertCustomError(
+          batcherInstance.batchTransferFrom(
+            tokenContract.address,
+            recipients,
+            amounts,
+            { from: sender }
+          ),
+          'SafeERC20FailedOperation'
+        );
+
+        // balance does not change
+        await checkBalance(sender, 500);
+        await checkBalance(recipients[0], 0);
+        await checkBalance(recipients[1], 0);
+      });
+
+      it('Fails when sender has not approved enough tokens', async () => {
+        const sender = accounts[1];
+        const recipients = [accounts[2], accounts[3]];
+        const amounts = [500, 600];
+
+        await tokenContract.transfer(sender, 1100, {
+          from: tokenContractOwner
+        });
+        await tokenContract.approve(batcherInstance.address, 500, {
+          from: sender
+        });
+
+        await checkBalance(sender, 1100);
+        await checkBalance(recipients[0], 0);
+        await checkBalance(recipients[1], 0);
+
+        await assertCustomError(
+          batcherInstance.batchTransferFrom(
+            tokenContract.address,
+            recipients,
+            amounts,
+            { from: sender }
+          ),
+          'SafeERC20FailedOperation'
+        );
+
+        // balance does not change
+        await checkBalance(sender, 1100);
+        await checkBalance(recipients[0], 0);
+        await checkBalance(recipients[1], 0);
+      });
+
+      it('Fails with empty recipients array', async () => {
+        const sender = accounts[1];
+        await assertCustomError(
+          batcherInstance.batchTransferFrom(tokenContract.address, [], [], {
+            from: sender
+          }),
+          'EmptyRecipientsList'
+        );
+      });
+
+      it('Fails with mismatched recipients and amounts arrays', async () => {
+        const sender = accounts[1];
+        const recipients = [accounts[2], accounts[3]];
+        const amounts = [100];
+
+        await assertCustomError(
+          batcherInstance.batchTransferFrom(
+            tokenContract.address,
+            recipients,
+            amounts,
+            { from: sender }
+          ),
+          'UnequalRecipientsAndValues'
+        );
+      });
+
+      it('Successfully transfers tokens that do not return bool (like USDT)', async () => {
+        // Deploy USDT mock
+        const tetherTokenContract = await Tether.new(
+          '1000000',
+          'USDT',
+          'USDT',
+          6,
+          {
+            from: tokenContractOwner
+          }
+        );
+
+        const sender = accounts[1];
+        const recipients = [accounts[2], accounts[3], accounts[4]];
+        const amounts = [100, 200, 300];
+        const totalAmount = amounts.reduce((a, b) => a + b, 0);
+        // Transfer tokens to sender
+        await tetherTokenContract.transfer(sender, 1000, {
+          from: tokenContractOwner
+        });
+
+        // Check initial balances
+        const senderInitialBalance = await tetherTokenContract.balanceOf.call(
+          sender
+        );
+        assert.strictEqual(
+          senderInitialBalance.toString(),
+          '1000',
+          'Incorrect sender initial balance'
+        );
+
+        // Approve batcher to spend tokens
+        await tetherTokenContract.approve(batcherInstance.address, 1000, {
+          from: sender
+        });
+
+        // Execute batch transfer
+        await batcherInstance.batchTransferFrom(
+          tetherTokenContract.address,
+          recipients,
+          amounts,
+          { from: sender }
+        );
+
+        // Verify final balances
+        const senderFinalBalance = await tetherTokenContract.balanceOf.call(
+          sender
+        );
+        assert.strictEqual(
+          senderFinalBalance.toString(),
+          (1000 - totalAmount).toString(),
+          'Incorrect sender final balance'
+        );
+
+        // Check each recipient's balance
+        for (let i = 0; i < recipients.length; i++) {
+          const recipientBalance = await tetherTokenContract.balanceOf.call(
+            recipients[i]
+          );
+          assert.strictEqual(
+            recipientBalance.toString(),
+            amounts[i].toString(),
+            `Incorrect recipient[${i}] balance`
+          );
+        }
+      });
+
+      it('Fails correctly when transferring non-bool-returning tokens with insufficient balance', async () => {
+        // Deploy USDT mock
+        const tetherTokenContract = await Tether.new(
+          '1000000',
+          'USDT',
+          'USDT',
+          6,
+          {
+            from: tokenContractOwner
+          }
+        );
+
+        const sender = accounts[1];
+        const recipients = [accounts[2], accounts[3]];
+        const amounts = [500, 600]; // Total 1100, more than sender will have
+
+        // Transfer only 500 tokens to sender (less than needed)
+        await tetherTokenContract.transfer(sender, 500, {
+          from: tokenContractOwner
+        });
+
+        // Approve batcher to spend tokens
+        await tetherTokenContract.approve(batcherInstance.address, 1100, {
+          from: sender
+        });
+
+        // Verify initial balances
+        const senderInitialBalance = await tetherTokenContract.balanceOf.call(
+          sender
+        );
+        assert.strictEqual(
+          senderInitialBalance.toString(),
+          '500',
+          'Incorrect sender initial balance'
+        );
+
+        // Attempt batch transfer - should fail
+        try {
+          await assertCustomError(
+            batcherInstance.batchTransferFrom(
+              tetherTokenContract.address,
+              recipients,
+              amounts,
+              { from: sender }
+            ),
+            'TokenTransferFailed'
+          );
+        } catch (err) {
+          assert(
+            err.message.includes(
+              `VM Exception while processing transaction: reverted with panic code 0x1 (Assertion error)`
+            )
+          );
+        }
+
+        // Verify balances remained unchanged
+        const senderFinalBalance = await tetherTokenContract.balanceOf.call(
+          sender
+        );
+        assert.strictEqual(
+          senderFinalBalance.toString(),
+          '500',
+          'Sender balance should be unchanged'
+        );
+
+        for (const recipient of recipients) {
+          const balance = await tetherTokenContract.balanceOf.call(recipient);
+          assert.strictEqual(
+            balance.toString(),
+            '0',
+            'Recipient should not have received any tokens'
+          );
+        }
       });
     });
 
