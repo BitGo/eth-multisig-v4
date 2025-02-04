@@ -5,9 +5,24 @@ import '@openzeppelin/contracts/access/Ownable2Step.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
+/// @notice Thrown when attempting a batch transfer with an empty recipients list
+/// @dev This error indicates an invalid attempt to perform a batch transfer without any recipients
 error EmptyRecipientsList();
+
+/// @notice Thrown when the number of recipients doesn't match the number of values/amounts
+/// @dev Arrays must be of equal length for batch transfers to work correctly
 error UnequalRecipientsAndValues();
+
+/// @notice Thrown when the batch size exceeds the configured limit
+/// @param provided The number of recipients in the attempted batch
+/// @param limit The maximum allowed number of recipients
 error TooManyRecipients(uint256 provided, uint256 limit);
+
+/// @notice Thrown when an ERC20 token transfer fails
+/// @param token The address of the ERC20 token contract
+/// @param from The sender's address
+/// @param to The recipient's address
+/// @param amount The amount of tokens that failed to transfer
 error TokenTransferFailed(address token, address from, address to, uint256 amount);
 
 /// @title Batcher - Batch transfer contract for ETH and ERC20 tokens

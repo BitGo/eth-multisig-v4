@@ -7,6 +7,7 @@ const Fail = artifacts.require('./Fail.sol');
 const GasGuzzler = artifacts.require('./GasGuzzler.sol');
 const GasHeavy = artifacts.require('./GasHeavy.sol');
 const FixedSupplyToken = artifacts.require('./FixedSupplyToken.sol');
+const BlacklistedToken = artifacts.require('./BlacklistedToken.sol');
 const Tether = artifacts.require('./TetherToken.sol');
 const truffleAssert = require('truffle-assertions');
 
@@ -780,10 +781,12 @@ describe('Batcher', () => {
         );
 
         // Verify balances
-        await checkBalance(sender, 400); // 1000 - (100 + 200 + 300)
-        await checkBalance(recipients[0], 100);
-        await checkBalance(recipients[1], 200);
-        await checkBalance(recipients[2], 300);
+        await Promise.all([
+          checkBalance(sender, 400),
+          checkBalance(recipients[0], 100),
+          checkBalance(recipients[1], 200),
+          checkBalance(recipients[2], 300)
+        ]);
       });
 
       it('Fails when sender has insufficient balance', async () => {
@@ -796,10 +799,11 @@ describe('Batcher', () => {
         await tokenContract.approve(batcherInstance.address, 1100, {
           from: sender
         });
-
-        await checkBalance(sender, 500);
-        await checkBalance(recipients[0], 0);
-        await checkBalance(recipients[1], 0);
+        await Promise.all([
+          checkBalance(sender, 500),
+          checkBalance(recipients[0], 0),
+          checkBalance(recipients[1], 0)
+        ]);
 
         await assertCustomError(
           batcherInstance.batchTransferFrom(
@@ -812,9 +816,11 @@ describe('Batcher', () => {
         );
 
         // balance does not change
-        await checkBalance(sender, 500);
-        await checkBalance(recipients[0], 0);
-        await checkBalance(recipients[1], 0);
+        await Promise.all([
+          checkBalance(sender, 500),
+          checkBalance(recipients[0], 0),
+          checkBalance(recipients[1], 0)
+        ]);
       });
 
       it('Fails when sender has not approved enough tokens', async () => {
@@ -829,9 +835,11 @@ describe('Batcher', () => {
           from: sender
         });
 
-        await checkBalance(sender, 1100);
-        await checkBalance(recipients[0], 0);
-        await checkBalance(recipients[1], 0);
+        await Promise.all([
+          checkBalance(sender, 1100),
+          checkBalance(recipients[0], 0),
+          checkBalance(recipients[1], 0)
+        ]);
 
         await assertCustomError(
           batcherInstance.batchTransferFrom(
@@ -844,9 +852,11 @@ describe('Batcher', () => {
         );
 
         // balance does not change
-        await checkBalance(sender, 1100);
-        await checkBalance(recipients[0], 0);
-        await checkBalance(recipients[1], 0);
+        await Promise.all([
+          checkBalance(sender, 1100),
+          checkBalance(recipients[0], 0),
+          checkBalance(recipients[1], 0)
+        ]);
       });
 
       it('Fails with empty recipients array', async () => {
@@ -1013,6 +1023,76 @@ describe('Batcher', () => {
             balance.toString(),
             '0',
             'Recipient should not have received any tokens'
+          );
+        }
+      });
+
+      it('Fails completely when one recipient is blacklisted - no partial success', async () => {
+        // Deploy BlacklistedToken.sol
+        const blacklistedToken = await BlacklistedToken.new({
+          from: tokenContractOwner
+        });
+
+        const sender = accounts[1];
+        const recipients = [
+          accounts[2],
+          accounts[3],
+          accounts[4],
+          accounts[5],
+          accounts[6]
+        ];
+        const amounts = [100, 100, 100, 100, 100];
+        const totalAmount = amounts.reduce((a, b) => a + b, 0);
+
+        // Transfer tokens to sender
+        await blacklistedToken.transfer(sender, 1000, {
+          from: tokenContractOwner
+        });
+
+        // Blacklist one recipient
+        await blacklistedToken.blacklistAddress(accounts[4], {
+          from: tokenContractOwner
+        });
+
+        // Approve batcher to spend tokens
+        await blacklistedToken.approve(batcherInstance.address, totalAmount, {
+          from: sender
+        });
+
+        // Verify initial balances
+        const senderInitialBalance = await blacklistedToken.balanceOf(sender);
+        assert.strictEqual(
+          senderInitialBalance.toString(),
+          '1000',
+          'Incorrect sender initial balance'
+        );
+
+        // Attempt batch transfer - should fail
+        await assertVMException(
+          batcherInstance.batchTransferFrom(
+            blacklistedToken.address,
+            recipients,
+            amounts,
+            { from: sender }
+          ),
+          'Recipient is blacklisted'
+        );
+
+        // Verify all balances remained unchanged
+        const senderFinalBalance = await blacklistedToken.balanceOf(sender);
+        assert.strictEqual(
+          senderFinalBalance.toString(),
+          '1000',
+          'Sender balance should be unchanged'
+        );
+
+        // Check each recipient's balance - should all be 0
+        for (const recipient of recipients) {
+          const balance = await blacklistedToken.balanceOf(recipient);
+          assert.strictEqual(
+            balance.toString(),
+            '0',
+            `Recipient ${recipient} should not have received any tokens`
           );
         }
       });

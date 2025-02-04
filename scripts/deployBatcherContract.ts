@@ -43,10 +43,15 @@ async function main() {
   }
 
   let batcher = null;
+  const erc20BatchLimit = 256;
   if (gasParams != undefined) {
-    batcher = await Batcher.deploy(transferGasLimit, gasParams);
+    batcher = await Batcher.deploy(
+      transferGasLimit,
+      erc20BatchLimit,
+      gasParams
+    );
   } else {
-    batcher = await Batcher.deploy(transferGasLimit);
+    batcher = await Batcher.deploy(transferGasLimit, erc20BatchLimit);
   }
   await batcher.deployed();
   output.batcher = batcher.address;
