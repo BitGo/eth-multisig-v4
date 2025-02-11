@@ -171,7 +171,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tcoredao: {
-      url: `https://rpc.test.btcs.network`,
+      url: `https://rpc.test2.btcs.network`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
@@ -388,10 +388,10 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'coredaoTestnet',
-        chainId: 1115,
+        chainId: 1114,
         urls: {
           apiURL: 'https://api.test.btcs.network/api',
-          browserURL: 'https://scan.test.btcs.network'
+          browserURL: 'https://scan.test2.btcs.network'
         }
       },
       {
