@@ -129,7 +129,7 @@ async function main() {
     // bera
     case 80094:
     // coredao
-    case 1115:
+    case 1114:
     case 1116:
       eip1559GasParams.gasLimit = 3000000;
       eip1559GasParams.maxFeePerGas = BigNumber.from('30000000000');
