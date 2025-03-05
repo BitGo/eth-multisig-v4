@@ -64,20 +64,23 @@ async function main() {
   await new Promise((r) => setTimeout(r, 1000 * 300));
 
   console.log('Done waiting, verifying');
-  await verifyContract(contractName, batcher.address, [transferGasLimit]);
+  await verifyContract(contractName, batcher.address, [
+    transferGasLimit,
+    erc20BatchLimit
+  ]);
   console.log('Contracts verified');
 }
 
 async function verifyContract(
   contractName: string,
   contractAddress: string,
-  constructorArguments: string[],
+  constructorArguments: [string, number],
   contract?: string
 ) {
   try {
     const verifyContractArgs: {
       address: string;
-      constructorArguments: string[];
+      constructorArguments: [string, number];
       contract?: string;
     } = {
       address: contractAddress,
