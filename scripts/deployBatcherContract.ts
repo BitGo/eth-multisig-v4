@@ -14,6 +14,11 @@ async function main() {
   const transferGasLimit = '200000';
 
   const signers = await ethers.getSigners();
+  if (signers.length < 3) {
+    throw Error(
+      `Found ${signers.length} Signers, expected 3. Cannot deploy batcher contract, please update the script`
+    );
+  }
   const batcherDeployer = signers[2];
   const Batcher = await ethers.getContractFactory(
     contractName,
