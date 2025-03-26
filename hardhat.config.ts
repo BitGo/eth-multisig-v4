@@ -42,6 +42,9 @@ const {
   BERA_RPC_URL
 } = process.env;
 
+const PLACEHOLDER_KEY: string =
+  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -161,7 +164,7 @@ const config: HardhatUserConfig = {
       url: `https://rpc.testnet.oasys.games`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -169,7 +172,7 @@ const config: HardhatUserConfig = {
       url: `https://rpc.mainnet.oasys.games`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -177,7 +180,7 @@ const config: HardhatUserConfig = {
       url: `https://rpc.test2.btcs.network`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -185,7 +188,7 @@ const config: HardhatUserConfig = {
       url: `https://rpc.coredao.org`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -193,7 +196,7 @@ const config: HardhatUserConfig = {
       url: `https://coston2-api.flare.network/ext/C/rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -201,7 +204,7 @@ const config: HardhatUserConfig = {
       url: `https://flare-api.flare.network/ext/C/rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -209,7 +212,7 @@ const config: HardhatUserConfig = {
       url: `https://coston-api.flare.network/ext/C/rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -217,7 +220,7 @@ const config: HardhatUserConfig = {
       url: `https://songbird-api.flare.network/ext/C/rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -233,7 +236,7 @@ const config: HardhatUserConfig = {
       url: `https://rpc.apothem.network`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -241,7 +244,7 @@ const config: HardhatUserConfig = {
       url: `https://erpc.xinfin.network`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -249,7 +252,7 @@ const config: HardhatUserConfig = {
       url: `https://api.test.wemix.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -257,7 +260,7 @@ const config: HardhatUserConfig = {
       url: `https://api.wemix.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     }
