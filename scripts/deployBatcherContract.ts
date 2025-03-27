@@ -29,6 +29,8 @@ async function main() {
 
   const chainId = await signers[0].getChainId();
   switch (chainId) {
+    //Coredao testnet
+    case 1114:
     //WEMIX
     case 1112:
     case 1111:
