@@ -486,16 +486,16 @@ const config: HardhatUserConfig = {
         network: 'xdcTestnet',
         chainId: 51,
         urls: {
-          apiURL: 'https://api-apothem.xdcscan.io/api',
-          browserURL: 'https://apothem.xdcscan.io'
+          apiURL: 'https://api-testnet.xdcscan.com/api',
+          browserURL: 'https://testnet.xdcscan.com/'
         }
       },
       {
         network: 'xdcMainnet',
         chainId: 50,
         urls: {
-          apiURL: 'https://api-xdc.blocksscan.io/api',
-          browserURL: 'https://xdcscan.io'
+          apiURL: 'https://api.xdcscan.com/api',
+          browserURL: 'https://xdcscan.com'
         }
       },
       {
