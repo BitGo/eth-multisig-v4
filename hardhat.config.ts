@@ -396,7 +396,7 @@ const config: HardhatUserConfig = {
         network: 'coredaoTestnet',
         chainId: 1114,
         urls: {
-          apiURL: 'https://api.test.btcs.network/api',
+          apiURL: 'https://api.test2.btcs.network/api',
           browserURL: 'https://scan.test2.btcs.network'
         }
       },
