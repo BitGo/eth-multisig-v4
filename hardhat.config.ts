@@ -82,11 +82,19 @@ const config: HardhatUserConfig = {
     },
     eth: {
       url: `https://ethereum-rpc.publicnode.com`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     hteth: {
-      url: `https://rpc.holesky.ethpandaops.io/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`]
+      url: `https://ethereum-holesky-rpc.publicnode.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     matic: {
       url: `https://polygon-rpc.com/`,
