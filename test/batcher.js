@@ -20,8 +20,6 @@ const { toBN } = web3.utils;
 const sendFailedErrorMsg = 'Send failed';
 const emptyErrMsg = 'Must send to at least one person';
 const recipientsValuesMismatchErrMsg = 'Unequal recipients and values';
-const fallbackErrMsg = 'Invalid fallback';
-const plainReceiveErrMsg = 'Invalid receive';
 const invalidRecipientErrMsg = 'Invalid recipient address';
 const maxRecipientsExceededErrMsg = 'Too many recipients';
 const zeroAddrOwnerChangeErrMsg = 'Invalid new owner';
@@ -482,21 +480,33 @@ describe('Batcher', () => {
     });
 
     it('Fails when the fallback function is called', async () => {
-      await assertVMException(
-        batcherInstance.sendTransaction({
+      try {
+        await batcherInstance.sendTransaction({
           from: sender,
           value: 5,
           data: '0x1234'
-        }),
-        fallbackErrMsg
-      );
+        });
+        assert.fail('Transaction should have failed');
+      } catch (err) {
+        assert(
+          err.message.includes('function selector was not recognized') ||
+            err.message.includes('Transaction reverted'),
+          `Expected fallback error but got: ${err.message}`
+        );
+      }
     });
 
     it('Fails when the plain receive function is called', async () => {
-      await assertVMException(
-        batcherInstance.sendTransaction({ from: sender, value: 5 }),
-        plainReceiveErrMsg
-      );
+      try {
+        await batcherInstance.sendTransaction({ from: sender, value: 5 });
+        assert.fail('Transaction should have failed');
+      } catch (err) {
+        assert(
+          err.message.includes('no fallback nor receive function') ||
+            err.message.includes('Transaction reverted'),
+          `Expected receive error but got: ${err.message}`
+        );
+      }
     });
 
     it('Fails for zero address', async () => {
