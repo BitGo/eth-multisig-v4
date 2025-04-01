@@ -2,8 +2,9 @@
 pragma solidity 0.8.20;
 
 import '@openzeppelin/contracts/access/Ownable2Step.sol';
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
 /// @notice Thrown when attempting a batch transfer with an empty recipients list
 /// @dev This error indicates an invalid attempt to perform a batch transfer without any recipients
@@ -16,20 +17,13 @@ error UnequalRecipientsAndValues();
 /// @notice Thrown when the batch size exceeds the configured limit
 /// @param provided The number of recipients in the attempted batch
 /// @param limit The maximum allowed number of recipients
-error TooManyRecipients(uint256 provided, uint256 limit);
-
-/// @notice Thrown when an ERC20 token transfer fails
-/// @param token The address of the ERC20 token contract
-/// @param from The sender's address
-/// @param to The recipient's address
-/// @param amount The amount of tokens that failed to transfer
-error TokenTransferFailed(address token, address from, address to, uint256 amount);
+error TooManyRecipients(uint256 provided, uint16 limit);
 
 /// @title Batcher - Batch transfer contract for ETH and ERC20 tokens
 /// @notice Allows batch transfers of ETH and ERC20 tokens to multiple recipients in a single transaction
 /// @dev Implements reentrancy protection and configurable gas limits for transfers
 
-contract Batcher is Ownable2Step {
+contract Batcher is Ownable2Step, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
   event BatchTransfer(address sender, address recipient, uint256 value);
@@ -38,33 +32,22 @@ contract Batcher is Ownable2Step {
     uint256 newTransferGasLimit
   );
   event BatchTransferLimitChange(
-    uint256 prevBatchTransferLimit,
-    uint256 newBatchTransferLimit
+    uint16 prevBatchTransferLimit,
+    uint16 newBatchTransferLimit
   );
 
-  uint256 public lockCounter;
   uint256 public transferGasLimit;
-  uint256 public batchTransferLimit;
+  uint16 public batchTransferLimit;
 
   /// @notice Contract constructor
   /// @param _transferGasLimit Gas limit for individual transfers
   /// @param _batchTransferLimit Maximum number of transfers allowed in a batch
   /// @dev Sets initial values for transfer limits and initializes the reentrancy guard
-  constructor(uint256 _transferGasLimit, uint256 _batchTransferLimit) Ownable(msg.sender) {
-    lockCounter = 1;
+  constructor(uint256 _transferGasLimit, uint16 _batchTransferLimit) Ownable(msg.sender) {
     transferGasLimit = _transferGasLimit;
     batchTransferLimit = _batchTransferLimit;
     emit TransferGasLimitChange(0, transferGasLimit);
     emit BatchTransferLimitChange(0, batchTransferLimit);
-  }
-
-  /// @notice Prevents reentrancy attacks
-  /// @dev Increments a counter before execution and checks it hasn't changed after
-  modifier lockCall() {
-    lockCounter++;
-    uint256 localCounter = lockCounter;
-    _;
-    require(localCounter == lockCounter, 'Reentrancy attempt detected');
   }
 
   /// @notice Batch transfer ETH to multiple recipients
@@ -75,7 +58,7 @@ contract Batcher is Ownable2Step {
   function batch(address[] calldata recipients, uint256[] calldata values)
     external
     payable
-    lockCall
+    nonReentrant
   {
     require(recipients.length != 0, 'Must send to at least one person');
     require(
@@ -113,7 +96,7 @@ contract Batcher is Ownable2Step {
     address token,
     address[] calldata recipients,
     uint256[] calldata amounts
-  ) external lockCall {
+  ) external nonReentrant {
     if (recipients.length == 0) revert EmptyRecipientsList();
     if (recipients.length != amounts.length) revert UnequalRecipientsAndValues();
     if (recipients.length > batchTransferLimit) revert TooManyRecipients(recipients.length, batchTransferLimit);
@@ -135,6 +118,7 @@ contract Batcher is Ownable2Step {
     uint256 value,
     bytes calldata data
   ) external onlyOwner returns (bytes memory) {
+    require(to != address(0), "Cannot recover to zero address");
     (bool success, bytes memory returnData) = to.call{ value: value }(data);
     require(success, 'Recover failed');
     return returnData;
@@ -157,20 +141,12 @@ contract Batcher is Ownable2Step {
   /// @param newBatchTransferLimit New maximum batch size
   /// @dev Must be greater than zero
   /// @dev Only callable by contract owner
-  function changeBatchTransferLimit(uint256 newBatchTransferLimit)
+  function changeBatchTransferLimit(uint16 newBatchTransferLimit)
     external
     onlyOwner
   {
     require(newBatchTransferLimit > 0, 'Batch transfer limit too low');
     emit BatchTransferLimitChange(batchTransferLimit, newBatchTransferLimit);
     batchTransferLimit = newBatchTransferLimit;
-  }
-
-  fallback() external payable {
-    revert('Invalid fallback');
-  }
-
-  receive() external payable {
-    revert('Invalid receive');
   }
 }
