@@ -39,7 +39,8 @@ const {
   SONGBIRD_EXPLORER_API_KEY,
   XDC_EXPLORER_API_KEY,
   WEMIX_EXPLORER_API_KEY,
-  BERA_RPC_URL
+  BERA_RPC_URL,
+  MONAD_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -200,6 +201,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    tmon: {
+      url: `https://testnet-rpc.monad.xyz/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    mon: {
+      url: `https://testnet-rpc.monad.xyz/`, //TODO: WIN-5225: change it with mainnet url, when its available
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tflr: {
       url: `https://coston2-api.flare.network/ext/C/rpc`,
       accounts: [
@@ -323,7 +340,10 @@ const config: HardhatUserConfig = {
       xdcTestnet: `${XDC_EXPLORER_API_KEY}`,
       xdcMainnet: `${XDC_EXPLORER_API_KEY}`,
       wemixTestnet: `${WEMIX_EXPLORER_API_KEY}`,
-      wemixMainnet: `${WEMIX_EXPLORER_API_KEY}`
+      wemixMainnet: `${WEMIX_EXPLORER_API_KEY}`,
+      //Monad
+      monadTestnet: `${MONAD_EXPLORER_API_KEY}`,
+      monadMainnet: `${MONAD_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -456,6 +476,22 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api',
           browserURL: 'https://testnet.snowtrace.io/'
+        }
+      },
+      {
+        network: 'monadTestnet',
+        chainId: 10143,
+        urls: {
+          apiURL: 'https://testnet.monadexplorer.com/api',
+          browserURL: 'https://testnet.monadexplorer.com/'
+        }
+      },
+      {
+        network: 'monadMainnet',
+        chainId: 10143, //TODO: WIN-5225: change it with mainnet explorer, when its available
+        urls: {
+          apiURL: 'https://testnet.monadexplorer.com/api', //TODO: WIN-5225: change it with mainnet explorer, when its available
+          browserURL: 'https://testnet.monadexplorer.com/' //TODO: WIN-5225: change it with mainnet explorer, when its available
         }
       },
       {

@@ -139,6 +139,8 @@ async function main() {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    //Monad
+    case 10143: // TODO: WIN-5225: add chain id once mainnet is release
     //Flare
     case 14:
     case 114:

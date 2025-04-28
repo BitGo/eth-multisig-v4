@@ -55,4 +55,5 @@ jobs:
           XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
           WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
           BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
+          MONAD_RPC_URL: ${{ secrets.MONAD_RPC_URL }}
       - run: npm run lint
