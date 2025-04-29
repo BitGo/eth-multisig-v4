@@ -41,7 +41,8 @@ const {
   WEMIX_EXPLORER_API_KEY,
   BERA_RPC_URL,
   MONAD_EXPLORER_API_KEY,
-  SOMNIA_EXPLORER_API_KEY
+  SOMNIA_EXPLORER_API_KEY,
+  SONEIUM_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -197,6 +198,22 @@ const config: HardhatUserConfig = {
     },
     coredao: {
       url: `https://rpc.coredao.org`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tsoneium: {
+      url: `https://rpc.minato.soneium.org/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    soneium: {
+      url: `https://rpc.soneium.org/`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -364,7 +381,10 @@ const config: HardhatUserConfig = {
       monadMainnet: `${MONAD_EXPLORER_API_KEY}`,
       //Somnia
       somniaTestnet: `${SOMNIA_EXPLORER_API_KEY}`,
-      somniaMainnet: `${SOMNIA_EXPLORER_API_KEY}`
+      somniaMainnet: `${SOMNIA_EXPLORER_API_KEY}`,
+      //Soneium
+      soneiumTestnet: `${SONEIUM_EXPLORER_API_KEY}`,
+      soneiumMainnet: `${SONEIUM_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -497,6 +517,22 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api',
           browserURL: 'https://testnet.snowtrace.io/'
+        }
+      },
+      {
+        network: 'soneiumTestnet',
+        chainId: 1946,
+        urls: {
+          apiURL: 'https://soneium-minato.blockscout.com/api',
+          browserURL: 'https://soneium-minato.blockscout.com/'
+        }
+      },
+      {
+        network: 'soneiumMainnet',
+        chainId: 1868,
+        urls: {
+          apiURL: 'https://soneium.blockscout.com/api',
+          browserURL: 'https://soneium.blockscout.com/'
         }
       },
       {
