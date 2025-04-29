@@ -18,13 +18,14 @@ const { getBalance, abi: ethAbi } = web3.eth;
 const { toBN } = web3.utils;
 
 const sendFailedErrorMsg = 'Send failed';
-const emptyErrMsg = 'Must send to at least one person';
-const recipientsValuesMismatchErrMsg = 'Unequal recipients and values';
-const fallbackErrMsg = 'Invalid fallback';
-const plainReceiveErrMsg = 'Invalid receive';
+const emptyErrMsg = 'custom:EmptyRecipientsList';
+const recipientsValuesMismatchErrMsg = 'custom:UnequalRecipientsAndValues';
+const fallbackErrMsg =
+  "function selector was not recognized and there's no fallback function";
+const plainReceiveErrMsg =
+  "function selector was not recognized and there's no fallback nor receive function";
 const invalidRecipientErrMsg = 'Invalid recipient address';
-const maxRecipientsExceededErrMsg = 'Too many recipients';
-const zeroAddrOwnerChangeErrMsg = 'Invalid new owner';
+const maxRecipientsExceededErrMsg = 'custom:TooManyRecipients';
 const newGasTransferLimitTooLowErrMsg = 'Transfer gas limit too low';
 const totalSentMustEqualTotalReceivedErrMsg =
   'Total sent out must equal total received';
@@ -80,6 +81,21 @@ const assertVMException = async (promise, expectedExceptionMsg) => {
   }
 };
 
+const assertTransactionReverted = async (promise, expectedErrMsg) => {
+  try {
+    await promise;
+  } catch (err) {
+    const expectedFormat = `Transaction reverted: ${expectedErrMsg}`;
+    assert.strictEqual(
+      err.message,
+      expectedFormat,
+      `Expected "${expectedFormat}" but got "${err.message}"`
+    );
+    return;
+  }
+  assert.fail('Transaction succeeded when it should have failed');
+};
+
 const assertBalanceDiff = (start, end, diff, errMsg) => {
   const startWithDiff = start.add(toBN(diff));
   assert.strictEqual(startWithDiff.toString(), end.toString(), errMsg);
@@ -102,7 +118,9 @@ describe('Batcher', () => {
     sender = accounts[0];
     batcherOwner = accounts[8];
 
-    batcherInstance = await Batcher.new(21000, 256, { from: batcherOwner });
+    batcherInstance = await Batcher.new(21000, 256, 256, {
+      from: batcherOwner
+    });
     reentryInstance = await Reentry.new(batcherInstance.address);
     failInstance = await Fail.new();
     gasGuzzlerInstance = await GasGuzzler.new();
@@ -197,14 +215,28 @@ describe('Batcher', () => {
     }
 
     if (expectOverallFailure) {
-      await assertVMException(
-        testBatcherDriverInstance.driveTest(recipients, values, {
-          from: sender,
-          value: sendVal,
-          gas: gasLimit
-        }),
-        expectedErrMsg
-      );
+      if (expectedErrMsg.startsWith('custom:')) {
+        // For custom errors
+        const customErrorName = expectedErrMsg.substring(7); // Remove 'custom:' prefix
+        await assertCustomError(
+          testBatcherDriverInstance.driveTest(recipients, values, {
+            from: sender,
+            value: sendVal,
+            gas: gasLimit
+          }),
+          customErrorName
+        );
+      } else {
+        // For regular revert strings
+        await assertVMException(
+          testBatcherDriverInstance.driveTest(recipients, values, {
+            from: sender,
+            value: sendVal,
+            gas: gasLimit
+          }),
+          expectedErrMsg
+        );
+      }
       return;
     }
 
@@ -482,7 +514,7 @@ describe('Batcher', () => {
     });
 
     it('Fails when the fallback function is called', async () => {
-      await assertVMException(
+      await assertTransactionReverted(
         batcherInstance.sendTransaction({
           from: sender,
           value: 5,
@@ -493,7 +525,7 @@ describe('Batcher', () => {
     });
 
     it('Fails when the plain receive function is called', async () => {
-      await assertVMException(
+      await assertTransactionReverted(
         batcherInstance.sendTransaction({ from: sender, value: 5 }),
         plainReceiveErrMsg
       );
@@ -533,14 +565,15 @@ describe('Batcher', () => {
       await runTestBatcherDriver(params);
     });
 
-    it('Fails when recipients length exceeds uint8 capacity', async () => {
+    it('Fails when recipients length exceeds nativeBatchTransferLimit', async () => {
       const recipients = [];
-      for (let i = 0; i < 256; i++) {
+      const nativeBatchTransferLimit = 256;
+      for (let i = 0; i < nativeBatchTransferLimit + 1; i++) {
         recipients.push(accounts[1]);
       }
       const params = {
         recipients: recipients,
-        values: createRandIntArr(256),
+        values: createRandIntArr(nativeBatchTransferLimit + 1),
         expectOverallFailure: true,
         expectedErrMsg: maxRecipientsExceededErrMsg
       };
@@ -687,50 +720,110 @@ describe('Batcher', () => {
     });
 
     describe('Batch Transfer Limit', () => {
-      it('Successfully changes batch transfer limit', async () => {
-        const newLimit = 100;
-        const tx = await batcherInstance.changeBatchTransferLimit(newLimit, {
-          from: batcherOwner
+      describe('erc20 batch limit', () => {
+        it('Successfully changes batch transfer limit', async () => {
+          const newLimit = 100;
+          const tx = await batcherInstance.changeBatchTransferLimit(newLimit, {
+            from: batcherOwner
+          });
+
+          const {
+            logs: [
+              {
+                args: { prevBatchTransferLimit, newBatchTransferLimit }
+              }
+            ]
+          } = tx;
+
+          assert.strictEqual(
+            prevBatchTransferLimit.toNumber(),
+            256,
+            'Previous limit incorrect'
+          );
+          assert.strictEqual(
+            newBatchTransferLimit.toNumber(),
+            newLimit,
+            'New limit incorrect'
+          );
+
+          const currentLimit = await batcherInstance.batchTransferLimit();
+          assert.strictEqual(
+            currentLimit.toNumber(),
+            newLimit,
+            'Limit not updated correctly'
+          );
         });
 
-        const {
-          logs: [
+        it('Fails to set batch transfer limit to zero', async () => {
+          await assertVMException(
+            batcherInstance.changeBatchTransferLimit(0, { from: batcherOwner }),
+            'Batch transfer limit too low'
+          );
+        });
+
+        it('Fails when non-owner tries to change batch transfer limit', async () => {
+          await truffleAssert.reverts(
+            batcherInstance.changeBatchTransferLimit(100, { from: accounts[1] })
+          );
+        });
+      });
+
+      describe('native batch limit', () => {
+        it('Successfully changes batch transfer limit', async () => {
+          const newLimit = 200;
+          const tx = await batcherInstance.changeNativeBatchTransferLimit(
+            newLimit,
             {
-              args: { prevBatchTransferLimit, newBatchTransferLimit }
+              from: batcherOwner
             }
-          ]
-        } = tx;
+          );
 
-        assert.strictEqual(
-          prevBatchTransferLimit.toNumber(),
-          256,
-          'Previous limit incorrect'
-        );
-        assert.strictEqual(
-          newBatchTransferLimit.toNumber(),
-          newLimit,
-          'New limit incorrect'
-        );
+          const {
+            logs: [
+              {
+                args: {
+                  prevNativeBatchTransferLimit,
+                  newNativeBatchTransferLimit
+                }
+              }
+            ]
+          } = tx;
 
-        const currentLimit = await batcherInstance.batchTransferLimit();
-        assert.strictEqual(
-          currentLimit.toNumber(),
-          newLimit,
-          'Limit not updated correctly'
-        );
-      });
+          assert.strictEqual(
+            prevNativeBatchTransferLimit.toNumber(),
+            256,
+            'Previous limit incorrect'
+          );
+          assert.strictEqual(
+            newNativeBatchTransferLimit.toNumber(),
+            newLimit,
+            'New limit incorrect'
+          );
 
-      it('Fails to set batch transfer limit to zero', async () => {
-        await assertVMException(
-          batcherInstance.changeBatchTransferLimit(0, { from: batcherOwner }),
-          'Batch transfer limit too low'
-        );
-      });
+          const currentLimit = await batcherInstance.nativeBatchTransferLimit();
+          assert.strictEqual(
+            currentLimit.toNumber(),
+            newLimit,
+            'Limit not updated correctly'
+          );
+        });
 
-      it('Fails when non-owner tries to change batch transfer limit', async () => {
-        await truffleAssert.reverts(
-          batcherInstance.changeBatchTransferLimit(100, { from: accounts[1] })
-        );
+        it('Fails to set batch transfer limit to zero', async () => {
+          await assertVMException(
+            batcherInstance.changeNativeBatchTransferLimit(0, {
+              from: batcherOwner
+            }),
+            'Native batch transfer limit too low'
+          );
+        });
+
+        it('Fails when non-owner tries to change batch transfer limit', async () => {
+          await truffleAssert.reverts(
+            batcherInstance.changeNativeBatchTransferLimit(100, {
+              from: accounts[1]
+            })
+          );
+        });
       });
     });
 
@@ -1174,7 +1267,7 @@ describe('Batcher', () => {
 
         const tokenTransferData = getUSDTTokenTransferData(batcherOwner, 100);
 
-        await batcherInstance.recover(
+        const tx = await batcherInstance.recover(
           tetherTokenContract.address,
           0,
           tokenTransferData,
@@ -1197,6 +1290,35 @@ describe('Batcher', () => {
           senderBalance.toString(),
           '1000000',
           'Sender USDT balance should be 1000000.'
+        );
+
+        // check event should be emitted
+        const eventTopic = web3.utils.sha3(
+          'RecoveryInitiated(address,uint256,bytes)'
+        );
+        const log = tx.receipt.rawLogs.find(
+          (log) => log.topics[0] === eventTopic
+        );
+        assert.ok(log, 'RecoveryInitiated event not found in logs');
+        const decodedLog = web3.eth.abi.decodeLog(
+          [
+            { type: 'address', name: 'to', indexed: false },
+            { type: 'uint256', name: 'value', indexed: false },
+            { type: 'bytes', name: 'data', indexed: false }
+          ],
+          log.data,
+          []
+        );
+        assert.strictEqual(
+          decodedLog.to,
+          tetherTokenContract.address,
+          'Event has wrong to address'
+        );
+        assert.strictEqual(decodedLog.value, '0', 'Event has wrong value');
+        assert.strictEqual(
+          decodedLog.data,
+          tokenTransferData,
+          'Event has wrong data'
         );
       });
 
