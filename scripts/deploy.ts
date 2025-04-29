@@ -39,7 +39,6 @@ async function main() {
     deployForwarderContracts = false;
   const [deployer] = await ethers.getSigners();
   const txCount = await deployer.getTransactionCount();
-
   if (txCount === 1 || txCount === 3) {
     throw Error('Cannot deploy contracts, please update the script');
   }
@@ -144,6 +143,8 @@ async function main() {
     //Flare
     case 14:
     case 114:
+    //Somnia
+    case 50312:
     //Songbird
     case 19:
     case 16:
