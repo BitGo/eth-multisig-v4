@@ -101,24 +101,44 @@ const config: HardhatUserConfig = {
     },
     matic: {
       url: `https://polygon-rpc.com/`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     tmatic: {
       // https://polygon-amoy.g.alchemy.com
       url: `https://polygon-amoy-bor-rpc.publicnode.com`,
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     bsc: {
       url: `https://bsc-dataseed1.binance.org/`,
-      accounts: [`${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     tbsc: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     tarbeth: {
       url: `${QUICKNODE_ARBITRUM_SEPOLIA_API_KEY}`,
-      accounts: [`${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     arbeth: {
       url: `https://arb1.arbitrum.io/rpc`,
@@ -168,7 +188,7 @@ const config: HardhatUserConfig = {
       url: `${BERA_RPC_URL}`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -286,11 +306,19 @@ const config: HardhatUserConfig = {
     },
     tavaxc: {
       url: 'https://api.avax-test.network/ext/C/rpc',
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     avaxc: {
       url: 'https://api.avax.network/ext/bc/C/rpc',
-      accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     },
     txdc: {
       url: `https://rpc.apothem.network`,
@@ -318,6 +346,38 @@ const config: HardhatUserConfig = {
     },
     wemix: {
       url: `https://api.wemix.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    celo: {
+      url: `https://forno.celo.org`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tcelo: {
+      url: `https://alfajores-forno.celo-testnet.org`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    etc: {
+      url: `https://etc.etcdesktop.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tetc: {
+      url: `https://rpc.mordor.etccooperative.org`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
