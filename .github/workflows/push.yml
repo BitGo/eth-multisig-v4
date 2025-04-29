@@ -57,4 +57,5 @@ jobs:
           BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
           MONAD_EXPLORER_API_KEY: ${{ secrets.MONAD_EXPLORER_API_KEY }}
           SOMNIA_EXPLORER_API_KEY: ${{ secrets.SOMNIA_EXPLORER_API_KEY }}
+          SONEIUM_EXPLORER_API_KEY: ${{ secrets.SONEIUM_EXPLORER_API_KEY }}
       - run: npm run lint

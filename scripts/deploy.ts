@@ -143,6 +143,9 @@ async function main() {
     //Flare
     case 14:
     case 114:
+    //Soneium
+    case 1946:
+    case 1868:
     //Somnia
     case 50312:
     //Songbird
