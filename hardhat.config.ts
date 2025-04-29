@@ -159,6 +159,7 @@ const config: HardhatUserConfig = {
       url: `https://rockbeard-eth-cartio.berachain.com/`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
