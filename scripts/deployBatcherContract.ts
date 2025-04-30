@@ -79,7 +79,8 @@ async function main() {
   console.log('Done waiting, verifying');
   await verifyContract(contractName, batcher.address, [
     transferGasLimit,
-    erc20BatchLimit
+    erc20BatchLimit,
+    nativeBatchLimit
   ]);
   console.log('Contracts verified');
 }
@@ -87,13 +88,13 @@ async function main() {
 async function verifyContract(
   contractName: string,
   contractAddress: string,
-  constructorArguments: [string, number],
+  constructorArguments: [string, number, number],
   contract?: string
 ) {
   try {
     const verifyContractArgs: {
       address: string;
-      constructorArguments: [string, number];
+      constructorArguments: [string, number, number];
       contract?: string;
     } = {
       address: contractAddress,
