@@ -42,7 +42,8 @@ const {
   BERA_RPC_URL,
   MONAD_EXPLORER_API_KEY,
   SOMNIA_EXPLORER_API_KEY,
-  SONEIUM_EXPLORER_API_KEY
+  SONEIUM_EXPLORER_API_KEY,
+  WORLD_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -218,6 +219,22 @@ const config: HardhatUserConfig = {
     },
     coredao: {
       url: `https://rpc.coredao.org`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tworld: {
+      url: `https://worldchain-sepolia.gateway.tenderly.co`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    world: {
+      url: `https://worldchain-mainnet.g.alchemy.com/public`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -444,7 +461,10 @@ const config: HardhatUserConfig = {
       somniaMainnet: `${SOMNIA_EXPLORER_API_KEY}`,
       //Soneium
       soneiumTestnet: `${SONEIUM_EXPLORER_API_KEY}`,
-      soneiumMainnet: `${SONEIUM_EXPLORER_API_KEY}`
+      soneiumMainnet: `${SONEIUM_EXPLORER_API_KEY}`,
+      //World
+      worldTestnet: `${WORLD_EXPLORER_API_KEY}`,
+      worldMainnet: `${WORLD_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -577,6 +597,22 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api',
           browserURL: 'https://testnet.snowtrace.io/'
+        }
+      },
+      {
+        network: 'worldTestnet',
+        chainId: 4801,
+        urls: {
+          apiURL: 'https://worldchain-sepolia.gateway.tenderly.co',
+          browserURL: 'https://sepolia.worldscan.org/'
+        }
+      },
+      {
+        network: 'worldMainnet',
+        chainId: 480,
+        urls: {
+          apiURL: 'https://api.worldscan.org/',
+          browserURL: 'https://worldscan.org/'
         }
       },
       {

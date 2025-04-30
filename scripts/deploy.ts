@@ -42,7 +42,7 @@ async function main() {
   if (txCount === 1 || txCount === 3) {
     throw Error('Cannot deploy contracts, please update the script');
   }
-
+  console.log('txCount: ' + txCount);
   if (txCount === 0) {
     deployWalletContracts = true;
     deployForwarderContracts = true;
@@ -56,6 +56,7 @@ async function main() {
   let forwarderFactoryContractName = 'ForwarderFactory';
   let contractPath = `contracts/WalletSimple.sol:WalletSimple`;
   const chainId = await deployer.getChainId();
+  console.log('chainId: ', chainId);
   switch (chainId) {
     // https://chainlist.org/
     //eth
@@ -138,6 +139,21 @@ async function main() {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    // world
+    case 480:
+    case 4801:
+      console.log(
+        'Setting World gasLimit,maxFeePerGas, maxPriorityFeePerGas...'
+      );
+      const GWEI = BigNumber.from('1000000000'); // 1
+      eip1559GasParams.gasLimit = 3000000;
+      eip1559GasParams.maxFeePerGas = GWEI.mul(5);
+      eip1559GasParams.maxPriorityFeePerGas = GWEI.mul(2);
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
     //Monad
     case 10143: // TODO: WIN-5225: add chain id once mainnet is release
     //Flare
@@ -203,10 +219,17 @@ async function main() {
     console.log(
       'Deploying wallet contract called: ' + walletImplementationContractName
     );
+    console.log('📦 Getting contract factory...');
     const WalletSimple = await ethers.getContractFactory(
       walletImplementationContractName
     );
+    console.log('⛽ Gas params:', gasParams);
+    const balance = await deployer.getBalance();
+    console.log('💰 Balance:', ethers.utils.formatEther(balance), 'ETH');
     const walletSimple = await WalletSimple.deploy(gasParams);
+    console.log('📤 TX hash:', walletSimple.deployTransaction.hash);
+    console.log('⏳ Waiting for confirmation...');
+    await walletSimple.deployTransaction.wait(1);
     await walletSimple.deployed();
     output.walletImplementation = walletSimple.address;
     console.log('WalletSimple deployed at ' + walletSimple.address);
@@ -214,6 +237,7 @@ async function main() {
     const WalletFactory = await ethers.getContractFactory(
       walletFactoryContractName
     );
+    console.log('🚀 Sending deployment TX...');
     const walletFactory = await WalletFactory.deploy(
       walletSimple.address,
       gasParams
