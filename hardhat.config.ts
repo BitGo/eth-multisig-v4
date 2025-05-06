@@ -126,7 +126,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tbsc: {
-      url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
+      url: `https://bsc-testnet-rpc.publicnode.com`,
       accounts: [
         `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
