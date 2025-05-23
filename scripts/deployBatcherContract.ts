@@ -29,6 +29,13 @@ async function main() {
 
   const chainId = await signers[0].getChainId();
   switch (chainId) {
+    //Monad
+    case 10143:
+    //World
+    case 480:
+    case 4801:
+    //Somnia
+    case 50312:
     //Soneium
     case 1946:
     case 1868:

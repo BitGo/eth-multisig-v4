@@ -603,7 +603,7 @@ const config: HardhatUserConfig = {
         network: 'worldTestnet',
         chainId: 4801,
         urls: {
-          apiURL: 'https://worldchain-sepolia.gateway.tenderly.co',
+          apiURL: 'https://api-sepolia.worldscan.org/api',
           browserURL: 'https://sepolia.worldscan.org/'
         }
       },
