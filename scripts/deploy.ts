@@ -39,10 +39,12 @@ async function main() {
     deployForwarderContracts = false;
   const [deployer] = await ethers.getSigners();
   const txCount = await deployer.getTransactionCount();
+
   if (txCount === 1 || txCount === 3) {
     throw Error('Cannot deploy contracts, please update the script');
   }
   console.log('txCount: ' + txCount);
+  const GWEI = BigNumber.from('1000000000'); // 1
   if (txCount === 0) {
     deployWalletContracts = true;
     deployForwarderContracts = true;
@@ -145,7 +147,6 @@ async function main() {
       console.log(
         'Setting World gasLimit,maxFeePerGas, maxPriorityFeePerGas...'
       );
-      const GWEI = BigNumber.from('1000000000'); // 1
       eip1559GasParams.gasLimit = 3000000;
       eip1559GasParams.maxFeePerGas = GWEI.mul(5);
       eip1559GasParams.maxPriorityFeePerGas = GWEI.mul(2);
@@ -156,6 +157,24 @@ async function main() {
       break;
     //Monad
     case 10143: // TODO: WIN-5225: add chain id once mainnet is release
+      const feeData = await ethers.provider.getFeeData(); // dynamically gets suggested fees
+      const baseFee =
+        feeData.lastBaseFeePerGas || BigNumber.from('30000000000'); // fallback if null
+
+      eip1559GasParams.gasLimit = 3000000;
+      eip1559GasParams.maxPriorityFeePerGas = GWEI.mul(1);
+      eip1559GasParams.maxFeePerGas = baseFee.add(
+        eip1559GasParams.maxPriorityFeePerGas
+      );
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      const estimatedTxCost = ethers.utils.formatEther(
+        eip1559GasParams.maxFeePerGas.mul(eip1559GasParams.gasLimit)
+      ); // wei
+      console.log('💸 Estimated Max Deployment Cost:', estimatedTxCost, 'ETH');
+      break;
     //Flare
     case 14:
     case 114:
@@ -334,7 +353,13 @@ async function verifyContract(
     if (contract) {
       verifyContractArgs.contract = contract;
     }
-
+    console.log('\n=== Verifying Contract ===');
+    console.log('Contract Name:        ', contractName);
+    console.log('Contract Address:     ', contractAddress);
+    console.log('Constructor Arguments:', constructorArguments);
+    if (contract) {
+      console.log('Full Contract Path:   ', contract);
+    }
     await hre.run('verify:verify', verifyContractArgs);
   } catch (e) {
     // @ts-ignore

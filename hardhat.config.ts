@@ -651,16 +651,18 @@ const config: HardhatUserConfig = {
         network: 'monadTestnet',
         chainId: 10143,
         urls: {
-          apiURL: 'https://testnet.monadexplorer.com/api',
-          browserURL: 'https://testnet.monadexplorer.com/'
+          apiURL:
+            'https://api.socialscan.io/monad-testnet/v1/explorer/command_api/contract',
+          browserURL: 'https://monad-testnet.socialscan.io/'
         }
       },
       {
         network: 'monadMainnet',
         chainId: 10143, //TODO: WIN-5225: change it with mainnet explorer, when its available
         urls: {
-          apiURL: 'https://testnet.monadexplorer.com/api', //TODO: WIN-5225: change it with mainnet explorer, when its available
-          browserURL: 'https://testnet.monadexplorer.com/' //TODO: WIN-5225: change it with mainnet explorer, when its available
+          apiURL:
+            'https://api.socialscan.io/monad-testnet/v1/explorer/command_api/contract', //TODO: WIN-5225: change it with mainnet explorer, when its available
+          browserURL: 'https://monad-testnet.socialscan.io/' //TODO: WIN-5225: change it with mainnet explorer, when its available
         }
       },
       {
