@@ -24,11 +24,17 @@ async function main() {
     contractName,
     batcherDeployer
   );
-
+  const address = await batcherDeployer.getAddress();
+  console.log(' Address:', address);
   let gasParams: Overrides | undefined = undefined;
 
   const chainId = await signers[0].getChainId();
   switch (chainId) {
+    //Monad
+    case 10143:
+    //World
+    case 480:
+    case 4801:
     //Soneium
     case 1946:
     case 1868:
@@ -48,6 +54,23 @@ async function main() {
           ? feeData.gasPrice
           : feeData.maxPriorityFeePerGas) as BigNumberish,
         gasLimit: BigNumber.from('3000000')
+      };
+      break;
+    //Somnia
+    case 50312:
+      const feeDataSomnia = await ethers.provider.getFeeData();
+      gasParams = {
+        maxFeePerGas: (feeDataSomnia.maxFeePerGas?.lt(
+          feeDataSomnia.gasPrice as BigNumber
+        )
+          ? feeDataSomnia.gasPrice
+          : feeDataSomnia.maxFeePerGas) as BigNumberish,
+        maxPriorityFeePerGas: (feeDataSomnia.maxFeePerGas?.lt(
+          feeDataSomnia.gasPrice as BigNumber
+        )
+          ? feeDataSomnia.gasPrice
+          : feeDataSomnia.maxPriorityFeePerGas) as BigNumberish,
+        gasLimit: BigNumber.from('5000000')
       };
       break;
   }
@@ -94,6 +117,14 @@ async function verifyContract(
   constructorArguments: [string, number, number],
   contract?: string
 ) {
+  console.log(
+    'contractName: ' +
+      contractName +
+      'contractAddress: ' +
+      contractAddress +
+      'constructorArguments: ' +
+      constructorArguments
+  );
   try {
     const verifyContractArgs: {
       address: string;

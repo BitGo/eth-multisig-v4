@@ -39,7 +39,6 @@ async function main() {
     deployForwarderContracts = false;
   const [deployer] = await ethers.getSigners();
   const txCount = await deployer.getTransactionCount();
-
   if (txCount === 1 || txCount === 3) {
     throw Error('Cannot deploy contracts, please update the script');
   }
@@ -183,6 +182,12 @@ async function main() {
     case 1868:
     //Somnia
     case 50312:
+      eip1559GasParams.gasLimit = 5000000;
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
     //Songbird
     case 19:
     case 16:
@@ -245,6 +250,8 @@ async function main() {
     console.log('⛽ Gas params:', gasParams);
     const balance = await deployer.getBalance();
     console.log('💰 Balance:', ethers.utils.formatEther(balance), 'ETH');
+    const address = await deployer.getAddress();
+    console.log(' Address:', address);
     const walletSimple = await WalletSimple.deploy(gasParams);
     console.log('📤 TX hash:', walletSimple.deployTransaction.hash);
     console.log('⏳ Waiting for confirmation...');
