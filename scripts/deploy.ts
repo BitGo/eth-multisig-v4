@@ -129,6 +129,9 @@ async function main() {
     case 80000:
     // bera
     case 80094:
+    // Apechain
+    case 33111:
+    case 33139:
     // coredao
     case 1114:
     case 1116:

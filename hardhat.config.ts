@@ -43,7 +43,8 @@ const {
   MONAD_EXPLORER_API_KEY,
   SOMNIA_EXPLORER_API_KEY,
   SONEIUM_EXPLORER_API_KEY,
-  WORLD_EXPLORER_API_KEY
+  WORLD_EXPLORER_API_KEY,
+  APECHAIN_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -400,6 +401,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tapechain: {
+      url: `https://rpc.curtis.apechain.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    apechain: {
+      url: `https://apechain.drpc.org`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -464,7 +481,10 @@ const config: HardhatUserConfig = {
       soneiumMainnet: `${SONEIUM_EXPLORER_API_KEY}`,
       //World
       worldTestnet: `${WORLD_EXPLORER_API_KEY}`,
-      worldMainnet: `${WORLD_EXPLORER_API_KEY}`
+      worldMainnet: `${WORLD_EXPLORER_API_KEY}`,
+      //Apechain
+      apechainTestnet: `${APECHAIN_EXPLORER_API_KEY}`,
+      apechainMainnet: `${APECHAIN_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -613,6 +633,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.worldscan.org/',
           browserURL: 'https://worldscan.org/'
+        }
+      },
+      {
+        network: 'apechainTestnet',
+        chainId: 33111,
+        urls: {
+          apiURL: 'https://api.etherscan.io/v2/api',
+          browserURL: 'https://curtis.apescan.io/'
+        }
+      },
+      {
+        network: 'apechainMainnet',
+        chainId: 33139,
+        urls: {
+          apiURL: 'https://api.apescan.io/api',
+          browserURL: 'https://apescan.io/'
         }
       },
       {
