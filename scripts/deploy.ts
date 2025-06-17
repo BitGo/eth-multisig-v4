@@ -132,6 +132,9 @@ async function main() {
     // Apechain
     case 33111:
     case 33139:
+    // Pharos
+    case 688688:
+    // TODO: WIN-5781: add chain id once pharos mainnet is release
     // coredao
     case 1114:
     case 1116:

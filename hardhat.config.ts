@@ -44,7 +44,8 @@ const {
   SOMNIA_EXPLORER_API_KEY,
   SONEIUM_EXPLORER_API_KEY,
   WORLD_EXPLORER_API_KEY,
-  APECHAIN_EXPLORER_API_KEY
+  APECHAIN_EXPLORER_API_KEY,
+  PHAROS_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -417,6 +418,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tphrs: {
+      url: `https://testnet.dplabs-internal.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    phrs: {
+      url: `https://testnet.dplabs-internal.com`, // TODO: WIN-5781: change with mainnet url when its available
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -484,7 +501,10 @@ const config: HardhatUserConfig = {
       worldMainnet: `${WORLD_EXPLORER_API_KEY}`,
       //Apechain
       apechainTestnet: `${APECHAIN_EXPLORER_API_KEY}`,
-      apechainMainnet: `${APECHAIN_EXPLORER_API_KEY}`
+      apechainMainnet: `${APECHAIN_EXPLORER_API_KEY}`,
+      //Pharos
+      pharosTestnet: `${PHAROS_EXPLORER_API_KEY}`,
+      pharosMainnet: `${PHAROS_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -649,6 +669,23 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.apescan.io/api',
           browserURL: 'https://apescan.io/'
+        }
+      },
+      {
+        network: 'pharosTestnet',
+        chainId: 688688,
+        urls: {
+          apiURL:
+            'https://api.socialscan.io/pharos-testnet/v1/explorer/command_api/contract',
+          browserURL: 'https://testnet.pharosscan.xyz'
+        }
+      },
+      {
+        network: 'pharosMainnet',
+        chainId: 688688, // TODO: WIN-5781: change it with mainnet details, when its available
+        urls: {
+          apiURL: '', // TODO: WIN-5781: change it with mainnet details, when its available
+          browserURL: '' // TODO: WIN-5781: change it with mainnet details, when its available
         }
       },
       {
