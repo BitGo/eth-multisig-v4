@@ -45,7 +45,8 @@ const {
   SONEIUM_EXPLORER_API_KEY,
   WORLD_EXPLORER_API_KEY,
   APECHAIN_EXPLORER_API_KEY,
-  PHAROS_EXPLORER_API_KEY
+  PHAROS_EXPLORER_API_KEY,
+  HYPEEVM_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -434,6 +435,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    thypeevm: {
+      url: `https://rpc.hyperliquid-testnet.xyz/evm`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    hypeevm: {
+      url: `https://rpc.hyperliquid.xyz/evm`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -504,7 +521,10 @@ const config: HardhatUserConfig = {
       apechainMainnet: `${APECHAIN_EXPLORER_API_KEY}`,
       //Pharos
       pharosTestnet: `${PHAROS_EXPLORER_API_KEY}`,
-      pharosMainnet: `${PHAROS_EXPLORER_API_KEY}`
+      pharosMainnet: `${PHAROS_EXPLORER_API_KEY}`,
+      //Hyperliquid Evm
+      hypeEvmTestnet: `${HYPEEVM_EXPLORER_API_KEY}`,
+      hypeEvmMainnet: `${HYPEEVM_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -686,6 +706,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: '', // TODO: WIN-5781: change it with mainnet details, when its available
           browserURL: '' // TODO: WIN-5781: change it with mainnet details, when its available
+        }
+      },
+      {
+        network: 'hypeEvmTestnet',
+        chainId: 998,
+        urls: {
+          apiURL: 'https://sourcify.parsec.finance/verify',
+          browserURL: 'https://testnet.purrsec.com/'
+        }
+      },
+      {
+        network: 'hypeEvmMainnet',
+        chainId: 999,
+        urls: {
+          apiURL: 'https://sourcify.parsec.finance/verify', // TODO: WIN-5783: add once mainnet api details are available
+          browserURL: 'https://hyperevm-explorer.vercel.app/'
         }
       },
       {
