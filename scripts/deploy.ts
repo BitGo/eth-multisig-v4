@@ -226,6 +226,9 @@ async function main() {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    //Creditcoin
+    case 102031:
+    case 102030:
     //wemix
     case 1112:
     case 1111:

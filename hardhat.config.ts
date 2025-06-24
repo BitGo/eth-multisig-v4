@@ -44,6 +44,7 @@ const {
   SOMNIA_EXPLORER_API_KEY,
   SONEIUM_EXPLORER_API_KEY,
   WORLD_EXPLORER_API_KEY,
+  CTC_EXPLORER_API_KEY,
   APECHAIN_EXPLORER_API_KEY,
   PHAROS_EXPLORER_API_KEY
 } = process.env;
@@ -403,6 +404,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    tctc: {
+      url: `https://rpc.cc3-testnet.creditcoin.network`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    ctc: {
+      url: `https://mainnet3.creditcoin.network`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tapechain: {
       url: `https://rpc.curtis.apechain.com`,
       accounts: [
@@ -499,6 +516,9 @@ const config: HardhatUserConfig = {
       //World
       worldTestnet: `${WORLD_EXPLORER_API_KEY}`,
       worldMainnet: `${WORLD_EXPLORER_API_KEY}`,
+      //Creditcoin
+      ctcTestnet: `${CTC_EXPLORER_API_KEY}`,
+      ctcMainnet: `${CTC_EXPLORER_API_KEY}`,
       //Apechain
       apechainTestnet: `${APECHAIN_EXPLORER_API_KEY}`,
       apechainMainnet: `${APECHAIN_EXPLORER_API_KEY}`,
@@ -653,6 +673,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.worldscan.org/',
           browserURL: 'https://worldscan.org/'
+        }
+      },
+      {
+        network: 'ctcTestnet',
+        chainId: 102031,
+        urls: {
+          apiURL: 'https://creditcoin-testnet.blockscout.com/api',
+          browserURL: 'https://creditcoin-testnet.blockscout.com/'
+        }
+      },
+      {
+        network: 'ctcMainnet',
+        chainId: 102030,
+        urls: {
+          apiURL: 'https://creditcoin.blockscout.com/api',
+          browserURL: 'https://creditcoin.blockscout.com/'
         }
       },
       {
