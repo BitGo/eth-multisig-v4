@@ -11,7 +11,7 @@
   "scripts": {
     "deploy-prod": "hardhat run scripts/deploy.ts --network",
     "deploy-test": "hardhat run scripts/deploy.ts --network",
-    "deploy-batcher" : "hardhat run scripts/deployBatcherContract.ts --network",
+    "deploy-batcher": "hardhat run scripts/deployBatcherContract.ts --network",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
@@ -28,6 +28,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "5.0.0",
     "@truffle/hdwallet-provider": "^2.0.0",
+    "@vechain/sdk-hardhat-plugin": "^1.2.0",
     "bignumber.js": "^9.0.0",
     "bluebird": "^3.3.5",
     "bn": "^1.0.1",
