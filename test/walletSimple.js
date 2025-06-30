@@ -31,6 +31,7 @@ const CeloWalletSimple = artifacts.require('./CeloWalletSimple.sol');
 const PolygonWalletSimple = artifacts.require('./PolygonWalletSimple.sol');
 const ArbethWalletSimple = artifacts.require('./ArbethWalletSimple.sol');
 const OpethWalletSimple = artifacts.require('./OpethWalletSimple.sol');
+const SoneiumWalletSimple = artifacts.require('./SoneiumWalletSimple.sol');
 const Fail = artifacts.require('./Fail.sol');
 const GasGuzzler = artifacts.require('./GasGuzzler.sol');
 const GasHeavy = artifacts.require('./GasHeavy.sol');
@@ -96,6 +97,13 @@ const coins = [
     nativeBatchPrefix: '31337-Batch',
     tokenPrefix: '31337-ERC20',
     WalletSimple: OpethWalletSimple
+  },
+  {
+    name: 'Soneium',
+    nativePrefix: '31337',
+    nativeBatchPrefix: '31337-Batch',
+    tokenPrefix: '31337-ERC20',
+    WalletSimple: SoneiumWalletSimple
   }
 ];
 

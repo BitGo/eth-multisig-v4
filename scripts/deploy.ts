@@ -184,8 +184,14 @@ async function main() {
     case 14:
     case 114:
     //Soneium
-    case 1946:
     case 1868:
+    //Tsoneium
+    case 1946:
+      walletImplementationContractName = 'WalletSimple';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
     //Somnia
     case 50312:
       eip1559GasParams.gasLimit = 5000000;
