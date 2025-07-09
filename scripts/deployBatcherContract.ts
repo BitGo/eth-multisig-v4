@@ -1,11 +1,12 @@
-import { ethers } from 'hardhat';
-import { BigNumber } from 'ethers';
-import { Overrides } from '@ethersproject/contracts/src.ts';
-import { BigNumberish } from '@ethersproject/bignumber';
-const hre = require('hardhat');
-const fs = require('fs');
+import hre, { ethers } from 'hardhat';
+import { BigNumber, Contract } from 'ethers';
+import { Overrides } from '@ethersproject/contracts';
+import { logger, waitAndVerify } from '../deployUtils';
+import fs from 'fs';
 
 async function main() {
+  logger.step('🚀 Starting Batcher Contract Deployment 🚀');
+
   const output = {
     batcher: ''
   };
@@ -13,141 +14,81 @@ async function main() {
   const contractName = 'Batcher';
   const transferGasLimit = '200000';
 
+  // --- 1. Setup & Configuration ---
+  logger.step('1. Setting up deployer and network information...');
+
   const signers = await ethers.getSigners();
   if (signers.length < 3) {
-    throw Error(
-      `Found ${signers.length} Signers, expected 3. Cannot deploy batcher contract, please update the script`
-    );
+    const errorMsg = `Found ${signers.length} Signers, expected 3. Cannot deploy batcher contract, please update the script`;
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
   }
+
   const batcherDeployer = signers[2];
+  const address = await batcherDeployer.getAddress();
+  const chainId = await signers[0].getChainId();
+
+  logger.info(`Network: ${hre.network.name} (Chain ID: ${chainId})`);
+  logger.info(`Deployer Address: ${address}`);
+
+  // --- 2. Gas Parameter Handling ---
+  logger.step('2. Configuring gas parameters for the transaction...');
+  let gasParams: Overrides | undefined = undefined;
+  const eip1559Chains = [10143, 480, 4801, 1946, 1868, 1114, 1112, 1111, 50312];
+
+  if (eip1559Chains.includes(chainId)) {
+    logger.info(`EIP-1559 chain detected. Fetching custom fee data...`);
+    const feeData = await ethers.provider.getFeeData();
+    gasParams = {
+      maxFeePerGas: feeData.maxFeePerGas ?? feeData.gasPrice ?? undefined,
+      maxPriorityFeePerGas:
+        feeData.maxPriorityFeePerGas ?? feeData.gasPrice ?? undefined,
+      gasLimit:
+        chainId === 50312
+          ? BigNumber.from('5000000')
+          : BigNumber.from('3000000')
+    };
+    logger.info(
+      `Gas params set: maxFeePerGas=${gasParams.maxFeePerGas}, maxPriorityFeePerGas=${gasParams.maxPriorityFeePerGas}`
+    );
+  } else {
+    logger.info(`Using default gas parameters for this network.`);
+  }
+
+  // --- 3. Contract Deployment ---
+  logger.step("3. Deploying the 'Batcher' contract...");
   const Batcher = await ethers.getContractFactory(
     contractName,
     batcherDeployer
   );
-  const address = await batcherDeployer.getAddress();
-  console.log(' Address:', address);
-  let gasParams: Overrides | undefined = undefined;
 
-  const chainId = await signers[0].getChainId();
-  switch (chainId) {
-    //Monad
-    case 10143:
-    //World
-    case 480:
-    case 4801:
-    //Soneium
-    case 1946:
-    case 1868:
-    //Coredao testnet
-    case 1114:
-    //WEMIX
-    case 1112:
-    case 1111:
-      const feeData = await ethers.provider.getFeeData();
-      gasParams = {
-        maxFeePerGas: (feeData.maxFeePerGas?.lt(feeData.gasPrice as BigNumber)
-          ? feeData.gasPrice
-          : feeData.maxFeePerGas) as BigNumberish,
-        maxPriorityFeePerGas: (feeData.maxFeePerGas?.lt(
-          feeData.gasPrice as BigNumber
-        )
-          ? feeData.gasPrice
-          : feeData.maxPriorityFeePerGas) as BigNumberish,
-        gasLimit: BigNumber.from('3000000')
-      };
-      break;
-    //Somnia
-    case 50312:
-      const feeDataSomnia = await ethers.provider.getFeeData();
-      gasParams = {
-        maxFeePerGas: (feeDataSomnia.maxFeePerGas?.lt(
-          feeDataSomnia.gasPrice as BigNumber
-        )
-          ? feeDataSomnia.gasPrice
-          : feeDataSomnia.maxFeePerGas) as BigNumberish,
-        maxPriorityFeePerGas: (feeDataSomnia.maxFeePerGas?.lt(
-          feeDataSomnia.gasPrice as BigNumber
-        )
-          ? feeDataSomnia.gasPrice
-          : feeDataSomnia.maxPriorityFeePerGas) as BigNumberish,
-        gasLimit: BigNumber.from('5000000')
-      };
-      break;
-  }
-
-  let batcher = null;
   const erc20BatchLimit = 256;
   const nativeBatchLimit = 256;
-  if (gasParams != undefined) {
-    batcher = await Batcher.deploy(
-      transferGasLimit,
-      erc20BatchLimit,
-      nativeBatchLimit,
-      gasParams
-    );
-  } else {
-    batcher = await Batcher.deploy(
-      transferGasLimit,
-      erc20BatchLimit,
-      nativeBatchLimit
-    );
+  const constructorArgs = [transferGasLimit, erc20BatchLimit, nativeBatchLimit];
+
+  let batcher: Contract;
+  const deployTxArgs = [...constructorArgs];
+  if (gasParams) {
+    deployTxArgs.push(gasParams);
   }
+
+  batcher = await Batcher.deploy(...deployTxArgs);
   await batcher.deployed();
+
   output.batcher = batcher.address;
-  console.log('Batcher deployed at ' + batcher.address);
 
-  fs.writeFileSync('output.json', JSON.stringify(output));
+  logger.success(`'Batcher' deployed successfully!`);
+  logger.info(`     - Contract Address: ${batcher.address}`);
+  logger.info(`     - Transaction Hash: ${batcher.deployTransaction.hash}`);
 
-  // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
-  console.log('Waiting for 5 minutes before verifying.....');
-  await new Promise((r) => setTimeout(r, 1000 * 300));
+  fs.writeFileSync('output.json', JSON.stringify(output, null, 2));
+  logger.success(`Deployment address saved to output.json`);
 
-  console.log('Done waiting, verifying');
-  await verifyContract(contractName, batcher.address, [
-    transferGasLimit,
-    erc20BatchLimit,
-    nativeBatchLimit
-  ]);
-  console.log('Contracts verified');
-}
+  // --- 4. Contract Verification ---
+  logger.step('4. Preparing for contract verification...');
+  await waitAndVerify(hre, batcher, contractName, constructorArgs);
 
-async function verifyContract(
-  contractName: string,
-  contractAddress: string,
-  constructorArguments: [string, number, number],
-  contract?: string
-) {
-  console.log(
-    'contractName: ' +
-      contractName +
-      'contractAddress: ' +
-      contractAddress +
-      'constructorArguments: ' +
-      constructorArguments
-  );
-  try {
-    const verifyContractArgs: {
-      address: string;
-      constructorArguments: [string, number, number];
-      contract?: string;
-    } = {
-      address: contractAddress,
-      constructorArguments: constructorArguments
-    };
-
-    if (contract) {
-      verifyContractArgs.contract = contract;
-    }
-
-    await hre.run('verify:verify', verifyContractArgs);
-  } catch (e) {
-    // @ts-ignore
-    // We get a failure API response if the source code has already been uploaded, don't throw in this case.
-    if (!e.message.toLowerCase().includes('already verified')) {
-      throw e;
-    }
-  }
-  console.log(`Verified ${contractName} on explorer!`);
+  logger.step('🎉 Deployment and Verification Complete! 🎉');
 }
 
 main().catch((error) => {

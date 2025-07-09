@@ -261,7 +261,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tstt: {
-      url: `https://dream-rpc.somnia.network/`,
+      url: `https://rpc.ankr.com/somnia_testnet?apikey=e97af24c8759a6cad0acd837d853aac43bb0903dcdab411d08b77aaf5c4c38a7`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -269,7 +269,7 @@ const config: HardhatUserConfig = {
       ]
     },
     stt: {
-      url: `https://dream-rpc.somnia.network/`, //TODO: WIN-5278: change it with mainnet explorer, when its available
+      url: `https://rpc.somnia.network`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -750,9 +750,9 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'somniaMainnet',
-        chainId: 50312, //TODO: WIN-5278: change it with mainnet explorer, when its available
+        chainId: 5031,
         urls: {
-          apiURL: 'https://shannon-explorer.somnia.network/api', //TODO: WIN-5278: change it with mainnet explorer, when its available
+          apiURL: 'https://api.infra.mainnet.somnia.network/',
           browserURL: 'https://shannon-explorer.somnia.network/' //TODO: WIN-5278: change it with mainnet explorer, when its available
         }
       },

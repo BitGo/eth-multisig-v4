@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-import { ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { getChainConfig } from './chainConfig';
 import {
   deployIfNeededAtNonce,
@@ -48,6 +48,7 @@ async function main() {
   console.log(
     `🚀 Deployer: ${deployerAddress} (nonce: ${currentNonce}) on chain ${chainId}`
   );
+
   // Deploy Wallet Implementation
   const walletAddress = await deployIfNeededAtNonce(
     output.walletImplementation,
@@ -58,14 +59,20 @@ async function main() {
       const WalletSimple = await ethers.getContractFactory(
         chainConfig.walletImplementationContractName
       );
-      const contract = await WalletSimple.deploy(chainConfig.gasParams);
+      const constructorArgs: string[] = [];
+      const contract = await WalletSimple.deploy(
+        ...constructorArgs,
+        chainConfig.gasParams
+      );
       await contract.deployed();
       console.log(
         `✅ ${chainConfig.walletImplementationContractName} deployed at ${contract.address}`
       );
       await waitAndVerify(
+        hre,
+        contract,
         chainConfig.walletImplementationContractName,
-        contract
+        constructorArgs
       );
       output.walletImplementation = contract.address;
       saveOutput(output);
@@ -91,9 +98,12 @@ async function main() {
       console.log(
         `✅ ${chainConfig.walletFactoryContractName} deployed at ${contract.address}`
       );
-      await waitAndVerify(chainConfig.walletFactoryContractName, contract, [
-        walletAddress
-      ]);
+      await waitAndVerify(
+        hre,
+        contract,
+        chainConfig.walletFactoryContractName,
+        [walletAddress]
+      );
       output.walletFactory = contract.address;
       saveOutput(output);
       return contract.address;
@@ -115,7 +125,7 @@ async function main() {
       console.log(
         `✅ ${chainConfig.forwarderContractName} deployed at ${contract.address}`
       );
-      await waitAndVerify(chainConfig.forwarderContractName, contract);
+      await waitAndVerify(hre, contract, chainConfig.forwarderContractName, []);
       output.forwarderImplementation = contract.address;
       saveOutput(output);
       return contract.address;
@@ -140,9 +150,12 @@ async function main() {
       console.log(
         `✅ ${chainConfig.forwarderFactoryContractName} deployed at ${contract.address}`
       );
-      await waitAndVerify(chainConfig.forwarderFactoryContractName, contract, [
-        forwarderAddress
-      ]);
+      await waitAndVerify(
+        hre,
+        contract,
+        chainConfig.forwarderFactoryContractName,
+        [forwarderAddress]
+      );
       output.forwarderFactory = contract.address;
       saveOutput(output);
       return contract.address;
