@@ -129,6 +129,9 @@ export async function waitAndVerify(
   logger.info(
     `Waiting for ${confirmationCount} block confirmations for ${contractName}...`
   );
+  const artifact = await hre.artifacts.readArtifact(contractName);
+  const verificationString = `${artifact.sourceName}:${artifact.contractName}`;
+  console.log(`Verification string: ${verificationString}`);
   await contract.deployTransaction.wait(confirmationCount);
   logger.success(`Contract confirmed on the network at ${contract.address}.`);
 
@@ -142,7 +145,8 @@ export async function waitAndVerify(
       logger.info('Attempting verification with standard Hardhat verifier...');
       await hre.run('verify:verify', {
         address: contract.address,
-        constructorArguments
+        constructorArguments: constructorArguments,
+        contract: verificationString
       });
       logger.success('Standard verification successful!');
       return; // Success, exit the loop.

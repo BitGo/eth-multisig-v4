@@ -85,7 +85,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 18.x
           cache: 'npm'
       - run: npm install
       - run: npm run deploy-batcher --network ${{ needs.get-network.outputs.network }}
@@ -144,7 +144,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 18.x
           cache: 'npm'
       - run: npm install
       - run: npm run deploy-batcher --network ${{ needs.get-network.outputs.network }}
