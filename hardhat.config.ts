@@ -1,8 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
-import '@nomiclabs/hardhat-etherscan';
 import { HardhatUserConfig } from 'hardhat/config';
-import '@nomiclabs/hardhat-etherscan';
+import '@nomicfoundation/hardhat-verify';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-truffle5';
 import '@typechain/hardhat';
