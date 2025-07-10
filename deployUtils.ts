@@ -1,7 +1,19 @@
 import hre, { ethers } from 'hardhat';
 import fs from 'fs';
 import { Contract } from 'ethers';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { verifyOnCustomEtherscan } from './scripts/customContractVerifier';
+
 const OUTPUT_FILE = 'output.json';
+
+export const logger = {
+  info: (msg: string) => console.log(`[INFO] ${msg}`),
+  config: (msg: string) => console.log(`[CONFIG] ${msg}`),
+  success: (msg: string) => console.log(`✅ [SUCCESS] ${msg}`),
+  error: (msg: string) => console.error(`❌ [ERROR] ${msg}`),
+  warn: (msg: string) => console.warn(`⚠️ [WARN] ${msg}`),
+  step: (msg: string) => console.log(`\n--- ${msg} ---`)
+};
 
 export type DeploymentAddresses = {
   walletImplementation?: string;
@@ -9,11 +21,11 @@ export type DeploymentAddresses = {
   forwarderImplementation?: string;
   forwarderFactory?: string;
 };
+
 /**
  * Attempts to load contract address from output file or by predicting nonce.
  * If neither found, it deploys the contract using the given deploy function.
  */
-// Core reusable function
 export async function deployIfNeededAtNonce(
   recordedAddress: string | undefined,
   expectedNonce: number,
@@ -26,29 +38,29 @@ export async function deployIfNeededAtNonce(
     nonce: expectedNonce
   });
 
-  console.log(
+  logger.info(
     `🔮 Expecting ${contractName} at nonce ${expectedNonce} -> ${predictedAddress}`
   );
 
   // 1. Check output.json record
   if (recordedAddress) {
-    console.log(`📁 Found ${contractName} in output.json: ${recordedAddress}`);
+    logger.info(`📁 Found ${contractName} in output.json: ${recordedAddress}`);
     if (await isContractDeployed(recordedAddress)) {
-      console.log(
-        `✅ ${contractName} already deployed on-chain at ${recordedAddress}. Skipping deployment.`
+      logger.success(
+        `${contractName} already deployed on-chain at ${recordedAddress}. Skipping deployment.`
       );
       return recordedAddress;
     } else {
-      console.log(
-        `⚠️ ${contractName} in output.json not found on-chain. Will fallback to nonce logic.`
+      logger.warn(
+        `${contractName} in output.json not found on-chain. Will fallback to nonce logic.`
       );
     }
   }
 
   // 2. Check if already deployed at predicted address
   if (await isContractDeployed(predictedAddress)) {
-    console.log(
-      `✅ ${contractName} already deployed on-chain at predicted address: ${predictedAddress}. Skipping deployment.`
+    logger.success(
+      `${contractName} already deployed on-chain at predicted address: ${predictedAddress}. Skipping deployment.`
     );
     return predictedAddress;
   }
@@ -58,7 +70,7 @@ export async function deployIfNeededAtNonce(
     deployerAddress
   );
   if (currentNonce > expectedNonce) {
-    console.log(
+    logger.warn(
       `⏩ Skipping deployment of ${contractName}. Current nonce ${currentNonce} is already past expected ${expectedNonce}. Will assume contract exists at ${predictedAddress}`
     );
     return predictedAddress;
@@ -66,13 +78,13 @@ export async function deployIfNeededAtNonce(
 
   // 4. If currentNonce doesn't match expectedNonce exactly, throw
   if (currentNonce !== expectedNonce) {
-    throw new Error(
-      `❌ Cannot deploy ${contractName}: current nonce is ${currentNonce}, expected ${expectedNonce}.`
-    );
+    const errorMsg = `Cannot deploy ${contractName}: current nonce is ${currentNonce}, expected ${expectedNonce}.`;
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
   }
 
   // 5. Deploy
-  console.log(`🚀 Deploying ${contractName} at nonce ${expectedNonce}...`);
+  logger.info(`🚀 Deploying ${contractName} at nonce ${expectedNonce}...`);
   return await deployFn();
 }
 
@@ -87,7 +99,7 @@ export function loadOutput(): DeploymentAddresses {
       return JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf-8'));
     }
   } catch (err) {
-    console.error('⚠️ Could not load output file:', err);
+    logger.error(`Could not load output file: ${err}`);
   }
   return {};
 }
@@ -96,27 +108,88 @@ export function saveOutput(output: DeploymentAddresses) {
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2));
 }
 
+/**
+ * Waits for contract confirmation and then verifies it on a block explorer.
+ * It first tries the standard Hardhat verifier and falls back to a custom verifier if the first one fails.
+ * The entire process is wrapped in a retry loop.
+ */
 export async function waitAndVerify(
-  contractName: string,
+  hre: HardhatRuntimeEnvironment,
   contract: Contract,
+  contractName: string,
   constructorArguments: string[] = []
 ) {
-  console.log(`⏳ Waiting for 10 confirmations of ${contractName} TX...`);
-  await contract.deployTransaction.wait(10);
+  if (!hre) {
+    const errorMsg = 'Hardhat Runtime Environment (hre) is not defined.';
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
 
-  console.log(`🚀 Now verifying ${contractName} on explorer...`);
-  try {
-    await hre.run('verify:verify', {
-      address: contract.address,
-      constructorArguments
-    });
-    console.log(
-      `✅ Verified ${contractName} at ${contract.address} on explorer!`
-    );
-  } catch (e: any) {
-    if (!e.message.toLowerCase().includes('already verified')) {
-      throw e;
+  const confirmationCount = 5;
+  logger.info(
+    `Waiting for ${confirmationCount} block confirmations for ${contractName}...`
+  );
+  await contract.deployTransaction.wait(confirmationCount);
+  logger.success(`Contract confirmed on the network at ${contract.address}.`);
+
+  const maxRetries = 20;
+  const retryDelay = 180000; // 180 seconds
+
+  for (let i = 0; i < maxRetries; i++) {
+    logger.info(`Verification attempt #${i + 1} for ${contractName}...`);
+    try {
+      // --- Primary Attempt: Standard Verifier ---
+      logger.info('Attempting verification with standard Hardhat verifier...');
+      await hre.run('verify:verify', {
+        address: contract.address,
+        constructorArguments
+      });
+      logger.success('Standard verification successful!');
+      return; // Success, exit the loop.
+    } catch (standardError: any) {
+      logger.warn(`Standard verifier failed: ${standardError.message}`);
+
+      // If already verified by standard verifier, we're done.
+      if (standardError.message.toLowerCase().includes('already verified')) {
+        logger.success('Contract is already verified.');
+        return;
+      }
+
+      // --- Fallback Attempt: Custom Verifier ---
+      logger.info('Falling back to custom verifier...');
+      try {
+        await verifyOnCustomEtherscan({
+          hre,
+          contractAddress: contract.address,
+          contractName: contractName,
+          constructorArguments: constructorArguments
+        });
+        logger.success('Custom verifier fallback successful!');
+        return; // Success, exit the loop.
+      } catch (customError: any) {
+        // If already verified by custom verifier, we're done.
+        if (customError.message.toLowerCase().includes('already verified')) {
+          logger.success('Contract is already verified.');
+          return;
+        }
+
+        // Log the custom verifier failure and decide whether to retry the whole process
+        logger.warn(
+          `Custom verifier fallback also failed: ${customError.message}`
+        );
+        if (i < maxRetries - 1) {
+          logger.info(
+            `Waiting ${
+              retryDelay / 1000
+            } seconds before retrying entire process...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        } else {
+          logger.error(
+            `All verification retries failed. Please verify manually later.`
+          );
+        }
+      }
     }
-    console.log(`⚠️ Already verified: ${contractName}`);
   }
 }
