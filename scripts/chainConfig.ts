@@ -50,7 +50,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
   switch (chainId) {
     case 1:
-    case 17000:
+    case 560048:
     case 137:
     case 80002:
       forwarderContractName = 'ForwarderV4';
