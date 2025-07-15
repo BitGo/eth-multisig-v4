@@ -45,7 +45,8 @@ const {
   WORLD_EXPLORER_API_KEY,
   CTC_EXPLORER_API_KEY,
   APECHAIN_EXPLORER_API_KEY,
-  PHAROS_EXPLORER_API_KEY
+  PHAROS_EXPLORER_API_KEY,
+  SONIC_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -450,6 +451,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tsonic: {
+      url: `https://rpc.blaze.soniclabs.com/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    sonic: {
+      url: `https://rpc.soniclabs.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -523,7 +540,10 @@ const config: HardhatUserConfig = {
       apechainMainnet: `${APECHAIN_EXPLORER_API_KEY}`,
       //Pharos
       pharosTestnet: `${PHAROS_EXPLORER_API_KEY}`,
-      pharosMainnet: `${PHAROS_EXPLORER_API_KEY}`
+      pharosMainnet: `${PHAROS_EXPLORER_API_KEY}`,
+      //Sonic
+      sonicTestnet: `${SONIC_EXPLORER_API_KEY}`,
+      sonicMainnet: `${SONIC_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -737,6 +757,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://soneium.blockscout.com/api',
           browserURL: 'https://soneium.blockscout.com/'
+        }
+      },
+      {
+        network: 'sonicTestnet',
+        chainId: 57054,
+        urls: {
+          apiURL: 'https://api.etherscan.io/v2/api',
+          browserURL: 'https://testnet.sonicscan.org/'
+        }
+      },
+      {
+        network: 'sonicMainnet',
+        chainId: 146,
+        urls: {
+          apiURL: 'https://api.sonicscan.org/api',
+          browserURL: 'https://sonicscan.org'
         }
       },
       {
