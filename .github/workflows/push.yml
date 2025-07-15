@@ -63,4 +63,5 @@ jobs:
           APECHAIN_EXPLORER_API_KEY: ${{ secrets.APECHAIN_EXPLORER_API_KEY }}
           PHAROS_EXPLORER_API_KEY: ${{ secrets.PHAROS_EXPLORER_API_KEY }}
           SONIC_EXPLORER_API_KEY: ${{ secrets.SONIC_EXPLORER_API_KEY }}
+          SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
       - run: npm run lint
