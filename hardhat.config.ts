@@ -97,7 +97,7 @@ const config: HardhatUserConfig = {
       ]
     },
     hteth: {
-      url: `https://ethereum-holesky-rpc.publicnode.com`,
+      url: `https://ethereum-hoodi-rpc.publicnode.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
         `${PLACEHOLDER_KEY}`,
@@ -495,7 +495,7 @@ const config: HardhatUserConfig = {
       //ethereum
       mainnet: `${ETHERSCAN_API_KEY}`,
       goerli: `${ETHERSCAN_API_KEY}`,
-      holesky: `${ETHERSCAN_API_KEY}`,
+      hoodi: `${ETHERSCAN_API_KEY}`,
       //polygon
       polygon: `${POLYGONSCAN_API_KEY}`,
       polygonAmoy: `${POLYGONSCAN_API_KEY}`,
@@ -567,11 +567,11 @@ const config: HardhatUserConfig = {
     },
     customChains: [
       {
-        network: 'holesky',
-        chainId: 17000,
+        network: 'hoodi',
+        chainId: 560048,
         urls: {
-          apiURL: 'https://api-holesky.etherscan.io/api',
-          browserURL: 'https://holesky.etherscan.io'
+          apiURL: 'https://api-hoodi.etherscan.io/api',
+          browserURL: 'https://hoodi.etherscan.io'
         }
       },
       {
