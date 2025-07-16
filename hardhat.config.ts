@@ -46,7 +46,8 @@ const {
   CTC_EXPLORER_API_KEY,
   APECHAIN_EXPLORER_API_KEY,
   PHAROS_EXPLORER_API_KEY,
-  SONIC_EXPLORER_API_KEY
+  SONIC_EXPLORER_API_KEY,
+  SEIEVM_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -467,6 +468,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tseievm: {
+      url: `https://seitrace.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    seievm: {
+      url: `https://seitrace.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -543,7 +560,10 @@ const config: HardhatUserConfig = {
       pharosMainnet: `${PHAROS_EXPLORER_API_KEY}`,
       //Sonic
       sonicTestnet: `${SONIC_EXPLORER_API_KEY}`,
-      sonicMainnet: `${SONIC_EXPLORER_API_KEY}`
+      sonicMainnet: `${SONIC_EXPLORER_API_KEY}`,
+      //SEIEVM
+      seievmTestnet: `${SEIEVM_EXPLORER_API_KEY}`,
+      seievmMainnet: `${SEIEVM_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -765,6 +785,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.etherscan.io/v2/api',
           browserURL: 'https://testnet.sonicscan.org/'
+        }
+      },
+      {
+        network: 'seievmTestnet',
+        chainId: 1328,
+        urls: {
+          apiURL: 'https://seitrace.com/atlantic-2/api',
+          browserURL: 'https://seitrace.com'
+        }
+      },
+      {
+        network: 'seievmMainnet',
+        chainId: 1329,
+        urls: {
+          apiURL: 'https://seitrace.com/pacific-1/api',
+          browserURL: 'https://seitrace.com'
         }
       },
       {

@@ -55,6 +55,7 @@ jobs:
           APECHAIN_EXPLORER_API_KEY: ${{ secrets.APECHAIN_EXPLORER_API_KEY }}
           PHAROS_EXPLORER_API_KEY: ${{ secrets.PHAROS_EXPLORER_API_KEY }}
           SONIC_EXPLORER_API_KEY: ${{ secrets.SONIC_EXPLORER_API_KEY }}
+          SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -69,7 +70,7 @@ jobs:
           result-encoding: string
           script: |
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|flr|tflr|sgb|tsgb|txdc|xdc|twemix|wemix|tmon|mon|tstt|stt|tsoneium|soneium|tworld|world|tctc|ctc|tapechain|apechain|tphrs|phrs|tsonic|sonic)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|flr|tflr|sgb|tsgb|txdc|xdc|twemix|wemix|tmon|mon|tstt|stt|tsoneium|soneium|tworld|world|tctc|ctc|tapechain|apechain|tphrs|phrs|tsonic|sonic|seievm|tseievm)$/;
             const matchedNetwork = tag.match(regex);
             if (!matchedNetwork) {
               console.log("No match found for the network name, defaulting to 'hteth'.");
@@ -79,7 +80,7 @@ jobs:
   deploy-batcher-contract-to-test:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if: ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' ) || (needs.get-network.outputs.network == 'tbera' ) || (needs.get-network.outputs.network == 'tavaxc' ) || (needs.get-network.outputs.network == 'tcoredao' ) || (needs.get-network.outputs.network == 'toas' ) || (needs.get-network.outputs.network == 'tflr' ) || (needs.get-network.outputs.network == 'tsgb' ) || (needs.get-network.outputs.network == 'txdc' ) || (needs.get-network.outputs.network == 'twemix' ) || (needs.get-network.outputs.network == 'tmon' )  || (needs.get-network.outputs.network == 'tstt' ) || (needs.get-network.outputs.network == 'tsoneium' )  || (needs.get-network.outputs.network == 'tworld' ) || (needs.get-network.outputs.network == 'tctc' ) || (needs.get-network.outputs.network == 'tapechain' ) || (needs.get-network.outputs.network == 'tphrs' ) || (needs.get-network.outputs.network == 'tsonic' )}}
+    if: ${{ (needs.get-network.outputs.network == 'hteth' ) || (needs.get-network.outputs.network == 'tmatic' ) || (needs.get-network.outputs.network == 'tbsc' ) || (needs.get-network.outputs.network == 'tarbeth' ) || (needs.get-network.outputs.network == 'topeth' ) || (needs.get-network.outputs.network == 'tzketh' ) || (needs.get-network.outputs.network == 'tbaseeth' ) || (needs.get-network.outputs.network == 'tbera' ) || (needs.get-network.outputs.network == 'tavaxc' ) || (needs.get-network.outputs.network == 'tcoredao' ) || (needs.get-network.outputs.network == 'toas' ) || (needs.get-network.outputs.network == 'tflr' ) || (needs.get-network.outputs.network == 'tsgb' ) || (needs.get-network.outputs.network == 'txdc' ) || (needs.get-network.outputs.network == 'twemix' ) || (needs.get-network.outputs.network == 'tmon' )  || (needs.get-network.outputs.network == 'tstt' ) || (needs.get-network.outputs.network == 'tsoneium' )  || (needs.get-network.outputs.network == 'tworld' ) || (needs.get-network.outputs.network == 'tctc' ) || (needs.get-network.outputs.network == 'tapechain' ) || (needs.get-network.outputs.network == 'tphrs' ) || (needs.get-network.outputs.network == 'tsonic' ) || (needs.get-network.outputs.network == 'tseievm' )}}
     environment: testnet
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +140,7 @@ jobs:
   deploy-batcher-contract-to-prod:
     runs-on: ubuntu-latest
     needs: [lint-and-test, get-network]
-    if: ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth' ) || (needs.get-network.outputs.network == 'bera' ) || (needs.get-network.outputs.network == 'avaxc' ) || (needs.get-network.outputs.network == 'coredao' ) || (needs.get-network.outputs.network == 'oas' ) || (needs.get-network.outputs.network == 'sgb' ) || (needs.get-network.outputs.network == 'flr' ) || (needs.get-network.outputs.network == 'xdc' ) || (needs.get-network.outputs.network == 'wemix' ) || (needs.get-network.outputs.network == 'mon' ) || (needs.get-network.outputs.network == 'stt' ) || (needs.get-network.outputs.network == 'soneium' ) || (needs.get-network.outputs.network == 'world' ) || (needs.get-network.outputs.network == 'ctc' ) || (needs.get-network.outputs.network == 'apechain' ) || (needs.get-network.outputs.network == 'phrs' ) || (needs.get-network.outputs.network == 'sonic' )}}
+    if: ${{ (needs.get-network.outputs.network == 'eth' ) || (needs.get-network.outputs.network == 'matic' ) || (needs.get-network.outputs.network == 'bsc' ) || (needs.get-network.outputs.network == 'arbeth' ) || (needs.get-network.outputs.network == 'opeth' ) || (needs.get-network.outputs.network == 'zketh' ) || (needs.get-network.outputs.network == 'baseeth' ) || (needs.get-network.outputs.network == 'bera' ) || (needs.get-network.outputs.network == 'avaxc' ) || (needs.get-network.outputs.network == 'coredao' ) || (needs.get-network.outputs.network == 'oas' ) || (needs.get-network.outputs.network == 'sgb' ) || (needs.get-network.outputs.network == 'flr' ) || (needs.get-network.outputs.network == 'xdc' ) || (needs.get-network.outputs.network == 'wemix' ) || (needs.get-network.outputs.network == 'mon' ) || (needs.get-network.outputs.network == 'stt' ) || (needs.get-network.outputs.network == 'soneium' ) || (needs.get-network.outputs.network == 'world' ) || (needs.get-network.outputs.network == 'ctc' ) || (needs.get-network.outputs.network == 'apechain' ) || (needs.get-network.outputs.network == 'phrs' ) || (needs.get-network.outputs.network == 'sonic' ) || (needs.get-network.outputs.network == 'seievm' )}}
     environment: mainnet
     steps:
       - uses: actions/checkout@v4
@@ -188,6 +189,7 @@ jobs:
           APECHAIN_EXPLORER_API_KEY: ${{ secrets.APECHAIN_EXPLORER_API_KEY }}
           PHAROS_EXPLORER_API_KEY: ${{ secrets.PHAROS_EXPLORER_API_KEY }}
           SONIC_EXPLORER_API_KEY: ${{ secrets.SONIC_EXPLORER_API_KEY }}
+          SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
