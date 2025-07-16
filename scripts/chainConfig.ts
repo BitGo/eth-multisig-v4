@@ -92,6 +92,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case 1328:
     case 1329:
     case 688688:
+    case 998:
+    case 999:
     case 1114:
     case 1116:
       gasParams = {
