@@ -99,7 +99,7 @@ const config: HardhatUserConfig = {
     hteth: {
       url: `https://ethereum-hoodi-rpc.publicnode.com`,
       accounts: [
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
+        `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
