@@ -48,7 +48,8 @@ const {
   PHAROS_EXPLORER_API_KEY,
   HYPEEVM_EXPLORER_API_KEY,
   SONIC_EXPLORER_API_KEY,
-  SEIEVM_EXPLORER_API_KEY
+  SEIEVM_EXPLORER_API_KEY,
+  KAIA_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -487,7 +488,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tseievm: {
-      url: `https://seitrace.com`,
+      url: `https://evm-rpc-testnet.sei-apis.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -495,7 +496,23 @@ const config: HardhatUserConfig = {
       ]
     },
     seievm: {
-      url: `https://seitrace.com`,
+      url: `https://evm-rpc.sei-apis.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tkaia: {
+      url: `https://public-en-kairos.node.kaia.io`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    kaia: {
+      url: `https://public-en.node.kaia.io`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -583,7 +600,10 @@ const config: HardhatUserConfig = {
       sonicMainnet: `${SONIC_EXPLORER_API_KEY}`,
       //SEIEVM
       seievmTestnet: `${SEIEVM_EXPLORER_API_KEY}`,
-      seievmMainnet: `${SEIEVM_EXPLORER_API_KEY}`
+      seievmMainnet: `${SEIEVM_EXPLORER_API_KEY}`,
+      //KAIA
+      kaiaTestnet: `${KAIA_EXPLORER_API_KEY}`,
+      kaiaMainnet: `${KAIA_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -828,7 +848,7 @@ const config: HardhatUserConfig = {
         chainId: 1328,
         urls: {
           apiURL: 'https://seitrace.com/atlantic-2/api',
-          browserURL: 'https://seitrace.com'
+          browserURL: 'https://seitrace.com/?chain=atlantic-2'
         }
       },
       {
@@ -836,7 +856,7 @@ const config: HardhatUserConfig = {
         chainId: 1329,
         urls: {
           apiURL: 'https://seitrace.com/pacific-1/api',
-          browserURL: 'https://seitrace.com'
+          browserURL: 'https://seitrace.com/?chain=pacific-1'
         }
       },
       {
@@ -943,6 +963,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.wemixscan.com/api',
           browserURL: 'https://wemixscan.com/'
+        }
+      },
+      {
+        network: 'kaiaTestnet',
+        chainId: 1001,
+        urls: {
+          apiURL: 'https://kairos-api.kaiascan.io/hardhat-verify',
+          browserURL: 'https://kairos.kaiascan.io/'
+        }
+      },
+      {
+        network: 'kaiaMainnet',
+        chainId: 8217,
+        urls: {
+          apiURL: 'https://mainnet-api.kaiascan.io/hardhat-verify',
+          browserURL: 'https://kaiascan.io/'
         }
       }
     ]
