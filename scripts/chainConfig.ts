@@ -50,14 +50,18 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
   switch (chainId) {
     case 1:
-    case 560048:
     case 137:
     case 80002:
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
-
+    // hoodi testnet
+    case 560048:
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
     case 56:
     case 97:
     case 42161:
