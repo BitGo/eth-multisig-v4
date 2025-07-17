@@ -33,6 +33,7 @@ export const CHAIN_IDS = {
   SONIC: 146,
   SEIEVM: 1329,
   WORLD: 480,
+  KAIA: 8217,
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -55,5 +56,6 @@ export const CHAIN_IDS = {
   HYPEEVM_TESTNET: 998,
   SONIC_TESTNET: 57054,
   SEIEVM_TESTNET: 1328,
-  WORLD_TESTNET: 4801
+  WORLD_TESTNET: 4801,
+  KAIA_TESTNET: 1001
 } as const;
