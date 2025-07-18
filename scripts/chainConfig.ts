@@ -1,5 +1,6 @@
 import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
+import { CHAIN_IDS } from '../config/chainIds';
 
 export interface ChainConfig {
   walletImplementationContractName: string;
@@ -49,36 +50,36 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
   let contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
 
   switch (chainId) {
-    case 1:
-    case 137:
-    case 80002:
+    case CHAIN_IDS.ETH_MAINNET:
+    case CHAIN_IDS.POLYGON_MAINNET:
+    case CHAIN_IDS.POLYGON_AMOY:
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     // hoodi testnet
-    case 560048:
+    case CHAIN_IDS.HOODI:
       forwarderContractName = 'Forwarder';
       forwarderFactoryContractName = 'ForwarderFactory';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
-    case 56:
-    case 97:
-    case 42161:
-    case 421614:
-    case 10:
-    case 11155420:
+    case CHAIN_IDS.BSC_MAINNET:
+    case CHAIN_IDS.BSC_TESTNET:
+    case CHAIN_IDS.ARBITRUM_ONE:
+    case CHAIN_IDS.ARBITRUM_SEPOLIA:
+    case CHAIN_IDS.OPTIMISM:
+    case CHAIN_IDS.OPTIMISM_SEPOLIA:
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
 
-    case 324:
-    case 300:
+    case CHAIN_IDS.ZKSYNC_ERA:
+    case CHAIN_IDS.ZKSYNC_SEPOLIA:
       walletImplementationContractName = 'ZkethWalletSimple';
       contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
 
-    case 84532:
-    case 8453:
+    case CHAIN_IDS.BASE_SEPOLIA:
+    case CHAIN_IDS.BASE:
       gasParams = {
         maxFeePerGas: BigNumber.from('10000000000'),
         maxPriorityFeePerGas: BigNumber.from('10000000000'),
@@ -87,19 +88,20 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
 
-    case 80000:
-    case 80094:
-    case 33111:
-    case 33139:
-    case 57054:
-    case 146:
-    case 1328:
-    case 1329:
-    case 688688:
-    case 998:
-    case 999:
-    case 1114:
-    case 1116:
+    case CHAIN_IDS.BERA:
+    case CHAIN_IDS.BERA_TESTNET:
+    case CHAIN_IDS.SONIC:
+    case CHAIN_IDS.SONIC_TESTNET:
+    case CHAIN_IDS.SEIEVM:
+    case CHAIN_IDS.SEIEVM_TESTNET:
+    case CHAIN_IDS.PHAROS:
+    case CHAIN_IDS.PHAROS_TESTNET:
+    case CHAIN_IDS.HYPEEVM:
+    case CHAIN_IDS.HYPEEVM_TESTNET:
+    case CHAIN_IDS.APECHAIN:
+    case CHAIN_IDS.APECHAIN_TESTNET:
+    case CHAIN_IDS.CORE_DAO:
+    case CHAIN_IDS.CORE_DAO_TESTNET:
       gasParams = {
         maxFeePerGas: BigNumber.from('30000000000'),
         maxPriorityFeePerGas: BigNumber.from('30000000000'),
@@ -109,8 +111,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
-    case 480:
-    case 4801:
+    case CHAIN_IDS.WORLD:
+    case CHAIN_IDS.WORLD_TESTNET:
       gasParams = {
         maxFeePerGas: GWEI.mul(5),
         maxPriorityFeePerGas: GWEI.mul(2),
@@ -120,7 +122,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
-    case 10143:
+    case CHAIN_IDS.MONAD:
       const monadFeeData = await ethers.provider.getFeeData();
       const baseFee =
         monadFeeData.lastBaseFeePerGas || BigNumber.from('30000000000');
@@ -138,28 +140,28 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       console.log('💸 Estimated Max Deployment Cost:', estimatedTxCost, 'ETH');
       break;
 
-    case 14:
-    case 114:
-    case 1946:
-    case 1868:
-    case 50312:
+    case CHAIN_IDS.FLARE:
+    case CHAIN_IDS.FLARE_TESTNET:
+    case CHAIN_IDS.SONEIUM_TESTNET:
+    case CHAIN_IDS.SONEIUM:
+    case CHAIN_IDS.SOMNIA_TESTNET:
       gasParams.gasLimit = 5_000_000;
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
-    case 19:
-    case 16:
-    case 9372:
-    case 248:
-    case 43114:
-    case 43113:
+    case CHAIN_IDS.SONGBIRD:
+    case CHAIN_IDS.SONGBIRD_TESTNET:
+    case CHAIN_IDS.OAS_TESTNET:
+    case CHAIN_IDS.OAS:
+    case CHAIN_IDS.AVALANCHE:
+    case CHAIN_IDS.AVALANCHE_TESTNET:
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
-    case 50:
-    case 51:
+    case CHAIN_IDS.XDC:
+    case CHAIN_IDS.XDC_TESTNET:
       gasParams = {
         gasPrice: feeData.gasPrice!,
         gasLimit: 3_000_000,
@@ -170,10 +172,10 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
-    case 102031:
-    case 102030:
-    case 1112:
-    case 1111:
+    case CHAIN_IDS.CREDITCOIN_TESTNET:
+    case CHAIN_IDS.CREDITCOIN:
+    case CHAIN_IDS.WEMIX_TESTNET:
+    case CHAIN_IDS.WEMIX:
       if (feeData.gasPrice?.gt(gasParams.maxPriorityFeePerGas || 0)) {
         gasParams.maxFeePerGas = feeData.gasPrice!;
         gasParams.maxPriorityFeePerGas = feeData.gasPrice!;
