@@ -7,6 +7,7 @@ import '@nomiclabs/hardhat-truffle5';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
+import { CHAIN_IDS } from './config/chainIds';
 
 const {
   MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
@@ -53,6 +54,8 @@ const {
 
 const PLACEHOLDER_KEY: string =
   'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
+const ETHERSCAN_V2_URL = 'https://api.etherscan.io/v2/api?chainid=';
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -471,7 +474,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tsonic: {
-      url: `https://rpc.blaze.soniclabs.com/`,
+      url: `https://rpc.blaze.soniclabs.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -588,7 +591,7 @@ const config: HardhatUserConfig = {
     customChains: [
       {
         network: 'hoodi',
-        chainId: 560048,
+        chainId: CHAIN_IDS.HOODI,
         urls: {
           apiURL: 'https://api-hoodi.etherscan.io/api',
           browserURL: 'https://hoodi.etherscan.io'
@@ -596,7 +599,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'arbitrumSepolia',
-        chainId: 421614,
+        chainId: CHAIN_IDS.ARBITRUM_SEPOLIA,
         urls: {
           apiURL: 'https://api-sepolia.arbiscan.io/api',
           browserURL: 'https://sepolia.arbiscan.io'
@@ -604,7 +607,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'optimisticSepolia',
-        chainId: 11155420,
+        chainId: CHAIN_IDS.OPTIMISM_SEPOLIA,
         urls: {
           apiURL: 'https://api-sepolia-optimistic.etherscan.io/api',
           browserURL: 'https://sepolia-optimism.etherscan.io'
@@ -612,7 +615,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'zksync',
-        chainId: 324,
+        chainId: CHAIN_IDS.ZKSYNC_ERA,
         urls: {
           apiURL: 'https://block-explorer-api.mainnet.zksync.io/api',
           browserURL: 'https://explorer.zksync.io'
@@ -620,7 +623,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'zksyncSepolia',
-        chainId: 300,
+        chainId: CHAIN_IDS.ZKSYNC_SEPOLIA,
         urls: {
           apiURL: 'https://block-explorer-api.sepolia.zksync.dev/api',
           browserURL: 'https://sepolia.explorer.zksync.io'
@@ -628,7 +631,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'cartioBera',
-        chainId: 80000,
+        chainId: CHAIN_IDS.BERA,
         urls: {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/80000/etherscan/api',
@@ -637,7 +640,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'bera',
-        chainId: 80094,
+        chainId: CHAIN_IDS.BERA_TESTNET,
         urls: {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/80094/etherscan/api',
@@ -646,7 +649,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'oasTestnet',
-        chainId: 9372,
+        chainId: CHAIN_IDS.OAS_TESTNET,
         urls: {
           apiURL: 'https://explorer.testnet.oasys.games/api',
           browserURL: 'https://explorer.testnet.oasys.games'
@@ -654,7 +657,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'oasMainnet',
-        chainId: 248,
+        chainId: CHAIN_IDS.OAS,
         urls: {
           apiURL: 'https://explorer.oasys.games/api',
           browserURL: 'https://explorer.oasys.games/'
@@ -662,7 +665,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'coredaoTestnet',
-        chainId: 1114,
+        chainId: CHAIN_IDS.CORE_DAO_TESTNET,
         urls: {
           apiURL: 'https://api.test2.btcs.network/api',
           browserURL: 'https://scan.test2.btcs.network'
@@ -670,7 +673,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'coredaoMainnet',
-        chainId: 1116,
+        chainId: CHAIN_IDS.CORE_DAO,
         urls: {
           apiURL: 'https://openapi.coredao.org/api',
           browserURL: 'https://scan.coredao.org/'
@@ -678,7 +681,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'polygonAmoy',
-        chainId: 80002,
+        chainId: CHAIN_IDS.POLYGON_AMOY,
         urls: {
           apiURL: 'https://api-amoy.polygonscan.com/api',
           browserURL: 'https://amoy.polygonscan.com'
@@ -686,7 +689,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'baseSepolia',
-        chainId: 84532,
+        chainId: CHAIN_IDS.BASE_SEPOLIA,
         urls: {
           apiURL: 'https://api-sepolia.basescan.org/api',
           browserURL: 'https://sepolia.basescan.org/'
@@ -694,7 +697,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'base',
-        chainId: 8453,
+        chainId: CHAIN_IDS.BASE,
         urls: {
           apiURL: 'https://api.basescan.org/api',
           browserURL: 'https://basescan.org/'
@@ -702,7 +705,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'avaxc',
-        chainId: 43114,
+        chainId: CHAIN_IDS.AVALANCHE,
         urls: {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api',
@@ -711,7 +714,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'avaxcTestnet',
-        chainId: 43113,
+        chainId: CHAIN_IDS.AVALANCHE_TESTNET,
         urls: {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api',
@@ -720,7 +723,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'worldTestnet',
-        chainId: 4801,
+        chainId: CHAIN_IDS.WORLD_TESTNET,
         urls: {
           apiURL: 'https://api-sepolia.worldscan.org/api',
           browserURL: 'https://sepolia.worldscan.org/'
@@ -728,7 +731,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'worldMainnet',
-        chainId: 480,
+        chainId: CHAIN_IDS.WORLD,
         urls: {
           apiURL: 'https://api.worldscan.org/',
           browserURL: 'https://worldscan.org/'
@@ -736,7 +739,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'ctcTestnet',
-        chainId: 102031,
+        chainId: CHAIN_IDS.CREDITCOIN_TESTNET,
         urls: {
           apiURL: 'https://creditcoin-testnet.blockscout.com/api',
           browserURL: 'https://creditcoin-testnet.blockscout.com/'
@@ -744,7 +747,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'ctcMainnet',
-        chainId: 102030,
+        chainId: CHAIN_IDS.CREDITCOIN,
         urls: {
           apiURL: 'https://creditcoin.blockscout.com/api',
           browserURL: 'https://creditcoin.blockscout.com/'
@@ -752,7 +755,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'apechainTestnet',
-        chainId: 33111,
+        chainId: CHAIN_IDS.APECHAIN_TESTNET,
         urls: {
           apiURL: 'https://api.etherscan.io/v2/api',
           browserURL: 'https://curtis.apescan.io/'
@@ -760,7 +763,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'apechainMainnet',
-        chainId: 33139,
+        chainId: CHAIN_IDS.APECHAIN,
         urls: {
           apiURL: 'https://api.apescan.io/api',
           browserURL: 'https://apescan.io/'
@@ -768,7 +771,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'pharosTestnet',
-        chainId: 688688,
+        chainId: CHAIN_IDS.PHAROS_TESTNET,
         urls: {
           apiURL:
             'https://api.socialscan.io/pharos-testnet/v1/explorer/command_api/contract',
@@ -777,7 +780,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'pharosMainnet',
-        chainId: 688688, // TODO: WIN-5781: change it with mainnet details, when its available
+        chainId: CHAIN_IDS.PHAROS_TESTNET, // TODO: WIN-5781: change it with mainnet details, when its available
         urls: {
           apiURL: '', // TODO: WIN-5781: change it with mainnet details, when its available
           browserURL: '' // TODO: WIN-5781: change it with mainnet details, when its available
@@ -785,7 +788,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'hypeEvmTestnet',
-        chainId: 998,
+        chainId: CHAIN_IDS.HYPEEVM_TESTNET,
         urls: {
           apiURL: 'https://sourcify.parsec.finance/verify',
           browserURL: 'https://testnet.purrsec.com/'
@@ -793,7 +796,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'hypeEvmMainnet',
-        chainId: 999,
+        chainId: CHAIN_IDS.HYPEEVM,
         urls: {
           apiURL: 'https://sourcify.parsec.finance/verify', // TODO: WIN-5783: add once mainnet api details are available
           browserURL: 'https://hyperevm-explorer.vercel.app/'
@@ -801,7 +804,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'soneiumTestnet',
-        chainId: 1946,
+        chainId: CHAIN_IDS.SONEIUM_TESTNET,
         urls: {
           apiURL: 'https://soneium-minato.blockscout.com/api',
           browserURL: 'https://soneium-minato.blockscout.com/'
@@ -809,7 +812,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'soneiumMainnet',
-        chainId: 1868,
+        chainId: CHAIN_IDS.SONEIUM,
         urls: {
           apiURL: 'https://soneium.blockscout.com/api',
           browserURL: 'https://soneium.blockscout.com/'
@@ -817,15 +820,23 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'sonicTestnet',
-        chainId: 57054,
+        chainId: CHAIN_IDS.SONIC_TESTNET,
         urls: {
-          apiURL: 'https://api.etherscan.io/v2/api',
-          browserURL: 'https://testnet.sonicscan.org/'
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.SONIC_TESTNET}`,
+          browserURL: 'https://testnet.sonicscan.org'
+        }
+      },
+      {
+        network: 'sonicMainnet',
+        chainId: CHAIN_IDS.SONIC,
+        urls: {
+          apiURL: 'https://api.sonicscan.org/api',
+          browserURL: 'https://sonicscan.org'
         }
       },
       {
         network: 'seievmTestnet',
-        chainId: 1328,
+        chainId: CHAIN_IDS.SEIEVM_TESTNET,
         urls: {
           apiURL: 'https://seitrace.com/atlantic-2/api',
           browserURL: 'https://seitrace.com'
@@ -833,23 +844,15 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'seievmMainnet',
-        chainId: 1329,
+        chainId: CHAIN_IDS.SEIEVM,
         urls: {
           apiURL: 'https://seitrace.com/pacific-1/api',
           browserURL: 'https://seitrace.com'
         }
       },
       {
-        network: 'sonicMainnet',
-        chainId: 146,
-        urls: {
-          apiURL: 'https://api.sonicscan.org/api',
-          browserURL: 'https://sonicscan.org'
-        }
-      },
-      {
         network: 'somniaTestnet',
-        chainId: 50312,
+        chainId: CHAIN_IDS.SOMNIA_TESTNET,
         urls: {
           apiURL: 'https://shannon-explorer.somnia.network/api',
           browserURL: 'https://shannon-explorer.somnia.network/'
@@ -857,7 +860,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'somniaMainnet',
-        chainId: 5031,
+        chainId: CHAIN_IDS.SOMNIA,
         urls: {
           apiURL: 'https://api.infra.mainnet.somnia.network/',
           browserURL: 'https://shannon-explorer.somnia.network/' //TODO: WIN-5278: change it with mainnet explorer, when its available
@@ -865,7 +868,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'monadTestnet',
-        chainId: 10143,
+        chainId: CHAIN_IDS.MONAD_TESTNET,
         urls: {
           apiURL:
             'https://api.socialscan.io/monad-testnet/v1/explorer/command_api/contract',
@@ -874,7 +877,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'monadMainnet',
-        chainId: 10143, //TODO: WIN-5225: change it with mainnet explorer, when its available
+        chainId: CHAIN_IDS.MONAD, //TODO: WIN-5225: change it with mainnet explorer, when its available
         urls: {
           apiURL:
             'https://api.socialscan.io/monad-testnet/v1/explorer/command_api/contract', //TODO: WIN-5225: change it with mainnet explorer, when its available
@@ -883,7 +886,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'flareTestnet',
-        chainId: 114,
+        chainId: CHAIN_IDS.FLARE_TESTNET,
         urls: {
           apiURL: 'https://coston2-explorer.flare.network/api',
           browserURL: 'https://coston2-explorer.flare.network'
@@ -891,7 +894,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'flareMainnet',
-        chainId: 14,
+        chainId: CHAIN_IDS.FLARE,
         urls: {
           apiURL: 'https://flare-explorer.flare.network/api',
           browserURL: 'https://flare-explorer.flare.network'
@@ -899,7 +902,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'songbirdTestnet',
-        chainId: 16,
+        chainId: CHAIN_IDS.SONGBIRD_TESTNET,
         urls: {
           apiURL: 'https://coston-explorer.flare.network/api',
           browserURL: 'https://coston-explorer.flare.network'
@@ -907,7 +910,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'songbirdMainnet',
-        chainId: 19,
+        chainId: CHAIN_IDS.SONGBIRD,
         urls: {
           apiURL: 'https://songbird-explorer.flare.network/api ',
           browserURL: 'https://songbird.flarescan.com'
@@ -915,7 +918,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'xdcTestnet',
-        chainId: 51,
+        chainId: CHAIN_IDS.XDC_TESTNET,
         urls: {
           apiURL: 'https://api-testnet.xdcscan.com/api',
           browserURL: 'https://testnet.xdcscan.com/'
@@ -923,7 +926,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'xdcMainnet',
-        chainId: 50,
+        chainId: CHAIN_IDS.XDC,
         urls: {
           apiURL: 'https://api.xdcscan.com/api',
           browserURL: 'https://xdcscan.com'
@@ -931,7 +934,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'wemixTestnet',
-        chainId: 1112,
+        chainId: CHAIN_IDS.WEMIX_TESTNET,
         urls: {
           apiURL: 'https://api-testnet.wemixscan.com/api',
           browserURL: 'https://testnet.wemixscan.com/'
@@ -939,7 +942,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'wemixMainnet',
-        chainId: 1111,
+        chainId: CHAIN_IDS.WEMIX,
         urls: {
           apiURL: 'https://api.wemixscan.com/api',
           browserURL: 'https://wemixscan.com/'
