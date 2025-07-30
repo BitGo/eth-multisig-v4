@@ -50,7 +50,8 @@ const {
   HYPEEVM_EXPLORER_API_KEY,
   SONIC_EXPLORER_API_KEY,
   SEIEVM_EXPLORER_API_KEY,
-  KAIA_EXPLORER_API_KEY
+  KAIA_EXPLORER_API_KEY,
+  IRYS_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -521,6 +522,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tirys: {
+      url: `https://inst-1.cloud.blockscout.com/api/eth-rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    irys: {
+      url: `https://inst-1.cloud.blockscout.com/api/eth-rpc`, // TODO: Update with mainnet URL when available
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -606,7 +623,10 @@ const config: HardhatUserConfig = {
       seievmMainnet: `${SEIEVM_EXPLORER_API_KEY}`,
       //KAIA
       kaiaTestnet: `${KAIA_EXPLORER_API_KEY}`,
-      kaiaMainnet: `${KAIA_EXPLORER_API_KEY}`
+      kaiaMainnet: `${KAIA_EXPLORER_API_KEY}`,
+      //IRYS
+      irysTestnet: `${IRYS_EXPLORER_API_KEY}`,
+      irysMainnet: `${IRYS_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -982,6 +1002,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://mainnet-api.kaiascan.io/hardhat-verify',
           browserURL: 'https://kaiascan.io/'
+        }
+      },
+      {
+        network: 'irysTestnet',
+        chainId: CHAIN_IDS.IRYS_TESTNET,
+        urls: {
+          apiURL: 'https://inst-1.cloud.blockscout.com/api',
+          browserURL: 'https://inst-1.cloud.blockscout.com'
+        }
+      },
+      {
+        network: 'irysMainnet',
+        chainId: CHAIN_IDS.IRYS,
+        urls: {
+          apiURL: 'https://inst-1.cloud.blockscout.com/api',
+          browserURL: 'https://inst-1.cloud.blockscout.com'
         }
       }
     ]

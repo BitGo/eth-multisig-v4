@@ -66,4 +66,5 @@ jobs:
           SONIC_EXPLORER_API_KEY: ${{ secrets.SONIC_EXPLORER_API_KEY }}
           SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
           KAIA_EXPLORER_API_KEY: ${{ secrets.KAIA_EXPLORER_API_KEY }}
+          IRYS_EXPLORER_API_KEY: ${{ secrets.IRYS_EXPLORER_API_KEY }}
       - run: npm run lint
