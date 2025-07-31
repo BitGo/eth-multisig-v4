@@ -45,10 +45,8 @@ const {
   SONEIUM_EXPLORER_API_KEY,
   WORLD_EXPLORER_API_KEY,
   CTC_EXPLORER_API_KEY,
-  APECHAIN_EXPLORER_API_KEY,
   PHAROS_EXPLORER_API_KEY,
   HYPEEVM_EXPLORER_API_KEY,
-  SONIC_EXPLORER_API_KEY,
   SEIEVM_EXPLORER_API_KEY,
   KAIA_EXPLORER_API_KEY,
   IRYS_EXPLORER_API_KEY
@@ -607,8 +605,8 @@ const config: HardhatUserConfig = {
       ctcTestnet: `${CTC_EXPLORER_API_KEY}`,
       ctcMainnet: `${CTC_EXPLORER_API_KEY}`,
       //Apechain
-      apechainTestnet: `${APECHAIN_EXPLORER_API_KEY}`,
-      apechainMainnet: `${APECHAIN_EXPLORER_API_KEY}`,
+      apechainTestnet: `${ETHERSCAN_API_KEY}`,
+      apechainMainnet: `${ETHERSCAN_API_KEY}`,
       //Pharos
       pharosTestnet: `${PHAROS_EXPLORER_API_KEY}`,
       pharosMainnet: `${PHAROS_EXPLORER_API_KEY}`,
@@ -616,8 +614,8 @@ const config: HardhatUserConfig = {
       hypeEvmTestnet: `${HYPEEVM_EXPLORER_API_KEY}`,
       hypeEvmMainnet: `${HYPEEVM_EXPLORER_API_KEY}`,
       //Sonic
-      sonicTestnet: `${SONIC_EXPLORER_API_KEY}`,
-      sonicMainnet: `${SONIC_EXPLORER_API_KEY}`,
+      sonicTestnet: `${ETHERSCAN_API_KEY}`,
+      sonicMainnet: `${ETHERSCAN_API_KEY}`,
       //SEIEVM
       seievmTestnet: `${SEIEVM_EXPLORER_API_KEY}`,
       seievmMainnet: `${SEIEVM_EXPLORER_API_KEY}`,
@@ -797,7 +795,7 @@ const config: HardhatUserConfig = {
         network: 'apechainTestnet',
         chainId: CHAIN_IDS.APECHAIN_TESTNET,
         urls: {
-          apiURL: 'https://api.etherscan.io/v2/api',
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.APECHAIN_TESTNET}`,
           browserURL: 'https://curtis.apescan.io/'
         }
       },
