@@ -64,7 +64,13 @@ async function main() {
         ...constructorArgs,
         chainConfig.gasParams
       );
+      
+
       await contract.deployed();
+
+      console.log('Deploying Wallet');
+      console.log('Contract: ', contract);
+      console.log('Constructor Args: ', constructorArgs);
       console.log(
         `✅ ${chainConfig.walletImplementationContractName} deployed at ${contract.address}`
       );

@@ -791,8 +791,7 @@ const config: HardhatUserConfig = {
         network: 'pharosTestnet',
         chainId: CHAIN_IDS.PHAROS_TESTNET,
         urls: {
-          apiURL:
-            'https://api.socialscan.io/pharos-testnet/v1/explorer/command_api/contract',
+          apiURL: `https://api.zan.top/node/v1/eth/sepolia/9be097f6c5834e7fab9ce536001375e1`,
           browserURL: 'https://testnet.pharosscan.xyz'
         }
       },
