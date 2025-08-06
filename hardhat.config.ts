@@ -521,6 +521,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    lineaeth: {
+      url: `https://rpc.linea.build/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tlineaeth: {
+      url: `https://rpc.sepolia.linea.build/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tirys: {
       url: `https://inst-1.cloud.blockscout.com/api/eth-rpc`,
       accounts: [
@@ -624,7 +640,10 @@ const config: HardhatUserConfig = {
       kaiaMainnet: `${KAIA_EXPLORER_API_KEY}`,
       //IRYS
       irysTestnet: `${IRYS_EXPLORER_API_KEY}`,
-      irysMainnet: `${IRYS_EXPLORER_API_KEY}`
+      irysMainnet: `${IRYS_EXPLORER_API_KEY}`,
+      //LINEA
+      lineaethTestnet: `${ETHERSCAN_API_KEY}`,
+      lineaethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1000,6 +1019,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://mainnet-api.kaiascan.io/hardhat-verify',
           browserURL: 'https://kaiascan.io/'
+        }
+      },
+      {
+        network: 'lineaethMainnet',
+        chainId: CHAIN_IDS.LINEAETH,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.LINEAETH}`,
+          browserURL: 'https://lineascan.build/'
+        }
+      },
+      {
+        network: 'lineaethTestnet',
+        chainId: CHAIN_IDS.LINEAETH_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.LINEAETH_TESTNET}`,
+          browserURL: 'https://sepolia.lineascan.build/'
         }
       },
       {
