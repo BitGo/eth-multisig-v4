@@ -1026,7 +1026,7 @@ const config: HardhatUserConfig = {
         network: 'ipTestnet',
         chainId: 1315,
         urls: {
-          apiURL: 'https://api.storyapis.com',
+          apiURL: 'https://aeneid.storyscan.io/api',
           browserURL: 'https://aeneid.storyscan.io/'
         }
       },
@@ -1034,7 +1034,7 @@ const config: HardhatUserConfig = {
         network: 'ipMainnet',
         chainId: 1514,
         urls: {
-          apiURL: 'https://api.storyapis.com',
+          apiURL: 'https://www.storyscan.io/api',
           browserURL: 'https://explorer.story.foundation/'
         }
       },
