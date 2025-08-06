@@ -57,6 +57,7 @@ jobs:
           SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
           KAIA_EXPLORER_API_KEY: ${{ secrets.KAIA_EXPLORER_API_KEY }}
           IP_EXPLORER_API_KEY: ${{ secrets.IP_EXPLORER_API_KEY }}
+          HYPE_EVM_PRIVATE_KEY: ${{ secrets.HYPE_EVM_PRIVATE_KEY }}
 
   get-network:
     runs-on: ubuntu-latest
@@ -131,6 +132,7 @@ jobs:
           SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
           KAIA_EXPLORER_API_KEY: ${{ secrets.KAIA_EXPLORER_API_KEY }}
           IP_EXPLORER_API_KEY: ${{ secrets.IP_EXPLORER_API_KEY }}
+          HYPE_EVM_PRIVATE_KEY: ${{ secrets.HYPE_EVM_PRIVATE_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:
@@ -215,6 +217,7 @@ jobs:
           SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
           KAIA_EXPLORER_API_KEY: ${{ secrets.KAIA_EXPLORER_API_KEY }}
           IP_EXPLORER_API_KEY: ${{ secrets.IP_EXPLORER_API_KEY }}
+          HYPE_EVM_PRIVATE_KEY: ${{ secrets.HYPE_EVM_PRIVATE_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:

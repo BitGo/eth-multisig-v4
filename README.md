@@ -37,6 +37,17 @@ Note that this suite of contracts is an upgraded version of [eth-multisig-v2](ht
 - Wallets include a batch function to save on fees when sending multiple transactions.
 - SequenceId is now simply a strictly increasing nonce.
 
+### BigBlocks Configuration
+
+Some chains (currently HypeEVM mainnet and testnet) support BigBlocks functionality for optimized transaction processing. When deploying to these chains, the deployment script will automatically configure BigBlocks.
+
+Requirements:
+- `HYPE_EVM_PRIVATE_KEY` environment variable must be set when deploying to HypeEVM chains
+- Add this to your `.env` file:
+  ```
+  HYPE_EVM_PRIVATE_KEY=<Your HypeEVM private key>
+  ```
+
 ### Deployment
 The Wallet contract and forwarder contracts can each be deployed independently of each other, using the provided ForwarderFactory and WalletFactory.
 These factories employ two features to minimize the cost associated with deploying a new contract:
@@ -115,12 +126,13 @@ Find it at [contracts/WalletSimple.sol](contracts/WalletSimple.sol)
 A test suite is included through the use of the hardhat framework, providing coverage for methods in the wallet.
 
 On first run:
-1. Create a file called `.env` in the root directory. 
-2. Add the following variable:
+1. Create a file called `.env` in the root directory.
+2. Add the following variables:
    ```
    TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT=<Your private key>
    MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT=<Your private key>
    PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT=<Your private key>
+   HYPE_EVM_PRIVATE_KEY=<Your HypeEVM private key>  # Required for HypeEVM chains
    ```
 Note: `<your private key>` can be from a wallet like Metamask.
 
