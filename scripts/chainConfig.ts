@@ -101,6 +101,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.APECHAIN_TESTNET:
     case CHAIN_IDS.CORE_DAO:
     case CHAIN_IDS.CORE_DAO_TESTNET:
+    case CHAIN_IDS.IP:
+    case CHAIN_IDS.IP_TESTNET:
       gasParams = {
         maxFeePerGas: BigNumber.from('30000000000'),
         maxPriorityFeePerGas: BigNumber.from('30000000000'),

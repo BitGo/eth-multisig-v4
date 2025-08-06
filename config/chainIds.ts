@@ -35,6 +35,7 @@ export const CHAIN_IDS = {
   WORLD: 480,
   KAIA: 8217,
   IRYS: 1270, // TODO: Update when mainnet is available
+  IP: 1514,
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -59,5 +60,7 @@ export const CHAIN_IDS = {
   SEIEVM_TESTNET: 1328,
   WORLD_TESTNET: 4801,
   KAIA_TESTNET: 1001,
-  IRYS_TESTNET: 1270
+  IRYS_TESTNET: 1270,
+  IP_TESTNET: 1315,
+  
 } as const;

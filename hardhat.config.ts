@@ -49,7 +49,8 @@ const {
   HYPEEVM_EXPLORER_API_KEY,
   SEIEVM_EXPLORER_API_KEY,
   KAIA_EXPLORER_API_KEY,
-  IRYS_EXPLORER_API_KEY
+  IRYS_EXPLORER_API_KEY,
+  IP_EXPLORER_API_KEY,
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -505,6 +506,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    ip: {
+      url: `https://mainnet.storyrpc.io/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tip: {
+      url: `https://aeneid.storyrpc.io/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tkaia: {
       url: `https://public-en-kairos.node.kaia.io`,
       accounts: [
@@ -624,7 +641,10 @@ const config: HardhatUserConfig = {
       kaiaMainnet: `${KAIA_EXPLORER_API_KEY}`,
       //IRYS
       irysTestnet: `${IRYS_EXPLORER_API_KEY}`,
-      irysMainnet: `${IRYS_EXPLORER_API_KEY}`
+      irysMainnet: `${IRYS_EXPLORER_API_KEY}`,
+      //STORY IP
+      ipTestnet: `${IP_EXPLORER_API_KEY}`,
+      ipMainnet: `${IP_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1000,6 +1020,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://mainnet-api.kaiascan.io/hardhat-verify',
           browserURL: 'https://kaiascan.io/'
+        }
+      },
+      {
+        network: 'ipTestnet',
+        chainId: 1315,
+        urls: {
+          apiURL: 'https://api.storyapis.com',
+          browserURL: 'https://aeneid.storyscan.io/'
+        }
+      },
+      {
+        network: 'ipMainnet',
+        chainId: 1514,
+        urls: {
+          apiURL: 'https://api.storyapis.com',
+          browserURL: 'https://explorer.story.foundation/'
         }
       },
       {
