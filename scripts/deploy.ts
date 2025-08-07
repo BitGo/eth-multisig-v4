@@ -8,6 +8,11 @@ import {
   saveOutput,
   DeploymentAddresses
 } from '../deployUtils';
+import { enableBigBlocks } from './enableBigBlocks';
+import {
+  getBigBlocksConfig,
+  isBigBlocksSupported
+} from '../config/bigBlocksConfig';
 
 const NONCE = {
   WALLET: 0,
@@ -15,6 +20,27 @@ const NONCE = {
   FORWARDER: 2,
   FORWARDER_FACTORY: 3
 };
+
+/**
+ * Configure BigBlocks for HypeEVM network
+ */
+async function setupBigBlocks(chainId: number): Promise<void> {
+  const config = getBigBlocksConfig(chainId);
+  if (!config) return;
+
+  if (!config.envKey) {
+    throw new Error(`Please set the private key for ${config.name}.`);
+  }
+
+  console.log(`Using BigBlocks on ${config.name}`);
+  try {
+    await enableBigBlocks(config.envKey, true, chainId);
+  } catch (error) {
+    throw new Error(
+      `Failed to setup BigBlocks on ${config.name}: ${(error as Error).message}`
+    );
+  }
+}
 
 async function main() {
   const feeData = await ethers.provider.getFeeData();
@@ -44,6 +70,11 @@ async function main() {
   const chainId = await deployer.getChainId();
   const chainConfig = await getChainConfig(chainId);
   let output: DeploymentAddresses = loadOutput();
+
+  if (isBigBlocksSupported(chainId)) {
+    console.log('🔄 Setting up BigBlocks...');
+    await setupBigBlocks(chainId);
+  }
 
   console.log(
     `🚀 Deployer: ${deployerAddress} (nonce: ${currentNonce}) on chain ${chainId}`
