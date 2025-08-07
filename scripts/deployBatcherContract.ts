@@ -44,7 +44,7 @@ async function main() {
       maxPriorityFeePerGas:
         feeData.maxPriorityFeePerGas ?? feeData.gasPrice ?? undefined,
       gasLimit:
-        chainId === 50312
+        chainId === 688688
           ? BigNumber.from('5000000')
           : BigNumber.from('3000000')
     };
