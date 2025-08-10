@@ -1,5 +1,3 @@
-import { BigNumber } from 'ethers';
-import { ethers } from 'hardhat';
 import { CHAIN_IDS } from '../config/chainIds';
 
 export interface ChainConfig {
@@ -8,40 +6,14 @@ export interface ChainConfig {
   forwarderContractName: string;
   forwarderFactoryContractName: string;
   contractPath: string;
-  gasParams: GasParams;
 }
 
-export type GasParams = {
-  gasLimit: number;
-} & (
-  | {
-      maxFeePerGas: BigNumber;
-      maxPriorityFeePerGas: BigNumber;
-      gasPrice?: never;
-    }
-  | {
-      gasPrice: BigNumber;
-      maxFeePerGas?: never;
-      maxPriorityFeePerGas?: never;
-    }
-);
-export async function getChainConfig(chainId: number): Promise<ChainConfig> {
-  const feeData = await ethers.provider.getFeeData();
-  const GWEI = BigNumber.from('1000000000');
-
-  let gasParams: GasParams;
-  if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
-    gasParams = {
-      maxFeePerGas: feeData.maxFeePerGas,
-      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-      gasLimit: 3_000_000
-    };
-  } else {
-    gasParams = {
-      gasPrice: feeData.gasPrice || BigNumber.from('0'),
-      gasLimit: 3_000_000
-    };
-  }
+/**
+ * Returns network-specific contract names and paths.
+ * @param chainId The chain ID of the network.
+ * @returns A configuration object for the specified chain.
+ */
+export function getChainConfig(chainId: number): ChainConfig {
 
   let walletImplementationContractName = 'WalletSimple';
   let walletFactoryContractName = 'WalletFactory';
@@ -79,11 +51,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
     case CHAIN_IDS.BASE_SEPOLIA:
     case CHAIN_IDS.BASE:
-      gasParams = {
-        maxFeePerGas: BigNumber.from('10000000000'),
-        maxPriorityFeePerGas: BigNumber.from('10000000000'),
-        gasLimit: 3_000_000
-      };
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
 
@@ -105,85 +72,26 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.LINEAETH_TESTNET:
     case CHAIN_IDS.IP:
     case CHAIN_IDS.IP_TESTNET:
-      gasParams = {
-        maxFeePerGas: BigNumber.from('30000000000'),
-        maxPriorityFeePerGas: BigNumber.from('30000000000'),
-        gasLimit: 3_000_000
-      };
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-      break;
-
     case CHAIN_IDS.WORLD:
     case CHAIN_IDS.WORLD_TESTNET:
-      gasParams = {
-        maxFeePerGas: GWEI.mul(5),
-        maxPriorityFeePerGas: GWEI.mul(2),
-        gasLimit: 3_000_000
-      };
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-      break;
-
     case CHAIN_IDS.MONAD:
-      const monadFeeData = await ethers.provider.getFeeData();
-      const baseFee =
-        monadFeeData.lastBaseFeePerGas || BigNumber.from('30000000000');
-      gasParams = {
-        maxFeePerGas: baseFee.add(GWEI.mul(1)),
-        maxPriorityFeePerGas: GWEI.mul(1),
-        gasLimit: 3_000_000
-      };
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-
-      const estimatedTxCost = ethers.utils.formatEther(
-        gasParams.maxFeePerGas.mul(gasParams.gasLimit)
-      );
-      console.log('💸 Estimated Max Deployment Cost:', estimatedTxCost, 'ETH');
-      break;
-
     case CHAIN_IDS.FLARE:
     case CHAIN_IDS.FLARE_TESTNET:
     case CHAIN_IDS.SONEIUM_TESTNET:
     case CHAIN_IDS.SONEIUM:
     case CHAIN_IDS.SOMNIA_TESTNET:
-      gasParams.gasLimit = 5_000_000;
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-      break;
-
     case CHAIN_IDS.SONGBIRD:
     case CHAIN_IDS.SONGBIRD_TESTNET:
     case CHAIN_IDS.OAS_TESTNET:
     case CHAIN_IDS.OAS:
     case CHAIN_IDS.AVALANCHE:
     case CHAIN_IDS.AVALANCHE_TESTNET:
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-      break;
-
     case CHAIN_IDS.XDC:
     case CHAIN_IDS.XDC_TESTNET:
-      gasParams = {
-        gasPrice: feeData.gasPrice!,
-        gasLimit: 3_000_000,
-        maxFeePerGas: undefined,
-        maxPriorityFeePerGas: undefined
-      };
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-      break;
-
     case CHAIN_IDS.CREDITCOIN_TESTNET:
     case CHAIN_IDS.CREDITCOIN:
     case CHAIN_IDS.WEMIX_TESTNET:
     case CHAIN_IDS.WEMIX:
-      if (feeData.gasPrice?.gt(gasParams.maxPriorityFeePerGas || 0)) {
-        gasParams.maxFeePerGas = feeData.gasPrice!;
-        gasParams.maxPriorityFeePerGas = feeData.gasPrice!;
-      }
-      gasParams.gasLimit = 3_000_000;
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
@@ -194,7 +102,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     walletFactoryContractName,
     forwarderContractName,
     forwarderFactoryContractName,
-    contractPath,
-    gasParams
+    contractPath 
   };
 }

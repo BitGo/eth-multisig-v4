@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { getChainConfig } from './chainConfig';
 import {
@@ -13,6 +12,8 @@ import {
   getBigBlocksConfig,
   isBigBlocksSupported
 } from '../config/bigBlocksConfig';
+
+
 
 const NONCE = {
   WALLET: 0,
@@ -43,37 +44,17 @@ async function setupBigBlocks(chainId: number): Promise<void> {
 }
 
 async function main() {
-  const feeData = await ethers.provider.getFeeData();
-  type LegacyGasParams = {
-    gasPrice: BigNumber | null;
-    gasLimit?: number;
-  };
-
-  const legacyGasParams: LegacyGasParams = {
-    gasPrice: feeData.gasPrice
-  };
-
-  type Eip1559GasParams = {
-    maxFeePerGas: BigNumber | null;
-    maxPriorityFeePerGas: BigNumber | null;
-    gasLimit?: number;
-  };
-
-  const eip1559GasParams: Eip1559GasParams = {
-    maxFeePerGas: feeData.maxFeePerGas,
-    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
-  };
-
+  
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
-  const currentNonce = await deployer.getTransactionCount();
-  const chainId = await deployer.getChainId();
-  const chainConfig = await getChainConfig(chainId);
-  let output: DeploymentAddresses = loadOutput();
+  const currentNonce = await ethers.provider.getTransactionCount(deployerAddress);
+  const { chainId } = await ethers.provider.getNetwork(); // More direct way to get chainId
+  const chainConfig = await getChainConfig(Number(chainId));
+  const output: DeploymentAddresses = loadOutput();
 
-  if (isBigBlocksSupported(chainId)) {
+  if (isBigBlocksSupported(Number(chainId))) {
     console.log('🔄 Setting up BigBlocks...');
-    await setupBigBlocks(chainId);
+    await setupBigBlocks(Number(chainId));
   }
 
   console.log(
@@ -91,13 +72,15 @@ async function main() {
         chainConfig.walletImplementationContractName
       );
       const constructorArgs: string[] = [];
-      const contract = await WalletSimple.deploy(
-        ...constructorArgs,
-        chainConfig.gasParams
-      );
-      await contract.deployed();
+      
+      // --- Ethers v6 Change ---
+      // The deploy method no longer takes a final "overrides" object for gas.
+      // It only takes the constructor arguments.
+      const contract = await WalletSimple.deploy(...constructorArgs);
+      await contract.waitForDeployment(); // ethers v6
+
       console.log(
-        `✅ ${chainConfig.walletImplementationContractName} deployed at ${contract.address}`
+        `✅ ${chainConfig.walletImplementationContractName} deployed at ${contract.target}` // contract.address is now contract.target
       );
       await waitAndVerify(
         hre,
@@ -105,9 +88,9 @@ async function main() {
         chainConfig.walletImplementationContractName,
         constructorArgs
       );
-      output.walletImplementation = contract.address;
+      output.walletImplementation = contract.target as string;
       saveOutput(output);
-      return contract.address;
+      return contract.target as string;
     }
   );
 
@@ -121,13 +104,10 @@ async function main() {
       const WalletFactory = await ethers.getContractFactory(
         chainConfig.walletFactoryContractName
       );
-      const contract = await WalletFactory.deploy(
-        walletAddress,
-        chainConfig.gasParams
-      );
-      await contract.deployed();
+      const contract = await WalletFactory.deploy(walletAddress); // Only constructor args
+      await contract.waitForDeployment(); // ethers v6
       console.log(
-        `✅ ${chainConfig.walletFactoryContractName} deployed at ${contract.address}`
+        `✅ ${chainConfig.walletFactoryContractName} deployed at ${contract.target}`
       );
       await waitAndVerify(
         hre,
@@ -135,9 +115,9 @@ async function main() {
         chainConfig.walletFactoryContractName,
         [walletAddress]
       );
-      output.walletFactory = contract.address;
+      output.walletFactory = contract.target as string;
       saveOutput(output);
-      return contract.address;
+      return contract.target as string;
     }
   );
 
@@ -151,15 +131,15 @@ async function main() {
       const Forwarder = await ethers.getContractFactory(
         chainConfig.forwarderContractName
       );
-      const contract = await Forwarder.deploy(chainConfig.gasParams);
-      await contract.deployed();
+      const contract = await Forwarder.deploy(); // No gas params
+      await contract.waitForDeployment(); // ethers v6
       console.log(
-        `✅ ${chainConfig.forwarderContractName} deployed at ${contract.address}`
+        `✅ ${chainConfig.forwarderContractName} deployed at ${contract.target}`
       );
       await waitAndVerify(hre, contract, chainConfig.forwarderContractName, []);
-      output.forwarderImplementation = contract.address;
+      output.forwarderImplementation = contract.target as string;
       saveOutput(output);
-      return contract.address;
+      return contract.target as string;
     }
   );
 
@@ -173,13 +153,10 @@ async function main() {
       const ForwarderFactory = await ethers.getContractFactory(
         chainConfig.forwarderFactoryContractName
       );
-      const contract = await ForwarderFactory.deploy(
-        forwarderAddress,
-        chainConfig.gasParams
-      );
-      await contract.deployed();
+      const contract = await ForwarderFactory.deploy(forwarderAddress); // Only constructor args
+      await contract.waitForDeployment(); // ethers v6
       console.log(
-        `✅ ${chainConfig.forwarderFactoryContractName} deployed at ${contract.address}`
+        `✅ ${chainConfig.forwarderFactoryContractName} deployed at ${contract.target}`
       );
       await waitAndVerify(
         hre,
@@ -187,9 +164,9 @@ async function main() {
         chainConfig.forwarderFactoryContractName,
         [forwarderAddress]
       );
-      output.forwarderFactory = contract.address;
+      output.forwarderFactory = contract.target as string;
       saveOutput(output);
-      return contract.address;
+      return contract.target as string;
     }
   );
 

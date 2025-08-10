@@ -1,6 +1,6 @@
 import hre, { ethers } from 'hardhat';
 import fs from 'fs';
-import { Contract } from 'ethers';
+import { BaseContract } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { verifyOnCustomEtherscan } from './scripts/customContractVerifier';
 
@@ -33,7 +33,8 @@ export async function deployIfNeededAtNonce(
   contractName: string,
   deployFn: () => Promise<string>
 ): Promise<string> {
-  const predictedAddress = ethers.utils.getContractAddress({
+
+  const predictedAddress = (ethers as any).getCreateAddress({
     from: deployerAddress,
     nonce: expectedNonce
   });
@@ -115,7 +116,7 @@ export function saveOutput(output: DeploymentAddresses) {
  */
 export async function waitAndVerify(
   hre: HardhatRuntimeEnvironment,
-  contract: Contract,
+  contract: BaseContract,
   contractName: string,
   constructorArguments: string[] = []
 ) {
@@ -132,8 +133,16 @@ export async function waitAndVerify(
   const artifact = await hre.artifacts.readArtifact(contractName);
   const verificationString = `${artifact.sourceName}:${artifact.contractName}`;
   console.log(`Verification string: ${verificationString}`);
-  await contract.deployTransaction.wait(confirmationCount);
-  logger.success(`Contract confirmed on the network at ${contract.address}.`);
+  
+  
+  const deployTx = contract.deploymentTransaction();
+  await deployTx?.wait(confirmationCount);
+
+  logger.success(
+    `Contract ${contractName} confirmed on the network after ${confirmationCount} confirmations.`
+  );
+  const contractAddress = await contract.getAddress();
+  logger.success(`Contract confirmed on the network at ${contractAddress}.`);
 
   const maxRetries = 20;
   const retryDelay = 180000; // 180 seconds
@@ -144,7 +153,7 @@ export async function waitAndVerify(
       // --- Primary Attempt: Standard Verifier ---
       logger.info('Attempting verification with standard Hardhat verifier...');
       await hre.run('verify:verify', {
-        address: contract.address,
+        address: contractAddress, 
         constructorArguments: constructorArguments,
         contract: verificationString
       });
@@ -153,7 +162,6 @@ export async function waitAndVerify(
     } catch (standardError: any) {
       logger.warn(`Standard verifier failed: ${standardError.message}`);
 
-      // If already verified by standard verifier, we're done.
       if (standardError.message.toLowerCase().includes('already verified')) {
         logger.success('Contract is already verified.');
         return;
@@ -164,20 +172,18 @@ export async function waitAndVerify(
       try {
         await verifyOnCustomEtherscan({
           hre,
-          contractAddress: contract.address,
+          contractAddress: contractAddress, // Use the fetched address
           contractName: contractName,
           constructorArguments: constructorArguments
         });
         logger.success('Custom verifier fallback successful!');
         return; // Success, exit the loop.
       } catch (customError: any) {
-        // If already verified by custom verifier, we're done.
         if (customError.message.toLowerCase().includes('already verified')) {
           logger.success('Contract is already verified.');
           return;
         }
 
-        // Log the custom verifier failure and decide whether to retry the whole process
         logger.warn(
           `Custom verifier fallback also failed: ${customError.message}`
         );

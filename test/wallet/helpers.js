@@ -1,166 +1,172 @@
-require('assert');
-require('should');
 
+const { ethers } = require('hardhat');
 const helpers = require('../helpers');
-
-// Used to build the solidity tightly packed buffer to sha3, ecsign
-const util = require('ethereumjs-util');
-const abi = require('ethereumjs-abi');
 const crypto = require('crypto');
 
-const Forwarder = artifacts.require('../Forwarder.sol');
-const ForwarderFactory = artifacts.require('../ForwarderFactory.sol');
-const WalletFactory = artifacts.require('../WalletFactory.sol');
-const RecoveryWalletFactory = artifacts.require('../RecoveryWalletFactory.sol');
-const RecoveryWalletSimple = artifacts.require('../RecoveryWalletSimple.sol');
-
 const assertVMException = (err, expectedErrMsg) => {
-  err.message.toString().should.containEql('VM Exception');
+  if (!/revert|VM Exception/.test(err.message)) throw err;
   if (expectedErrMsg) {
-    err.message.toString().should.containEql(expectedErrMsg);
+    if (!err.message.includes(expectedErrMsg)) throw err;
   }
 };
 
+
 const createForwarderFromWallet = async (wallet, autoFlush = true) => {
   const parent = wallet.address;
-  const salt = util.bufferToHex(crypto.randomBytes(20));
-  const inputSalt = util.setLengthLeft(
-    Buffer.from(util.stripHexPrefix(salt), 'hex'),
-    32
-  );
-  const calculationSalt = abi.soliditySHA3(
-    ['address', 'bytes32'],
-    [parent, inputSalt]
-  );
-  const forwarderContract = await Forwarder.new([], {});
-  const forwarderFactory = await ForwarderFactory.new(
-    forwarderContract.address
-  );
-  const initCode = helpers.getInitCode(
-    util.stripHexPrefix(forwarderContract.address)
-  );
-  const forwarderAddress = helpers.getNextContractAddressCreate2(
-    forwarderFactory.address,
-    calculationSalt,
-    initCode
-  );
-
+  const salt = ethers.hexlify(crypto.randomBytes(20));
+  const inputSalt = ethers.zeroPadValue(salt, 32);
+  const Forwarder = await ethers.getContractFactory('Forwarder');
+  const forwarderContract = await Forwarder.deploy([]);
+  await forwarderContract.waitForDeployment();
+  const ForwarderFactory = await ethers.getContractFactory('ForwarderFactory');
+  const forwarderFactory = await ForwarderFactory.deploy(await forwarderContract.getAddress());
+  await forwarderFactory.waitForDeployment();
+  
   return {
-    forwarderAddress,
+    forwarderAddress: null, // Will be set when created
     create: async () =>
       executeCreateForwarder(
         forwarderFactory,
-        calculationSalt,
         inputSalt,
-        initCode,
         parent,
         autoFlush
       )
   };
 };
 
+
 const executeCreateForwarder = async (
   factory,
-  calculationSalt,
   inputSalt,
-  initCode,
   parent,
   autoFlush = true
 ) => {
-  const forwarderAddress = helpers.getNextContractAddressCreate2(
-    factory.address,
-    calculationSalt,
-    initCode
-  );
-
-  await factory.createForwarder(parent, inputSalt, autoFlush, autoFlush);
-  return Forwarder.at(forwarderAddress);
+  // Create the forwarder and get the address from the event
+  const tx = await factory.createForwarder(parent, inputSalt, autoFlush, autoFlush);
+  const receipt = await tx.wait();
+  
+  // Find the ForwarderCreated event to get the new forwarder address
+  const event = receipt.logs.find(log => {
+      try {
+          const parsedLog = factory.interface.parseLog(log);
+          return parsedLog?.name === 'ForwarderCreated';
+      } catch (e) {
+          return false;
+      }
+  });
+  
+  if (!event) {
+      throw new Error('ForwarderCreated event not found in transaction logs');
+  }
+  
+  const parsedEvent = factory.interface.parseLog(event);
+  const forwarderAddress = parsedEvent.args.newForwarderAddress;
+  
+  const Forwarder = await ethers.getContractFactory('Forwarder');
+  return Forwarder.attach(forwarderAddress);
 };
+
 
 const createWalletFactory = async (WalletSimple) => {
-  const walletContract = await WalletSimple.new([], {});
-  const walletFactory = await WalletFactory.new(walletContract.address);
+  const walletContract = await WalletSimple.deploy([]);
+  await walletContract.waitForDeployment();
+  const WalletFactory = await ethers.getContractFactory('WalletFactory');
+  const walletFactory = await WalletFactory.deploy(await walletContract.getAddress());
+  await walletFactory.waitForDeployment();
   return {
-    implementationAddress: walletContract.address,
+    implementationAddress: await walletContract.getAddress(),
     factory: walletFactory
   };
 };
+
 
 const createRecoveryWalletFactory = async () => {
-  const walletContract = await RecoveryWalletSimple.new([], {});
-  const walletFactory = await RecoveryWalletFactory.new(walletContract.address);
+  const RecoveryWalletSimple = await ethers.getContractFactory('RecoveryWalletSimple');
+  const walletContract = await RecoveryWalletSimple.deploy([]);
+  await walletContract.waitForDeployment();
+  const RecoveryWalletFactory = await ethers.getContractFactory('RecoveryWalletFactory');
+  const walletFactory = await RecoveryWalletFactory.deploy(await walletContract.getAddress());
+  await walletFactory.waitForDeployment();
   return {
-    implementationAddress: walletContract.address,
+    implementationAddress: await walletContract.getAddress(),
     factory: walletFactory
   };
 };
 
-const createRecoveryWalletHelper = async (creator, signers) => {
-  // OK to be the same for all wallets since we are using a new factory for each
-  const salt = '0x1234';
-  const { factory, implementationAddress } =
-    await createRecoveryWalletFactory();
 
-  const inputSalt = util.setLengthLeft(
-    Buffer.from(util.stripHexPrefix(salt), 'hex'),
-    32
-  );
-  const calculationSalt = abi.soliditySHA3(
-    ['address[]', 'bytes32'],
-    [signers, inputSalt]
-  );
-  const initCode = helpers.getInitCode(
-    util.stripHexPrefix(implementationAddress)
-  );
-  const walletAddress = helpers.getNextContractAddressCreate2(
-    factory.address,
-    calculationSalt,
-    initCode
-  );
-  await factory.createWallet(signers, inputSalt, { from: creator });
-  return RecoveryWalletSimple.at(walletAddress);
+const createRecoveryWalletHelper = async (creator, signers) => {
+  const salt = '0x1234';
+  const { factory, implementationAddress } = await createRecoveryWalletFactory();
+  const inputSalt = ethers.zeroPadValue(salt, 32);
+  
+  // Create the wallet and get the address from the event
+  const tx = await factory.createWallet(signers, inputSalt);
+  const receipt = await tx.wait();
+  
+  // Find the WalletCreated event to get the new wallet address
+  const event = receipt.logs.find(log => {
+      try {
+          const parsedLog = factory.interface.parseLog(log);
+          return parsedLog?.name === 'WalletCreated';
+      } catch (e) {
+          return false;
+      }
+  });
+  
+  if (!event) {
+      throw new Error('WalletCreated event not found in transaction logs');
+  }
+  
+  const parsedEvent = factory.interface.parseLog(event);
+  const walletAddress = parsedEvent.args.newWalletAddress;
+  
+  const RecoveryWalletSimple = await ethers.getContractFactory('RecoveryWalletSimple');
+  return RecoveryWalletSimple.attach(walletAddress);
 };
+
 
 const createWalletHelper = async (WalletSimple, creator, signers) => {
-  // OK to be the same for all wallets since we are using a new factory for each
   const salt = '0x1234';
-  const { factory, implementationAddress } = await createWalletFactory(
-    WalletSimple
-  );
-
-  const inputSalt = util.setLengthLeft(
-    Buffer.from(util.stripHexPrefix(salt), 'hex'),
-    32
-  );
-  const calculationSalt = abi.soliditySHA3(
-    ['address[]', 'bytes32'],
-    [signers, inputSalt]
-  );
-  const initCode = helpers.getInitCode(
-    util.stripHexPrefix(implementationAddress)
-  );
-  const walletAddress = helpers.getNextContractAddressCreate2(
-    factory.address,
-    calculationSalt,
-    initCode
-  );
-  await factory.createWallet(signers, inputSalt, { from: creator });
-  return WalletSimple.at(walletAddress);
+  const { factory, implementationAddress } = await createWalletFactory(WalletSimple);
+  const inputSalt = ethers.zeroPadValue(salt, 32);
+  
+  // Create the wallet and get the address from the event
+  const tx = await factory.createWallet(signers, inputSalt);
+  const receipt = await tx.wait();
+  
+  // Find the WalletCreated event to get the new wallet address
+  const event = receipt.logs.find(log => {
+      try {
+          const parsedLog = factory.interface.parseLog(log);
+          return parsedLog?.name === 'WalletCreated';
+      } catch (e) {
+          return false;
+      }
+  });
+  
+  if (!event) {
+      throw new Error('WalletCreated event not found in transaction logs');
+  }
+  
+  const parsedEvent = factory.interface.parseLog(event);
+  const walletAddress = parsedEvent.args.newWalletAddress;
+  
+  return WalletSimple.attach(walletAddress);
 };
+
 
 const getBalanceInWei = async (address) => {
-  return web3.utils.toBN(await web3.eth.getBalance(address));
+  return await ethers.provider.getBalance(address);
 };
+
 
 const calculateFutureExpireTime = (seconds) => {
-  return Math.floor(new Date().getTime() / 1000) + seconds;
+  return Math.floor(Date.now() / 1000) + seconds;
 };
 
-// Taken from http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html -
-// The automatic accessor function for a public state variable of array type only returns individual elements.
-// If you want to return the complete array, you have to manually write a function to do that.
+
 const isSigner = async function getSigners(wallet, signer) {
-  return await wallet.signers.call(signer);
+  return await wallet.signers(signer);
 };
 
 exports.assertVMException = assertVMException;

@@ -15,9 +15,9 @@ async function main() {
   const [walletDeployer, forwarderDeployer] = await ethers.getSigners();
 
   const gasParams = {
-    gasPrice: feeData.gasPrice!.mul('2')
+    gasPrice: feeData.gasPrice.mul(2) // Use BigNumber arithmetic for ethers v5
   };
-  const walletTxCount = await walletDeployer.getTransactionCount();
+  const walletTxCount = await ethers.provider.getTransactionCount(walletDeployer.address); // Updated for ethers v6
 
   console.log('Deploying wallet contracts....');
   console.log('Wallet Tx Count: ', walletTxCount);
@@ -25,7 +25,7 @@ async function main() {
   for (let i = 0; i < walletSelfTransactions; i++) {
     const tx = await walletDeployer.sendTransaction({
       to: walletDeployer.address,
-      value: ethers.utils.parseEther('0'),
+      value: ethers.utils.parseEther('0'), // ethers v5
       gasPrice: gasParams.gasPrice
     });
     await tx.wait();
@@ -40,11 +40,11 @@ async function main() {
     walletDeployer
   );
   const walletImplementation = await WalletImplementation.deploy(gasParams);
-  await walletImplementation.deployed();
-  output.walletImplementation = walletImplementation.address;
+  await walletImplementation.deployed(); // ethers v5
+  output.walletImplementation = walletImplementation.address; // ethers v5
   console.log(
     `${walletImplementationContractName} deployed at ` +
-      walletImplementation.address
+      walletImplementation.address // ethers v5
   );
 
   const WalletFactory = await ethers.getContractFactory(
@@ -52,16 +52,16 @@ async function main() {
     walletDeployer
   );
   const walletFactory = await WalletFactory.deploy(
-    walletImplementation.address,
+    walletImplementation.address, // ethers v5
     gasParams
   );
-  await walletFactory.deployed();
-  output.walletFactory = walletFactory.address;
+  await walletFactory.deployed(); // ethers v5
+  output.walletFactory = walletFactory.address; // ethers v5
   console.log(
-    `${walletFactoryContractName} deployed at ` + walletFactory.address
+    `${walletFactoryContractName} deployed at ` + walletFactory.address // ethers v5
   );
 
-  const forwarderTxCount = await forwarderDeployer.getTransactionCount();
+  const forwarderTxCount = await ethers.provider.getTransactionCount(forwarderDeployer.address); // ethers v5 (no change needed)
 
   console.log('Deploying forwarder contracts....');
   console.log('Forwarder Tx Count: ', forwarderTxCount);
@@ -70,7 +70,7 @@ async function main() {
   for (let i = 0; i < forwarderSelfTransactions; i++) {
     const tx = await forwarderDeployer.sendTransaction({
       to: forwarderDeployer.address,
-      value: ethers.utils.parseEther('0'),
+      value: ethers.utils.parseEther('0'), // ethers v5
       gasPrice: gasParams.gasPrice
     });
     await tx.wait();
@@ -88,12 +88,12 @@ async function main() {
   const forwarderImplementation = await ForwarderImplementation.deploy(
     gasParams
   );
-  await forwarderImplementation.deployed();
-  output.forwarderImplementation = forwarderImplementation.address;
+  await forwarderImplementation.deployed(); // ethers v5
+  output.forwarderImplementation = forwarderImplementation.address; // ethers v5
 
   console.log(
     `${forwarderImplementationContractName} deployed at ` +
-      forwarderImplementation.address
+      forwarderImplementation.address // ethers v5
   );
 
   const ForwarderFactory = await ethers.getContractFactory(
@@ -102,14 +102,14 @@ async function main() {
   );
 
   const forwarderFactory = await ForwarderFactory.deploy(
-    forwarderImplementation.address,
+    forwarderImplementation.address, // ethers v5
     gasParams
   );
 
-  await forwarderFactory.deployed();
-  output.forwarderFactory = forwarderFactory.address;
+  await forwarderFactory.deployed(); // ethers v5
+  output.forwarderFactory = forwarderFactory.address; // ethers v5
   console.log(
-    `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address
+    `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address // ethers v5
   );
 
   fs.writeFileSync('output.json', JSON.stringify(output));
@@ -119,30 +119,35 @@ async function main() {
   await new Promise((r) => setTimeout(r, 1000 * 300));
 
   // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
+  // In ethers v6, we get deployment transactions differently
+  const walletImplTx = walletImplementation.deploymentTransaction();
+  const walletFactoryTx = walletFactory.deploymentTransaction();
+  const forwarderImplTx = forwarderImplementation.deploymentTransaction();
+  const forwarderFactoryTx = forwarderFactory.deploymentTransaction();
 
-  await walletImplementation.deployTransaction.wait(10);
-  await walletFactory.deployTransaction.wait(10);
-  await forwarderImplementation.deployTransaction.wait(10);
-  await forwarderFactory.deployTransaction.wait(10);
+  if (walletImplTx) await walletImplTx.wait(10);
+  if (walletFactoryTx) await walletFactoryTx.wait(10);
+  if (forwarderImplTx) await forwarderImplTx.wait(10);
+  if (forwarderFactoryTx) await forwarderFactoryTx.wait(10);
 
   console.log('Done waiting, verifying');
   await verifyContract(
     walletImplementationContractName,
-    walletImplementation.address,
+    walletImplementation.address, // ethers v5
     []
   );
   await verifyContract('WalletFactory', walletFactory.address, [
-    walletImplementation.address
+    walletImplementation.address // ethers v5
   ]);
 
   await verifyContract(
     forwarderImplementationContractName,
-    forwarderImplementation.address,
+    forwarderImplementation.address, // ethers v5
     []
   );
 
-  await verifyContract('ForwarderFactory', forwarderFactory.address, [
-    forwarderImplementation.address
+  await verifyContract('ForwarderFactory', await forwarderFactory.getAddress(), [ // Updated for ethers v6
+    await forwarderImplementation.getAddress() // Updated for ethers v6
   ]);
 
   console.log('Contracts verified');

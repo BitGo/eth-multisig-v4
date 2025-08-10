@@ -62,10 +62,14 @@ describe('customContractVerifier', () => {
         provider: {
           getNetwork: sinon.stub().resolves({ chainId: 50312 })
         },
+        // --- Ethers v6 Fix ---
+        // The way constructor arguments are encoded for verification has changed.
+        // We now mock `getDeployTransaction` which returns an object with the encoded data.
+        // This replaces the older `interface.encodeDeploy` pattern.
         getContractFactory: sinon.stub().resolves({
-          interface: {
-            encodeDeploy: sinon.stub().returns('0xencodedargs')
-          }
+          getDeployTransaction: sinon.stub().resolves({
+            data: '0xencodedargs'
+          })
         })
       }
     } as any;
@@ -105,8 +109,7 @@ describe('customContractVerifier', () => {
     });
 
     // Assert: Check that the success message was logged and no warnings were issued
-    expect(loggerSuccessStub.calledWith('Contract successfully verified!')).to
-      .be.true;
+    expect(loggerSuccessStub.calledWith('Contract successfully verified!')).to.be.true;
     expect(loggerWarnStub.called).to.be.false;
   });
 
