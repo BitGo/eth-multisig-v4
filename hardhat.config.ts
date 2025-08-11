@@ -569,6 +569,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    plasma: {
+      url: `https://testnet-rpc.plasma.to`, // TODO: Update with mainnet URL when available
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tplasma: {
+      url: `https://testnet-rpc.plasma.to`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -663,7 +679,10 @@ const config: HardhatUserConfig = {
       lineaethMainnet: `${ETHERSCAN_API_KEY}`,
       //STORY IP
       ipTestnet: `${IP_EXPLORER_API_KEY}`,
-      ipMainnet: `${IP_EXPLORER_API_KEY}`
+      ipMainnet: `${IP_EXPLORER_API_KEY}`,
+      //PLASMA
+      plasmaTestnet: `${ETHERSCAN_API_KEY}`,
+      plasmaMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1087,6 +1106,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://inst-1.cloud.blockscout.com/api',
           browserURL: 'https://inst-1.cloud.blockscout.com'
+        }
+      },
+      {
+        network: 'plasmaTestnet',
+        chainId: CHAIN_IDS.PLASMA_TESTNET,
+        urls: {
+          apiURL: 'https://testnet.plasmaexplorer.io/api',
+          browserURL: 'https://testnet.plasmaexplorer.io/'
+        }
+      },
+      {
+        network: 'plasmaMainnet',
+        chainId: CHAIN_IDS.PLASMA_MAINNET,
+        urls: {
+          apiURL: 'https://testnet.plasmaexplorer.io/api',
+          browserURL: 'https://testnet.plasmaexplorer.io/'
         }
       }
     ]
