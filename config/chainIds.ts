@@ -37,7 +37,7 @@ export const CHAIN_IDS = {
   IRYS: 1270,
   LINEAETH: 59144,
   IP: 1514,
-
+  PLASMA_MAINNET: 9746, // Replace with actual mainnet chain ID when available
   // Testnet Networks
   BSC_TESTNET: 97,
   BERA_TESTNET: 80094,
@@ -63,5 +63,6 @@ export const CHAIN_IDS = {
   KAIA_TESTNET: 1001,
   IRYS_TESTNET: 1270,
   LINEAETH_TESTNET: 59141,
-  IP_TESTNET: 1315
+  IP_TESTNET: 1315,
+  PLASMA_TESTNET: 9746
 } as const;

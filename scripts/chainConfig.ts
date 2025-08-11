@@ -89,6 +89,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
     case CHAIN_IDS.BERA:
     case CHAIN_IDS.BERA_TESTNET:
+    case CHAIN_IDS.PLASMA_MAINNET:
+    case CHAIN_IDS.PLASMA_TESTNET:
     case CHAIN_IDS.SONIC:
     case CHAIN_IDS.SONIC_TESTNET:
     case CHAIN_IDS.SEIEVM:
