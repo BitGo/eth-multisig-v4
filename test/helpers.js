@@ -1,198 +1,15 @@
-const abi = require('ethereumjs-abi');
-const util = require('ethereumjs-util');
-const BN = require('bn.js');
-const Promise = require('bluebird');
-const _ = require('lodash');
-const ethers = require('ethers');
-
-const Forwarder = artifacts.require('./Forwarder.sol');
-const ForwarderFactory = artifacts.require('./ForwarderFactory.sol');
-const WalletFactory = artifacts.require('./WalletFactory.sol');
-const WalletSimple = artifacts.require('./WalletSimple.sol');
-
-const abis = [
-  Forwarder.abi,
-  ForwarderFactory.abi,
-  WalletSimple.abi,
-  WalletFactory.abi
-];
-
-exports.showBalances = async function () {
-  const accounts = await web3.eth.getAccounts();
-  for (let i = 0; i < accounts.length; i++) {
-    console.log(
-      accounts[i] +
-        ': ' +
-        web3.utils.fromWei(web3.eth.getBalance(accounts[i]), 'ether'),
-      'ether'
-    );
-  }
-};
-
-// Polls an array for changes
-exports.waitForEvents = function (eventsArray, numEvents) {
-  if (numEvents === 0) {
-    return Promise.delay(1000); // Wait a reasonable amount so the caller can know no events fired
-  }
-  numEvents = numEvents || 1;
-  const oldLength = eventsArray.length;
-  let numTries = 0;
-  const pollForEvents = function () {
-    numTries++;
-    if (eventsArray.length >= oldLength + numEvents) {
-      return;
-    }
-    if (numTries >= 100) {
-      if (eventsArray.length == 0) {
-        console.log('Timed out waiting for events!');
-      }
-      return;
-    }
-    return Promise.delay(50).then(pollForEvents);
-  };
-  return pollForEvents();
-};
-
-// Helper to get sha3 for solidity tightly-packed arguments
-exports.getSha3ForConfirmationTx = function (
-  prefix,
-  toAddress,
-  amount,
-  data,
-  expireTime,
-  sequenceId
-) {
-  const encoded = ethers.utils.defaultAbiCoder.encode(
-    ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
-    [
-      prefix,
-      toAddress,
-      amount,
-      Buffer.from(data.replace('0x', ''), 'hex'),
-      expireTime,
-      sequenceId
-    ]
-  );
-  return ethers.utils.keccak256(encoded);
-};
-
-// Helper to get sha3 for solidity tightly-packed arguments
-exports.getSha3ForBatchTx = function (
-  prefix,
-  recipients,
-  values,
-  expireTime,
-  sequenceId
-) {
-  const encoded = ethers.utils.defaultAbiCoder.encode(
-    ['string', 'address[]', 'uint[]', 'uint', 'uint'],
-    [prefix, recipients, values, expireTime, sequenceId]
-  );
-  return ethers.utils.keccak256(encoded);
-};
-
-// Helper to get token transactions sha3 for solidity tightly-packed arguments
-exports.getSha3ForConfirmationTokenTx = function (
-  prefix,
-  toAddress,
-  value,
-  tokenContractAddress,
-  expireTime,
-  sequenceId
-) {
-  return abi.soliditySHA3(
-    ['string', 'address', 'uint', 'address', 'uint', 'uint'],
-    [
-      prefix,
-      new BN(toAddress.replace('0x', ''), 16),
-      value,
-      new BN(tokenContractAddress.replace('0x', ''), 16),
-      expireTime,
-      sequenceId
-    ]
-  );
-};
-
-// Serialize signature into format understood by our recoverAddress function
-exports.serializeSignature = ({ r, s, v }) =>
-  '0x' + Buffer.concat([r, s, Buffer.from([v])]).toString('hex');
-
 /**
- * Returns the address a contract will have when created from the provided address
- * @param address
- * @return address
+ * @file helpers.js
+ * @description Utility functions for creating operation hashes and signatures for multisig wallets.
+ * Updated for Ethers.js v6 and aligned to contract encoding (keccak256 over abi.encode).
  */
-exports.getNextContractAddress = async (address) => {
-  const addressBuffer = Buffer.from(util.stripHexPrefix(address), 'hex');
-  const nonce = await web3.eth.getTransactionCount(address);
-  return util.toChecksumAddress(
-    util.bufferToHex(util.generateAddress(addressBuffer, util.toBuffer(nonce)))
-  );
-};
 
-exports.getNextContractAddressCreate2 = (address, salt, initCode) => {
-  const addressBuffer = Buffer.from(util.stripHexPrefix(address), 'hex');
-  const initCodeBuffer = Buffer.from(util.stripHexPrefix(initCode), 'hex');
-  return util.toChecksumAddress(
-    util.bufferToHex(util.generateAddress2(addressBuffer, salt, initCodeBuffer))
-  );
-};
+const { ethers } = require('ethers');
 
-exports.assertVMException = async (fn) => {
-  let failed = false;
-  try {
-    await fn();
-  } catch (err) {
-    err.message.toString().should.containEql('Transaction reverted:');
-    failed = true;
-  }
+// Original accounts array approach (from commit 67e66761c3092cc3a592b7ab8b673f6bd2801721)
+const util = require('ethereumjs-util');
 
-  failed.should.equal(true);
-};
-
-exports.getInitCode = (targetAddress) => {
-  const target = util
-    .stripHexPrefix(targetAddress.toLowerCase())
-    .padStart(40, '0');
-  return `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${target}5af43d82803e903d91602b57fd5bf3`;
-};
-
-getEventDetails = (abis, eventName) => {
-  let foundAbi;
-  for (const abi of abis) {
-    foundAbi = _.find(abi, ({ name }) => name === eventName);
-    if (foundAbi) {
-      break;
-    }
-  }
-
-  if (!foundAbi) {
-    throw new Error(`Unknown event ${eventName}`);
-  }
-
-  const hash = web3.eth.abi.encodeEventSignature(foundAbi);
-  return { abi: foundAbi, hash };
-};
-
-exports.getEventFromTransaction = async (txHash, eventName) => {
-  const { abi, hash } = getEventDetails(abis, eventName);
-  const receipt = await web3.eth.getTransactionReceipt(txHash);
-
-  if (!receipt) {
-    return undefined;
-  }
-
-  const eventData = _.find(receipt.logs, function (log) {
-    return log.topics && log.topics.length > 0 && log.topics[0] === hash;
-  });
-
-  if (!eventData) {
-    return undefined;
-  }
-
-  return web3.eth.abi.decodeLog(abi.inputs, eventData.data);
-};
-
+// Test accounts (kept in sync with hardhat.config.ts -> networks.hardhat.accounts)
 exports.accounts = [
   '0xc8209c2200f920b11a460733c91687565c712b40c6f0350e9ad4138bf3193e47',
   '0x915334f048736c64127e91a1dc35dad86c91e59081cdc12cd060103050e2f3b1',
@@ -206,21 +23,161 @@ exports.accounts = [
   '0xace7201611ba195f85fb2e25b53e0f9869e57e2267d1c5eef63144c75dee5142'
 ].map((privkeyHex) => {
   const privkey = Buffer.from(privkeyHex.replace(/^0x/i, ''), 'hex');
+
+  // Ensure the private key is exactly 32 bytes
+  if (privkey.length !== 32) {
+    throw new Error(
+      `Invalid private key length: ${privkey.length}, expected 32 bytes`
+    );
+  }
+
   const pubkey = util.privateToPublic(privkey);
   const address = util.pubToAddress(pubkey);
   return { privkey, pubkey, address };
 });
 
+// Create address-to-private-key mapping (from the original commit)
 const mapAddrToAcct = exports.accounts.reduce(
   (obj, { address, privkey }) =>
     Object.assign(obj, { [address.toString('hex')]: privkey }),
   {}
 );
 
-exports.privateKeyForAccount = (acct) => {
-  const result = mapAddrToAcct[util.stripHexPrefix(acct).toLowerCase()];
-  if (!result) {
-    throw new Error('no privkey for ' + acct);
+/**
+ * Serialize an ECDSA signature into the format expected by the contract.
+ * This function recreates the behavior of the old serializeSignature function.
+ * @param {Object} sig - Signature object with r, s, and v properties
+ * @returns {string} The serialized signature as a hex string
+ */
+exports.serializeSignature = function (sig) {
+  // Ensure v is in the correct range (27 or 28)
+  let v = sig.v;
+  if (v < 27) {
+    v += 27;
   }
-  return result;
+
+  // Convert Buffer objects to hex strings if needed
+  let r = sig.r;
+  let s = sig.s;
+
+  if (Buffer.isBuffer(r)) {
+    r = '0x' + r.toString('hex');
+  }
+  if (Buffer.isBuffer(s)) {
+    s = '0x' + s.toString('hex');
+  }
+
+  // Ensure proper hex formatting and padding
+  const rHex = r.toString().slice(2).padStart(64, '0'); // Remove 0x and pad to 64 chars
+  const sHex = s.toString().slice(2).padStart(64, '0'); // Remove 0x and pad to 64 chars
+  const vHex = v.toString(16).padStart(2, '0'); // Convert to hex and pad to 2 chars
+
+  return '0x' + rHex + sHex + vHex;
+};
+
+/**
+ * Get private key for account (hybrid approach - support both original and current addresses)
+ * @param {string} account - The account address
+ * @returns {Buffer} The private key as a Buffer
+ */
+exports.privateKeyForAccount = function (account) {
+  // Direct mapping for known current environment addresses
+  const currentEnvironmentMapping = {
+    '0xB1b359CB06B3a40c53b2fa5Ec112214626bc187A':
+      '0xc8209c2200f920b11a460733c91687565c712b40c6f0350e9ad4138bf3193e47', // deployer
+    '0xbcBD7ec77f3f286BDaFcDE2A3720E39e93A726C6':
+      '0x915334f048736c64127e91a1dc35dad86c91e59081cdc12cd060103050e2f3b1', // signer1
+    '0x0BB0cB323c4DB61AA1f7d569dbDAa773A21daC58':
+      '0x80bf357dd53e61db0e68acbb270e16fd42645903b51329c856cf3cb36f180a3e' // signer2
+  };
+
+  // First try the current environment mapping
+  let privateKeyHex = currentEnvironmentMapping[account];
+
+  // If not found, try the original address-to-private-key mapping
+  if (!privateKeyHex) {
+    const originalPrivKey =
+      mapAddrToAcct[util.stripHexPrefix(account).toLowerCase()];
+    if (originalPrivKey) {
+      return originalPrivKey;
+    }
+  }
+
+  if (!privateKeyHex) {
+    throw new Error('no privkey for ' + account);
+  }
+
+  return Buffer.from(privateKeyHex.slice(2), 'hex');
+};
+
+/**
+ * Helper to get the keccak256 hash for a standard single-destination multisig transaction.
+ * This matches the format expected by the WalletSimple contract.
+ * @param {string} prefix - The domain separator prefix (e.g., chainId).
+ * @param {string} toAddress - The destination address.
+ * @param {string} amount - The amount of Ether to send (as a string).
+ * @param {string} data - The transaction data.
+ * @param {number} expireTime - The expiration time of the signature.
+ * @param {number} sequenceId - The wallet's sequence ID (nonce).
+ * @returns {string} The keccak256 hash of the packed arguments.
+ */
+exports.getSha3ForConfirmationTx = function (
+  prefix,
+  toAddress,
+  amount,
+  data,
+  expireTime,
+  sequenceId
+) {
+  // Match Solidity: keccak256(abi.encode(prefix, toAddress, value, data, expireTime, sequenceId))
+  const abi = ethers.AbiCoder.defaultAbiCoder();
+  const encoded = abi.encode(
+    ['string', 'address', 'uint256', 'bytes', 'uint256', 'uint256'],
+    [prefix, toAddress, amount, data, expireTime, sequenceId]
+  );
+  return ethers.keccak256(encoded);
+};
+
+/**
+ * Helper to get the keccak256 hash for a batch multisig transaction.
+ * This matches the format expected by the WalletSimple contract.
+ * @param {string} prefix - The domain separator prefix (e.g., chainId-Batch).
+ * @param {string[]} recipients - An array of recipient addresses.
+ * @param {string[]} values - An array of amounts to send (as strings).
+ * @param {number} expireTime - The expiration time of the signature.
+ * @param {number} sequenceId - The wallet's sequence ID (nonce).
+ * @returns {string} The keccak256 hash of the packed arguments.
+ */
+exports.getSha3ForBatchTx = function (
+  prefix,
+  recipients,
+  values,
+  expireTime,
+  sequenceId
+) {
+  // Match Solidity: keccak256(abi.encode(prefix, recipients, values, expireTime, sequenceId))
+  const abi = ethers.AbiCoder.defaultAbiCoder();
+  const encoded = abi.encode(
+    ['string', 'address[]', 'uint256[]', 'uint256', 'uint256'],
+    [prefix, recipients, values, expireTime, sequenceId]
+  );
+  return ethers.keccak256(encoded);
+};
+
+/**
+ * Helper to get the keccak256 hash for an ERC20 multisig token transfer.
+ * Matches WalletSimple: keccak256(abi.encodePacked(prefix, toAddress, value, tokenContractAddress, expireTime, sequenceId))
+ */
+exports.getSha3ForConfirmationTokenTx = function (
+  prefix,
+  toAddress,
+  value,
+  tokenContractAddress,
+  expireTime,
+  sequenceId
+) {
+  return ethers.solidityPackedKeccak256(
+    ['string', 'address', 'uint256', 'address', 'uint256', 'uint256'],
+    [prefix, toAddress, value, tokenContractAddress, expireTime, sequenceId]
+  );
 };

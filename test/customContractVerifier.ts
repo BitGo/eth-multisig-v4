@@ -62,10 +62,11 @@ describe('customContractVerifier', () => {
         provider: {
           getNetwork: sinon.stub().resolves({ chainId: 50312 })
         },
+
         getContractFactory: sinon.stub().resolves({
-          interface: {
-            encodeDeploy: sinon.stub().returns('0xencodedargs')
-          }
+          getDeployTransaction: sinon.stub().resolves({
+            data: '0xencodedargs'
+          })
         })
       }
     } as any;

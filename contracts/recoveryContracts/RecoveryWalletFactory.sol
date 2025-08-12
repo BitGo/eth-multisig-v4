@@ -6,6 +6,9 @@ import '../CloneFactory.sol';
 contract RecoveryWalletFactory is CloneFactory {
   address public immutable implementationAddress;
 
+  // Emitted when a new recovery wallet clone is created
+  event WalletCreated(address indexed newWalletAddress);
+
   constructor(address _implementationAddress) {
     implementationAddress = _implementationAddress;
   }
@@ -18,5 +21,7 @@ contract RecoveryWalletFactory is CloneFactory {
 
     address payable clone = createClone(implementationAddress, finalSalt);
     RecoveryWalletSimple(clone).init(allowedSigners[2]);
+
+    emit WalletCreated(clone);
   }
 }

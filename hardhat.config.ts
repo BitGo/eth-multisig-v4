@@ -1,10 +1,8 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { HardhatUserConfig } from 'hardhat/config';
+import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-verify';
-import '@nomiclabs/hardhat-waffle';
-import '@nomiclabs/hardhat-truffle5';
-import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 import { CHAIN_IDS } from './config/chainIds';
@@ -275,7 +273,7 @@ const config: HardhatUserConfig = {
       ]
     },
     stt: {
-      url: `https://rpc.somnia.network`,
+      url: `https://api.infra.mainnet.somnia.network`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -939,8 +937,8 @@ const config: HardhatUserConfig = {
         network: 'somniaMainnet',
         chainId: CHAIN_IDS.SOMNIA,
         urls: {
-          apiURL: 'https://api.infra.mainnet.somnia.network/',
-          browserURL: 'https://shannon-explorer.somnia.network/' //TODO: WIN-5278: change it with mainnet explorer, when its available
+          apiURL: 'https://mainnet.somnia.w3us.site/api',
+          browserURL: 'https://mainnet.somnia.w3us.site/'
         }
       },
       {
