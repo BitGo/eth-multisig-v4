@@ -1,6 +1,5 @@
-import { BigNumber } from 'ethers';
-import { ethers } from 'hardhat';
 import { CHAIN_IDS } from '../config/chainIds';
+import { ethers } from 'hardhat';
 
 export interface ChainConfig {
   walletImplementationContractName: string;
@@ -15,22 +14,23 @@ export type GasParams = {
   gasLimit: number;
 } & (
   | {
-      maxFeePerGas: BigNumber;
-      maxPriorityFeePerGas: BigNumber;
+      maxFeePerGas: bigint;
+      maxPriorityFeePerGas: bigint;
       gasPrice?: never;
     }
   | {
-      gasPrice: BigNumber;
+      gasPrice: bigint;
       maxFeePerGas?: never;
       maxPriorityFeePerGas?: never;
     }
 );
+
 export async function getChainConfig(chainId: number): Promise<ChainConfig> {
   const feeData = await ethers.provider.getFeeData();
-  const GWEI = BigNumber.from('1000000000');
+  const GWEI = 1_000_000_000n;
 
   let gasParams: GasParams;
-  if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+  if (feeData.maxFeePerGas != null && feeData.maxPriorityFeePerGas != null) {
     gasParams = {
       maxFeePerGas: feeData.maxFeePerGas,
       maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
@@ -38,7 +38,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     };
   } else {
     gasParams = {
-      gasPrice: feeData.gasPrice || BigNumber.from('0'),
+      gasPrice: feeData.gasPrice ?? 0n,
       gasLimit: 3_000_000
     };
   }
@@ -80,8 +80,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.BASE_SEPOLIA:
     case CHAIN_IDS.BASE:
       gasParams = {
-        maxFeePerGas: BigNumber.from('10000000000'),
-        maxPriorityFeePerGas: BigNumber.from('10000000000'),
+        maxFeePerGas: 10_000_000_000n,
+        maxPriorityFeePerGas: 10_000_000_000n,
         gasLimit: 3_000_000
       };
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
@@ -106,8 +106,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.IP:
     case CHAIN_IDS.IP_TESTNET:
       gasParams = {
-        maxFeePerGas: BigNumber.from('30000000000'),
-        maxPriorityFeePerGas: BigNumber.from('30000000000'),
+        maxFeePerGas: 30_000_000_000n,
+        maxPriorityFeePerGas: 30_000_000_000n,
         gasLimit: 3_000_000
       };
       forwarderContractName = 'ForwarderV4';
@@ -117,38 +117,65 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.WORLD:
     case CHAIN_IDS.WORLD_TESTNET:
       gasParams = {
-        maxFeePerGas: GWEI.mul(5),
-        maxPriorityFeePerGas: GWEI.mul(2),
+        maxFeePerGas: 5n * GWEI,
+        maxPriorityFeePerGas: 2n * GWEI,
         gasLimit: 3_000_000
       };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
-    case CHAIN_IDS.MONAD:
-      const monadFeeData = await ethers.provider.getFeeData();
-      const baseFee =
-        monadFeeData.lastBaseFeePerGas || BigNumber.from('30000000000');
+    case CHAIN_IDS.MONAD: {
+      const baseFee = 30_000_000_000n; // fallback base fee
+      const priority = 1n * GWEI;
       gasParams = {
-        maxFeePerGas: baseFee.add(GWEI.mul(1)),
-        maxPriorityFeePerGas: GWEI.mul(1),
+        maxFeePerGas: baseFee + priority,
+        maxPriorityFeePerGas: priority,
         gasLimit: 3_000_000
       };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
-
-      const estimatedTxCost = ethers.utils.formatEther(
-        gasParams.maxFeePerGas.mul(gasParams.gasLimit)
+      const estimatedTxCost = ethers.formatEther(
+        gasParams.maxFeePerGas * BigInt(gasParams.gasLimit)
       );
       console.log('💸 Estimated Max Deployment Cost:', estimatedTxCost, 'ETH');
       break;
+    }
 
     case CHAIN_IDS.FLARE:
     case CHAIN_IDS.FLARE_TESTNET:
     case CHAIN_IDS.SONEIUM_TESTNET:
     case CHAIN_IDS.SONEIUM:
-    case CHAIN_IDS.SOMNIA_TESTNET:
       gasParams.gasLimit = 5_000_000;
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
+    case CHAIN_IDS.SOMNIA:
+    case CHAIN_IDS.SOMNIA_TESTNET:
+      // Special gas handling for Somnia networks - they require very high gas limits
+      if (
+        feeData.maxFeePerGas != null &&
+        feeData.maxPriorityFeePerGas != null
+      ) {
+        const minPriority = 1_000_000_000n; // 1 gwei
+        const priority =
+          feeData.maxPriorityFeePerGas > 0n
+            ? feeData.maxPriorityFeePerGas
+            : minPriority;
+        const base = feeData.maxFeePerGas ?? 0n;
+        const maxFee = base > priority * 2n ? base : priority * 2n;
+        gasParams = {
+          maxFeePerGas: maxFee,
+          maxPriorityFeePerGas: priority,
+          gasLimit: 60_000_000 // Much higher gas limit for Somnia
+        };
+      } else {
+        gasParams = {
+          gasPrice: feeData.gasPrice ?? 6_000_000_000n, // 6 gwei fallback
+          gasLimit: 60_000_000 // Much higher gas limit for Somnia
+        };
+      }
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
@@ -166,10 +193,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.XDC:
     case CHAIN_IDS.XDC_TESTNET:
       gasParams = {
-        gasPrice: feeData.gasPrice!,
-        gasLimit: 3_000_000,
-        maxFeePerGas: undefined,
-        maxPriorityFeePerGas: undefined
+        gasPrice: feeData.gasPrice ?? 0n,
+        gasLimit: 3_000_000
       };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
@@ -179,11 +204,20 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.CREDITCOIN:
     case CHAIN_IDS.WEMIX_TESTNET:
     case CHAIN_IDS.WEMIX:
-      if (feeData.gasPrice?.gt(gasParams.maxPriorityFeePerGas || 0)) {
-        gasParams.maxFeePerGas = feeData.gasPrice!;
-        gasParams.maxPriorityFeePerGas = feeData.gasPrice!;
+      // For these chains, check if we should override EIP-1559 params with gasPrice
+      if (
+        'maxPriorityFeePerGas' in gasParams &&
+        gasParams.maxPriorityFeePerGas !== undefined &&
+        (feeData.gasPrice ?? 0n) > gasParams.maxPriorityFeePerGas
+      ) {
+        gasParams = {
+          maxFeePerGas: feeData.gasPrice!,
+          maxPriorityFeePerGas: feeData.gasPrice!,
+          gasLimit: 3_000_000
+        };
+      } else {
+        gasParams.gasLimit = 3_000_000;
       }
-      gasParams.gasLimit = 3_000_000;
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;

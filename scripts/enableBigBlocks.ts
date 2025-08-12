@@ -1,7 +1,6 @@
-import { Wallet } from '@ethersproject/wallet';
+import { Wallet } from 'ethers';
 import { keccak_256 } from '@noble/hashes/sha3';
 import { encode } from '@msgpack/msgpack';
-import { arrayify } from '@ethersproject/bytes';
 import { hexToBytes, bytesToHex, concatBytes } from './secp256k1Wrapper';
 import { getBigBlocksConfig } from '../config/bigBlocksConfig';
 

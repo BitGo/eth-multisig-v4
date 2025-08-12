@@ -2,7 +2,9 @@ import { expect } from 'chai';
 import fs from 'fs';
 import sinon from 'sinon';
 import { ethers } from 'hardhat';
+import { getCreateAddress } from 'ethers';
 import { loadOutput, saveOutput, deployIfNeededAtNonce } from '../deployUtils';
+import { Contract } from 'ethers'; // Import the generic Contract type for assertions
 
 describe('deployUtils (using Hardhat)', function () {
   let deployerAddress: string;
@@ -29,17 +31,18 @@ describe('deployUtils (using Hardhat)', function () {
   });
 
   it('loadOutput reads JSON from file correctly', () => {
-    const fakeData = JSON.stringify({ wallet: '0xabc' });
+    const fakeData = JSON.stringify({ walletImplementation: '0xabc' });
     sandbox.stub(fs, 'existsSync').returns(true);
     sandbox.stub(fs, 'readFileSync').returns(fakeData);
 
     const output = loadOutput();
-    expect(output).to.deep.equal({ wallet: '0xabc' });
+    expect(output).to.deep.equal({ walletImplementation: '0xabc' });
   });
 
   it('saveOutput writes JSON file with correct structure', () => {
     const writeStub = sandbox.stub(fs, 'writeFileSync').returns();
-    const data = { wallet: '0xdef' };
+
+    const data = { walletFactory: '0xdef' };
     saveOutput(data);
     expect(writeStub.calledWith('output.json', JSON.stringify(data, null, 2)))
       .to.be.true;
@@ -47,17 +50,21 @@ describe('deployUtils (using Hardhat)', function () {
 
   it('saveOutput overwrites file if already exists', () => {
     const writeStub = sandbox.stub(fs, 'writeFileSync').returns();
-    saveOutput({ updated: true });
+
+    saveOutput({ forwarderImplementation: '0x123' });
     expect(writeStub.callCount).to.equal(1);
   });
 
   it('deployIfNeededAtNonce deploys contract if nonce matches', async () => {
-    // This simulates: need to deploy at the current nonce
     const Dummy = await ethers.getContractFactory('WalletSimple');
     const contract = await Dummy.deploy();
-    await contract.deployed();
 
-    const deployFn = async () => contract.address;
+    await contract.waitForDeployment();
+
+    const contractAddress = await (
+      contract as unknown as Contract
+    ).getAddress();
+    const deployFn = async () => contractAddress;
 
     const currentNonce = await ethers.provider.getTransactionCount(
       deployerAddress
@@ -70,7 +77,7 @@ describe('deployUtils (using Hardhat)', function () {
       deployFn
     );
 
-    expect(deployedAddress).to.equal(contract.address);
+    expect(deployedAddress).to.equal(contractAddress);
   });
 
   it('skips deployment if nonce is higher', async () => {
@@ -87,7 +94,7 @@ describe('deployUtils (using Hardhat)', function () {
       deployFn
     );
 
-    const predicted = ethers.utils.getContractAddress({
+    const predicted = getCreateAddress({
       from: deployerAddress,
       nonce: expectedNonce
     });
