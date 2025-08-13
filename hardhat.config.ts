@@ -553,7 +553,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tirys: {
-      url: `https://inst-1.cloud.blockscout.com/api/eth-rpc`,
+      url: `http://testnet-rpc.irys.xyz/v1/execution-rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -561,7 +561,7 @@ const config: HardhatUserConfig = {
       ]
     },
     irys: {
-      url: `https://inst-1.cloud.blockscout.com/api/eth-rpc`, // TODO: Update with mainnet URL when available
+      url: `http://testnet-rpc.irys.xyz/v1/execution-rpc`, // TODO: Update with mainnet URL when available
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1076,15 +1076,15 @@ const config: HardhatUserConfig = {
         chainId: CHAIN_IDS.IRYS_TESTNET,
         urls: {
           apiURL: 'https://inst-1.cloud.blockscout.com/api',
-          browserURL: 'https://inst-1.cloud.blockscout.com'
+          browserURL: 'https://testnet-explorer.irys.xyz/'
         }
       },
       {
         network: 'irysMainnet',
         chainId: CHAIN_IDS.IRYS,
         urls: {
-          apiURL: 'https://inst-1.cloud.blockscout.com/api',
-          browserURL: 'https://inst-1.cloud.blockscout.com'
+          apiURL: 'https://inst-1.cloud.blockscout.com/api', // TODO: Update with mainnet URL when available
+          browserURL: 'https://testnet-explorer.irys.xyz/'
         }
       }
     ]
