@@ -23,7 +23,6 @@ const {
   ETHERSCAN_API_KEY,
   ALCHEMY_POLYGON_API_KEY,
   POLYGONSCAN_API_KEY,
-  BSCSCAN_API_KEY,
   ARBISCAN_API_KEY,
   OPTIMISTIC_ETHERSCAN_API_KEY,
   ZKSYNC_EXPLORER_API_KEY,
@@ -582,8 +581,8 @@ const config: HardhatUserConfig = {
       //polygon
       polygon: `${POLYGONSCAN_API_KEY}`,
       polygonAmoy: `${POLYGONSCAN_API_KEY}`,
-      bscTestnet: `${BSCSCAN_API_KEY}`,
-      bsc: `${BSCSCAN_API_KEY}`,
+      bscTestnet: `${ETHERSCAN_API_KEY}`,
+      bsc: `${ETHERSCAN_API_KEY}`,
       // arbitrum
       arbitrumOne: `${ARBISCAN_API_KEY}`,
       arbitrumSepolia: `${ARBISCAN_API_KEY}`,
@@ -1085,6 +1084,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://inst-1.cloud.blockscout.com/api',
           browserURL: 'https://inst-1.cloud.blockscout.com'
+        }
+      },
+      {
+        network: 'tbsc',
+        chainId: CHAIN_IDS.BSC_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.BSC_TESTNET}`,
+          browserURL: 'https://testnet.bscscan.com/'
+        }
+      },
+      {
+        network: 'bsc',
+        chainId: CHAIN_IDS.BSC_MAINNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.BSC_MAINNET}`,
+          browserURL: 'https://bscscan.com/'
         }
       }
     ]
