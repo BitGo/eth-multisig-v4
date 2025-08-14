@@ -2,6 +2,7 @@ import hre, { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 import { logger, waitAndVerify } from '../deployUtils';
 import fs from 'fs';
+import { getBatcherGasParams } from '../config/configGasParams';
 
 // Minimal tx override type compatible with ethers v6
 type TxOverrides = {
@@ -11,6 +12,11 @@ type TxOverrides = {
   gasPrice?: bigint;
 };
 
+function getArg(name: string): string | undefined {
+  const i = process.argv.indexOf(name);
+  return i >= 0 ? process.argv[i + 1] : undefined;
+}
+
 async function main() {
   logger.step('🚀 Starting Batcher Contract Deployment 🚀');
 
@@ -19,7 +25,6 @@ async function main() {
   };
 
   const contractName = 'Batcher';
-  const transferGasLimit = 200000; // uint256
 
   // --- 1. Setup & Configuration ---
   logger.step('1. Setting up deployer and network information...');
@@ -96,8 +101,28 @@ async function main() {
     batcherDeployer
   );
 
-  const erc20BatchLimit = 256;
-  const nativeBatchLimit = 256;
+  // Pull constructor args from centralized config
+  let { transferGasLimit, erc20BatchLimit, nativeBatchTransferLimit } =
+    getBatcherGasParams(Number(chainId));
+
+  // Optional deployment-time override so you can test with very low gas (e.g., 200)
+  const tglOverride =
+    getArg('--transfer-gas-limit') ||
+    getArg('--tgas') ||
+    process.env.BATCHER_TRANSFER_GAS_LIMIT ||
+    process.env.TRANSFER_GAS_LIMIT;
+  if (tglOverride) {
+    const parsed = Number(tglOverride);
+    if (!Number.isNaN(parsed) && parsed >= 0) {
+      logger.warn(`Overriding transferGasLimit for deployment -> ${parsed}`);
+      transferGasLimit = parsed;
+    } else {
+      logger.warn(
+        `Ignoring invalid transfer gas limit override: ${tglOverride}. Using ${transferGasLimit}`
+      );
+    }
+  }
+  const nativeBatchLimit = nativeBatchTransferLimit;
 
   // Build the deploy transaction request for estimation
   const deployTxReq = await Batcher.getDeployTransaction(

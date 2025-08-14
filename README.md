@@ -107,15 +107,99 @@ Forwarder function. Initializes with a parent and a fee address. It will forward
 
 Factory to create updated forwarder (contracts/ForwarderV4.sol). Deploys a small proxy which utilizes the implementation of a single forwarder contract.
 
-## Installation
+## Batcher gas params and admin script
 
-NodeJS 16 is required.
+Centralized config:
+- Per-chain defaults for Batcher limits: `config/configGasParams.ts`
+- Coin-specific batcher registry (addresses and optional per-coin limits): `config/coinBatcherLimits.ts`
 
-```shell
-yarn
+Populate the coin registry (example for `stt`):
+```ts
+// config/coinBatcherLimits.ts
+const STT: Limits = {
+  50312: { batcher: '0xBatcherOnSomniaTestnet', transferGasLimit: 300000 },
+  5031:  { batcher: '0xBatcherOnSomniaMainnet',  transferGasLimit: 300000 }
+};
 ```
 
-This installs hardhat.
+Deploying Batcher uses defaults from `config/configGasParams.ts`:
+```sh
+npm run deploy-batcher -- --network <network>
+```
+
+Update transferGasLimit on an existing Batcher (config-driven):
+- Minimal (network-only). The new limit is taken strictly from TS config (registry per coin/chain or per-chain defaults):
+```sh
+npm run update-gas-limit -- --network <network>
+```
+- Optional: pass `--coin <coin>` if you add more coins (defaults to `stt`).
+- To change the value, edit one of:
+  - `config/coinBatcherLimits.ts` (preferred per-coin/chain override)
+  - `config/configGasParams.ts` (per-chain defaults)
+
+Notes:
+- The script enforces onlyOwner and will abort if the caller isn’t the Batcher owner.
+- Gas price/1559 overrides are handled separately by `scripts/chainConfig.ts`.
+- For Somnia networks, batcher addresses are kept as constants in `config/coinBatcherLimits.ts` to avoid CI env hops. Fill them before running CI.
+
+### Testing tools: GasHeavy end-to-end retest
+
+Run the GasHeavy scenario tool (low limit fails, high limit succeeds):
+```sh
+npx hardhat run test/tools/retestGasHeavy.ts --network tstt
+```
+
+Important: use the testnet network alias `tstt` when running this tool (do not use `stt`).
+
+Because Hardhat doesn't pass unknown flags to scripts (HH305), provide the batcher address via environment instead of CLI flags:
+- `BATCHER_ADDRESS=0x...` or `BATCHER=0x...` (either is accepted)
+
+Example (required):
+```sh
+export BATCHER_ADDRESS=0xYourBatcherAddress
+npx hardhat run test/tools/retestGasHeavy.ts --network tstt
+```
+
+Optional envs:
+- `COIN=stt` (defaults to `stt`)
+- `OWNER_PRIVATE_KEY=0x...` to perform owner-only updates inside the tool; if omitted, owner updates are skipped and the test proceeds with current limits
+- `GAS_HEAVY=0x...` to reuse an existing GasHeavy
+- `LOW_LIMIT=2300` and `HIGH_LIMIT=300000` to tweak the test values
+- `AMOUNT_WEI=100000000000000` to adjust the send amount
+
+Notes:
+- Tools under `test/tools` are not part of the Mocha test run; execute them directly with `hardhat run` as shown above.
+- To change transferGasLimit for real, use the production script described below; the retest tool will only attempt owner mutations when `OWNER_PRIVATE_KEY` is provided.
+
+### GitHub Actions: update_transfer_gas_limit
+
+You can trigger a transferGasLimit update via a manual workflow dispatch:
+
+1. Ensure Somnia addresses are filled in `config/coinBatcherLimits.ts` (or provide `BATCHER_ADDRESS` when running locally).
+2. In GitHub, run the workflow: Actions > "Update Batcher transferGasLimit" > Run workflow
+   - Inputs:
+  - `environment`: `testnet` or `mainnet`
+  - `network` (chain): Hardhat network name (e.g., `tstt`, `stt`)
+  - `batcher_address` (optional): Explicit batcher address. If omitted, the workflow sets a default based on `environment`:
+       - testnet default: `0xebe27913fcc7510eAdf10643A8F86Bf5492A9541`
+       - mainnet default: `0x3E1e5d78e44f15593B3B61ED278f12C27F0fF33e`
+  - `gas_limit` (optional): Override transferGasLimit for this run. If omitted, the script uses TS config defaults/overrides.
+
+Behavior:
+- The script prefers `gas_limit` (passed as env TRANSFER_GAS_LIMIT) when provided.
+- Otherwise, it uses coin/chain-specific limits from `config/coinBatcherLimits.ts` or per-chain defaults from `config/configGasParams.ts` (which includes Somnia’s higher default).
+     
+
+
+## Installation
+
+NodeJS 18+ is required.
+
+```shell
+npm install
+```
+
+This installs dependencies including Hardhat.
 
 ## Wallet Solidity Contract
 

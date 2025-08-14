@@ -12,6 +12,7 @@
     "deploy-prod": "hardhat run scripts/deploy.ts --network",
     "deploy-test": "hardhat run scripts/deploy.ts --network",
     "deploy-batcher": "hardhat run scripts/deployBatcherContract.ts --network",
+    "update-gas-limit": "hardhat run scripts/updateTransferGasLimit.ts --network",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "solhint": "./node_modules/.bin/solhint --fix 'contracts/**/*.sol'",
