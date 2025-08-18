@@ -850,7 +850,7 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL:
             'https://api.socialscan.io/pharos-testnet/v1/explorer/command_api/contract',
-          browserURL: 'https://testnet.pharosscan.xyz'
+          browserURL: 'https://testnet.pharosscan.xyz/'
         }
       },
       {
