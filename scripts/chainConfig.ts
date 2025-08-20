@@ -156,7 +156,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
-
     case CHAIN_IDS.SOMNIA:
     case CHAIN_IDS.SOMNIA_TESTNET:
       // Special gas handling for Somnia networks - they require very high gas limits
