@@ -107,15 +107,79 @@ Forwarder function. Initializes with a parent and a fee address. It will forward
 
 Factory to create updated forwarder (contracts/ForwarderV4.sol). Deploys a small proxy which utilizes the implementation of a single forwarder contract.
 
-## Installation
+## Batcher gas params and admin script
 
-NodeJS 16 is required.
+Centralized defaults used when deploying a new Batcher:
+- Per-chain constructor defaults: `config/configGasParams.ts`
 
-```shell
-yarn
+Deploying Batcher (uses `config/configGasParams.ts` for constructor args):
+```sh
+npm run deploy-batcher -- --network <network>
 ```
 
-This installs hardhat.
+Optional constructor override during deploy:
+- `TRANSFER_GAS_LIMIT` to set a custom initial transferGasLimit.
+Notes:
+- On Somnia (testnet/mainnet), the deploy script automatically enforces a high gasLimit floor and sets robust fee params; no action needed.
+
+Updating transferGasLimit on an existing Batcher (env-only, simplified):
+- Required envs:
+  - `BATCHER_ADDRESS` — the deployed Batcher address
+  - `TRANSFER_GAS_LIMIT` — the new per-recipient gas stipend (number)
+- Behavior:
+  - Uses signers[0] for the selected Hardhat network.
+  - Verifies there is contract code at `BATCHER_ADDRESS` and that signers[0] is the on-chain owner; otherwise exits early.
+  - Gas params come from `scripts/chainConfig.ts` per chain; Somnia gets high gasLimit automatically.
+```sh
+BATCHER_ADDRESS=0xYourBatcher \
+TRANSFER_GAS_LIMIT=300000 \
+npm run update-gas-limit -- --network <network>
+```
+Ensure the first account in `networks.<name>.accounts` (Hardhat config) is the Batcher owner on that chain.
+
+### Testing tools: GasHeavy end-to-end retest
+
+Run the GasHeavy scenario tool (low limit fails, high limit succeeds):
+```sh
+BATCHER_ADDRESS=0xYourBatcherAddress \
+npx hardhat run test/tools/retestGasHeavy.ts --network tstt
+```
+
+Important:
+- The tool reads `BATCHER_ADDRESS` from the environment (Hardhat doesn’t forward unknown CLI flags).
+- Optional envs:
+  - `OWNER_PRIVATE_KEY=0x...` to perform owner-only updates inside the tool; if omitted, owner updates are skipped and the test proceeds with current limits.
+  - `GAS_HEAVY=0x...` to reuse a pre-deployed GasHeavy. On Somnia (50312/5031), the tool enforces a high gasLimit floor during deployment and will retry code detection; providing `GAS_HEAVY` skips deploy variance.
+  - `LOW_LIMIT=2300`, `HIGH_LIMIT=300000`, `AMOUNT_WEI=100000000000000` to tweak behavior.
+- Tools under `test/tools` are not part of the Mocha test run; execute them with `hardhat run` as shown.
+- To change transferGasLimit for real, use the admin script in the previous section.
+
+### GitHub Actions: update_transfer_gas_limit
+
+Trigger a transferGasLimit update via the workflow dispatch:
+
+1. In GitHub, run the workflow: Actions > "Update Batcher transferGasLimit" > Run workflow
+   - Inputs (required):
+     - `environment`: `testnet` or `mainnet`
+     - `network`: Hardhat network name (e.g., `tstt`, `stt`)
+     - `batcher_address`: the deployed Batcher address
+     - `gas_limit`: the new transferGasLimit value
+
+Behavior:
+- The workflow exports `BATCHER_ADDRESS` and `TRANSFER_GAS_LIMIT` for the script.
+- The script uses the first configured signer on that network; make sure that signer is the on-chain owner or the run will fail.
+     
+
+
+## Installation
+
+NodeJS 18+ is required.
+
+```shell
+npm install
+```
+
+This installs dependencies including Hardhat.
 
 ## Wallet Solidity Contract
 

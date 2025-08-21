@@ -1,0 +1,48 @@
+name: Update Batcher transferGasLimit
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - testnet
+          - mainnet
+      network:
+        description: "Hardhat network (e.g., tstt, stt)"
+        required: true
+        type: string
+      gas_limit:
+        description: "transferGasLimit to set (required)"
+        required: true
+        default: '300000'
+        type: string
+      batcher_address:
+        description: "Batcher contract address (required)"
+        required: true
+        default: ''
+        type: string
+
+jobs:
+  run-update:
+    runs-on: ubuntu-latest
+    environment: "${{ inputs.environment }}"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+      - run: npm install
+      - name: Run update script
+        run: |
+          export BATCHER_ADDRESS="${{ inputs.batcher_address }}"
+          export TRANSFER_GAS_LIMIT="${{ inputs.gas_limit }}"
+          npm run update-gas-limit -- ${{ inputs.network }}
+        env:
+          MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT }}
+          PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT }}
