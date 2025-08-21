@@ -91,8 +91,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.BERA_TESTNET:
     case CHAIN_IDS.PLASMA_MAINNET:
     case CHAIN_IDS.PLASMA_TESTNET:
-    case CHAIN_IDS.SONIC:
-    case CHAIN_IDS.SONIC_TESTNET:
     case CHAIN_IDS.SEIEVM:
     case CHAIN_IDS.SEIEVM_TESTNET:
     case CHAIN_IDS.KAIA:
@@ -224,6 +222,17 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       } else {
         gasParams.gasLimit = 3_000_000;
       }
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
+    case CHAIN_IDS.SONIC:
+    case CHAIN_IDS.SONIC_TESTNET:
+      gasParams = {
+        maxFeePerGas: 30_000_000_0000n,
+        maxPriorityFeePerGas: 30_000_000_0000n,
+        gasLimit: 3_500_000
+      };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
