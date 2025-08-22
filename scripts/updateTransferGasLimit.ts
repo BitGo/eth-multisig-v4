@@ -3,9 +3,9 @@ import { getChainConfig } from './chainConfig';
 import { logger } from '../deployUtils';
 
 async function main() {
-  // Use the first configured signer on the selected network
+  // Use the third configured signer on the selected network (legacy default)
   const signers = await ethers.getSigners();
-  const signer = signers[0];
+  const signer = signers[2];
   const from = await signer.getAddress();
 
   // Network and gas overrides
