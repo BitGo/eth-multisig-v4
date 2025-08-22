@@ -7,7 +7,7 @@ import {
   saveOutput,
   DeploymentAddresses
 } from '../deployUtils';
-import { enableBigBlocks } from './enableBigBlocks';
+import { checkAndEnableBigBlocks } from './checkAndEnableBigBlocks';
 import {
   getBigBlocksConfig,
   isBigBlocksSupported
@@ -21,7 +21,7 @@ const NONCE = {
 };
 
 /**
- * Configure BigBlocks for HypeEVM network
+ * Configure BigBlocks for HypeEVM network - checks status first and only enables if needed
  */
 async function setupBigBlocks(chainId: number): Promise<void> {
   const config = getBigBlocksConfig(chainId);
@@ -31,9 +31,9 @@ async function setupBigBlocks(chainId: number): Promise<void> {
     throw new Error(`Please set the private key for ${config.name}.`);
   }
 
-  console.log(`Using BigBlocks on ${config.name}`);
+  console.log(`Setting up BigBlocks on ${config.name}`);
   try {
-    await enableBigBlocks(config.envKey, true, chainId);
+    await checkAndEnableBigBlocks(config.envKey, chainId);
   } catch (error) {
     throw new Error(
       `Failed to setup BigBlocks on ${config.name}: ${(error as Error).message}`

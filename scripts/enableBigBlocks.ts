@@ -1,4 +1,4 @@
-import { Wallet } from 'ethers';
+import { Wallet, getBytes } from 'ethers';
 import { keccak_256 } from '@noble/hashes/sha3';
 import { encode } from '@msgpack/msgpack';
 import { hexToBytes, bytesToHex, concatBytes } from './secp256k1Wrapper';
@@ -121,10 +121,10 @@ async function signL1Action({
 
   const message = {
     source: config.isTestnet ? 'b' : 'a',
-    connectionId: arrayify(connectionId)
+    connectionId: getBytes(connectionId)
   };
 
-  const signature = await wallet._signTypedData(domain, types, message);
+  const signature = await wallet.signTypedData(domain, types, message);
 
   const r = '0x' + signature.slice(2, 66);
   const s = '0x' + signature.slice(66, 130);
