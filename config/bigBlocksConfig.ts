@@ -1,5 +1,9 @@
 import { CHAIN_IDS } from './chainIds';
-const { HYPE_EVM_PRIVATE_KEY } = process.env;
+const {
+  HYPE_EVM_PRIVATE_KEY,
+  PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT,
+  PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT
+} = process.env;
 
 /**
  * Configuration for a chain that supports BigBlocks
@@ -42,6 +46,38 @@ export const BIGBLOCKS_SUPPORTED_CHAINS: Record<number, BigBlocksChainConfig> =
       envKey: HYPE_EVM_PRIVATE_KEY
     }
   };
+
+/**
+ * Get BigBlocks configuration for V4 contract deployment
+ * Uses PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT environment variable
+ */
+export const getBigBlocksConfigForV4Deployment = (
+  chainId: number
+): BigBlocksChainConfig | undefined => {
+  const baseConfig = BIGBLOCKS_SUPPORTED_CHAINS[chainId];
+  if (!baseConfig) return undefined;
+  
+  return {
+    ...baseConfig,
+    envKey: PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT
+  };
+};
+
+/**
+ * Get BigBlocks configuration for Batcher contract deployment
+ * Uses PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT environment variable
+ */
+export const getBigBlocksConfigForBatcherDeployment = (
+  chainId: number
+): BigBlocksChainConfig | undefined => {
+  const baseConfig = BIGBLOCKS_SUPPORTED_CHAINS[chainId];
+  if (!baseConfig) return undefined;
+  
+  return {
+    ...baseConfig,
+    envKey: PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT
+  };
+};
 
 /**
  * Check if a given chain ID supports BigBlocks

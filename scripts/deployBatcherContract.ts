@@ -5,6 +5,7 @@ import fs from 'fs';
 import { enableBigBlocks } from './enableBigBlocks';
 import {
   getBigBlocksConfig,
+  getBigBlocksConfigForBatcherDeployment,
   isBigBlocksSupported
 } from '../config/bigBlocksConfig';
 
@@ -129,7 +130,7 @@ async function setupBigBlocks(
   chainId: number,
   deployerAddress: string
 ): Promise<void> {
-  const config = getBigBlocksConfig(chainId);
+  const config = getBigBlocksConfigForBatcherDeployment(chainId);
   if (!config) return;
 
   if (!config.envKey) {

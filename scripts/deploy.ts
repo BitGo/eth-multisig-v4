@@ -10,6 +10,7 @@ import {
 import { enableBigBlocks } from './enableBigBlocks';
 import {
   getBigBlocksConfig,
+  getBigBlocksConfigForV4Deployment,
   isBigBlocksSupported
 } from '../config/bigBlocksConfig';
 
@@ -128,7 +129,7 @@ async function setupBigBlocks(
   chainId: number,
   deployerAddress: string
 ): Promise<void> {
-  const config = getBigBlocksConfig(chainId);
+  const config = getBigBlocksConfigForV4Deployment(chainId);
   if (!config) return;
 
   if (!config.envKey) {
