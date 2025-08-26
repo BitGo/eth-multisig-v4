@@ -13,7 +13,6 @@ type TxOverrides = {
   gasPrice?: bigint;
 };
 
-
 async function main() {
   logger.step('🚀 Starting Batcher Contract Deployment 🚀');
 

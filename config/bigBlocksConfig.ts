@@ -56,7 +56,7 @@ export const getBigBlocksConfigForV4Deployment = (
 ): BigBlocksChainConfig | undefined => {
   const baseConfig = BIGBLOCKS_SUPPORTED_CHAINS[chainId];
   if (!baseConfig) return undefined;
-  
+
   return {
     ...baseConfig,
     envKey: PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT
@@ -72,7 +72,7 @@ export const getBigBlocksConfigForBatcherDeployment = (
 ): BigBlocksChainConfig | undefined => {
   const baseConfig = BIGBLOCKS_SUPPORTED_CHAINS[chainId];
   if (!baseConfig) return undefined;
-  
+
   return {
     ...baseConfig,
     envKey: PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT

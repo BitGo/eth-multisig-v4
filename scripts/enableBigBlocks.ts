@@ -226,7 +226,9 @@ export async function checkBigBlocksStatus(
     throw new Error(`Chain with ID ${chainId} is not supported for BigBlocks.`);
   }
 
-  console.log(`🔍 Checking BigBlocks status for ${userAddress} on ${config.name}...`);
+  console.log(
+    `🔍 Checking BigBlocks status for ${userAddress} on ${config.name}...`
+  );
   console.log(`📡 Making RPC call to: ${config.rpcUrl}`);
 
   try {
@@ -260,7 +262,9 @@ export async function checkBigBlocksStatus(
 
     return result.result || false;
   } catch (err) {
-    console.error(`❌ Failed to fetch BigBlocks status: ${(err as Error).message}`);
+    console.error(
+      `❌ Failed to fetch BigBlocks status: ${(err as Error).message}`
+    );
     throw err;
   }
 }
@@ -279,11 +283,15 @@ export async function enableBigBlocksWithRetry(
         `🔄 Attempt ${attempt}/${maxRetries}: Enabling BigBlocks on ${config.name}`
       );
       await enableBigBlocks(config.envKey!, true, chainId);
-      console.log(`✅ BigBlocks enabled on ${config.name} (attempt ${attempt})`);
+      console.log(
+        `✅ BigBlocks enabled on ${config.name} (attempt ${attempt})`
+      );
       return;
     } catch (error) {
       console.log(
-        `❌ Attempt ${attempt}/${maxRetries} failed: ${(error as Error).message}`
+        `❌ Attempt ${attempt}/${maxRetries} failed: ${
+          (error as Error).message
+        }`
       );
 
       if (attempt === maxRetries) {
@@ -342,7 +350,9 @@ export async function setupBigBlocksForV4Deployment(
     );
   }
 
-  console.log(`🎉 BigBlocks successfully verified as enabled on ${config.name}`);
+  console.log(
+    `🎉 BigBlocks successfully verified as enabled on ${config.name}`
+  );
 }
 
 /**
@@ -386,5 +396,7 @@ export async function setupBigBlocksForBatcherDeployment(
     );
   }
 
-  console.log(`🎉 BigBlocks successfully verified as enabled on ${config.name}`);
+  console.log(
+    `🎉 BigBlocks successfully verified as enabled on ${config.name}`
+  );
 }
