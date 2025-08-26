@@ -99,8 +99,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.IRYS_TESTNET:
     case CHAIN_IDS.PHAROS:
     case CHAIN_IDS.PHAROS_TESTNET:
-    case CHAIN_IDS.HYPEEVM:
-    case CHAIN_IDS.HYPEEVM_TESTNET:
     case CHAIN_IDS.APECHAIN:
     case CHAIN_IDS.APECHAIN_TESTNET:
     case CHAIN_IDS.CORE_DAO:
@@ -117,7 +115,16 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
-
+    case CHAIN_IDS.HYPEEVM:
+    case CHAIN_IDS.HYPEEVM_TESTNET:
+      gasParams = {
+        maxFeePerGas: 30_000_000_000n,
+        maxPriorityFeePerGas: 30_000_000_000n,
+        gasLimit: 3_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
     case CHAIN_IDS.WORLD:
     case CHAIN_IDS.WORLD_TESTNET:
       gasParams = {
