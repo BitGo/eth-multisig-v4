@@ -1,5 +1,6 @@
 import { CHAIN_IDS } from './chainIds';
 const { HYPE_EVM_PRIVATE_KEY } = process.env;
+
 /**
  * Configuration for a chain that supports BigBlocks
  */
@@ -10,6 +11,8 @@ export interface BigBlocksChainConfig {
   isTestnet: boolean;
   /** API URL for BigBlocks service */
   apiUrl: string;
+  /** RPC URL for the network */
+  rpcUrl: string;
   /** Chain ID for BigBlocks service */
   bigBlocksChainId: number;
   /** Environment variable key for private key */
@@ -26,6 +29,7 @@ export const BIGBLOCKS_SUPPORTED_CHAINS: Record<number, BigBlocksChainConfig> =
       name: 'HypeEVM mainnet',
       isTestnet: false,
       apiUrl: 'https://api.hyperliquid.xyz/exchange',
+      rpcUrl: 'https://spectrum-01.simplystaking.xyz/hyperliquid-tn-rpc/evm',
       bigBlocksChainId: 1337,
       envKey: HYPE_EVM_PRIVATE_KEY
     },
@@ -33,6 +37,7 @@ export const BIGBLOCKS_SUPPORTED_CHAINS: Record<number, BigBlocksChainConfig> =
       name: 'HypeEVM Testnet',
       isTestnet: true,
       apiUrl: 'https://api.hyperliquid-testnet.xyz/exchange',
+      rpcUrl: 'https://spectrum-01.simplystaking.xyz/hyperliquid-tn-rpc/evm',
       bigBlocksChainId: 1337,
       envKey: HYPE_EVM_PRIVATE_KEY
     }

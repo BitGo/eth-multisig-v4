@@ -2,6 +2,11 @@ import hre, { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 import { logger, waitAndVerify } from '../deployUtils';
 import fs from 'fs';
+import { enableBigBlocks } from './enableBigBlocks';
+import {
+  getBigBlocksConfig,
+  isBigBlocksSupported
+} from '../config/bigBlocksConfig';
 
 // Minimal tx override type compatible with ethers v6
 type TxOverrides = {
@@ -10,6 +15,158 @@ type TxOverrides = {
   maxPriorityFeePerGas?: bigint;
   gasPrice?: bigint;
 };
+
+// Add interface for JSON RPC response
+interface JsonRpcResponse {
+  jsonrpc: string;
+  id: number;
+  result?: boolean;
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
+/**
+ * Check if BigBlocks is already enabled using RPC call
+ */
+async function checkBigBlocksStatus(
+  userAddress: string,
+  chainId: number
+): Promise<boolean> {
+  const config = getBigBlocksConfig(chainId);
+  if (!config) {
+    throw new Error(`Chain with ID ${chainId} is not supported for BigBlocks.`);
+  }
+
+  logger.info(
+    `🔍 Checking BigBlocks status for ${userAddress} on ${config.name}...`
+  );
+  logger.info(`📡 Making RPC call to: ${config.rpcUrl}`);
+
+  try {
+    const requestBody = {
+      jsonrpc: '2.0',
+      id: 0,
+      method: 'eth_usingBigBlocks',
+      params: [userAddress]
+    };
+
+    const res = await fetch(config.rpcUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP Error: ${res.status} ${await res.text()}`);
+    }
+
+    const result = (await res.json()) as JsonRpcResponse;
+    logger.info(`📥 RPC Response: ${JSON.stringify(result)}`);
+
+    if (result.error) {
+      throw new Error(
+        `RPC Error: ${result.error.code} - ${result.error.message}`
+      );
+    }
+
+    return result.result || false;
+  } catch (err) {
+    logger.error(
+      `❌ Failed to fetch BigBlocks status: ${(err as Error).message}`
+    );
+    throw err;
+  }
+}
+
+/**
+ * Enable BigBlocks with retry mechanism
+ */
+async function enableBigBlocksWithRetry(
+  config: any,
+  chainId: number,
+  maxRetries: number = 3
+): Promise<void> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      logger.info(
+        `🔄 Attempt ${attempt}/${maxRetries}: Enabling BigBlocks on ${config.name}`
+      );
+      await enableBigBlocks(config.envKey, true, chainId);
+      logger.success(
+        `✅ BigBlocks enabled on ${config.name} (attempt ${attempt})`
+      );
+      return;
+    } catch (error) {
+      logger.warn(
+        `❌ Attempt ${attempt}/${maxRetries} failed: ${
+          (error as Error).message
+        }`
+      );
+
+      if (attempt === maxRetries) {
+        throw new Error(
+          `Failed to enable BigBlocks on ${
+            config.name
+          } after ${maxRetries} attempts: ${(error as Error).message}`
+        );
+      }
+
+      // Wait 2 seconds before retry
+      logger.info('⏳ Waiting 2 seconds before retry...');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+}
+
+/**
+ * Setup BigBlocks for a specific chain
+ */
+async function setupBigBlocks(
+  chainId: number,
+  deployerAddress: string
+): Promise<void> {
+  const config = getBigBlocksConfig(chainId);
+  if (!config) return;
+
+  if (!config.envKey) {
+    throw new Error(`Please set the private key for ${config.name}.`);
+  }
+
+  logger.info(`🔧 Checking BigBlocks status on ${config.name}...`);
+
+  // Check if BigBlocks is already enabled
+  const isEnabled = await checkBigBlocksStatus(deployerAddress, chainId);
+
+  if (isEnabled) {
+    logger.success(`✅ BigBlocks already enabled on ${config.name}`);
+    return;
+  }
+
+  logger.info(
+    `🔄 BigBlocks not enabled on ${config.name}, attempting to enable...`
+  );
+
+  // Try to enable BigBlocks with retry mechanism
+  await enableBigBlocksWithRetry(config, chainId, 3);
+
+  // Verify it was enabled successfully
+  logger.info(`🔍 Verifying BigBlocks was enabled...`);
+  const isEnabledAfter = await checkBigBlocksStatus(deployerAddress, chainId);
+
+  if (!isEnabledAfter) {
+    throw new Error(
+      `BigBlocks enable command succeeded but verification failed on ${config.name}`
+    );
+  }
+
+  logger.success(
+    `🎉 BigBlocks successfully verified as enabled on ${config.name}`
+  );
+}
 
 async function main() {
   logger.step('🚀 Starting Batcher Contract Deployment 🚀');
@@ -80,6 +237,23 @@ async function main() {
 
   logger.info(`Network: ${hre.network.name} (Chain ID: ${chainId})`);
   logger.info(`Deployer Address: ${address}`);
+
+  // --- 1.5. BigBlocks Setup ---
+  logger.step('1.5. Checking and setting up BigBlocks if supported...');
+
+  if (isBigBlocksSupported(Number(chainId))) {
+    logger.info('🔍 BigBlocks supported on this chain, checking status...');
+    try {
+      await setupBigBlocks(Number(chainId), address);
+      logger.success('✅ BigBlocks setup completed successfully');
+    } catch (error) {
+      logger.warn('⚠️ BigBlocks setup failed after all retry attempts');
+      logger.warn(`BigBlocks error: ${(error as Error).message}`);
+      logger.info('📦 Continuing with deployment without BigBlocks...');
+    }
+  } else {
+    logger.info('ℹ️ BigBlocks not supported on this chain, skipping...');
+  }
 
   // --- 2. Gas Parameter Handling ---
   logger.step('2. Configuring gas parameters for the transaction...');
