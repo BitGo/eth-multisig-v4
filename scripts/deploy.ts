@@ -7,12 +7,8 @@ import {
   saveOutput,
   DeploymentAddresses
 } from '../deployUtils';
-import { enableBigBlocks } from './enableBigBlocks';
-import {
-  getBigBlocksConfig,
-  getBigBlocksConfigForV4Deployment,
-  isBigBlocksSupported
-} from '../config/bigBlocksConfig';
+import { setupBigBlocksForV4Deployment } from './enableBigBlocks';
+import { isBigBlocksSupported } from '../config/bigBlocksConfig';
 
 const NONCE = {
   WALLET: 0,
@@ -21,150 +17,6 @@ const NONCE = {
   FORWARDER_FACTORY: 3
 };
 
-// Add interface for JSON RPC response
-interface JsonRpcResponse {
-  jsonrpc: string;
-  id: number;
-  result?: boolean;
-  error?: {
-    code: number;
-    message: string;
-  };
-}
-
-/**
- * Check if BigBlocks is already enabled using RPC call
- */
-async function checkBigBlocksStatus(
-  userAddress: string,
-  chainId: number
-): Promise<boolean> {
-  const config = getBigBlocksConfig(chainId);
-  if (!config) {
-    throw new Error(`Chain with ID ${chainId} is not supported for BigBlocks.`);
-  }
-  console.log('Useradd' + userAddress);
-  console.log(
-    `Checking BigBlocks status for ${userAddress} on ${config.name}...`
-  );
-  console.log(`Making RPC call to: ${config.rpcUrl}`);
-  try {
-    const requestBody = {
-      jsonrpc: '2.0',
-      id: 0,
-      method: 'eth_usingBigBlocks',
-      params: [userAddress]
-    };
-
-    const res = await fetch(config.rpcUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!res.ok) {
-      throw new Error(`HTTP Error: ${res.status} ${await res.text()}`);
-    }
-
-    const result = (await res.json()) as JsonRpcResponse;
-
-    console.log(result);
-
-    if (result.error) {
-      throw new Error(
-        `RPC Error: ${result.error.code} - ${result.error.message}`
-      );
-    }
-
-    return result.result || false;
-  } catch (err) {
-    console.error('Failed to fetch BigBlocks status.');
-    throw err;
-  }
-}
-
-/**
- * Enable BigBlocks with retry mechanism
- */
-async function enableBigBlocksWithRetry(
-  config: any,
-  chainId: number,
-  maxRetries: number = 3
-): Promise<void> {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(
-        ` Attempt ${attempt}/${maxRetries}: Enabling BigBlocks on ${config.name}`
-      );
-      await enableBigBlocks(config.envKey, true, chainId);
-      console.log(` BigBlocks enabled on ${config.name} (attempt ${attempt})`);
-      return;
-    } catch (error) {
-      console.log(
-        `Attempt ${attempt}/${maxRetries} failed:`,
-        (error as Error).message
-      );
-
-      if (attempt === maxRetries) {
-        throw new Error(
-          `Failed to enable BigBlocks on ${
-            config.name
-          } after ${maxRetries} attempts: ${(error as Error).message}`
-        );
-      }
-
-      // Wait 2 seconds before retry
-      console.log(' Waiting 2 seconds before retry...');
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-  }
-}
-
-/**
- * Setup BigBlocks for a specific chain
- */
-async function setupBigBlocks(
-  chainId: number,
-  deployerAddress: string
-): Promise<void> {
-  const config = getBigBlocksConfigForV4Deployment(chainId);
-  if (!config) return;
-
-  if (!config.envKey) {
-    throw new Error(`Please set the private key for ${config.name}.`);
-  }
-
-  console.log(` Checking BigBlocks status on ${config.name}...`);
-
-  // Check if BigBlocks is already enabled
-  const isEnabled = await checkBigBlocksStatus(deployerAddress, chainId);
-
-  if (isEnabled) {
-    console.log(`BigBlocks already enabled on ${config.name}`);
-    return;
-  }
-
-  console.log(
-    ` BigBlocks not enabled on ${config.name}, attempting to enable...`
-  );
-
-  // Try to enable BigBlocks with retry mechanism
-  await enableBigBlocksWithRetry(config, chainId, 3);
-
-  // Verify it was enabled successfully
-  console.log(`Verifying BigBlocks was enabled...`);
-  const isEnabledAfter = await checkBigBlocksStatus(deployerAddress, chainId);
-
-  if (!isEnabledAfter) {
-    throw new Error(
-      `BigBlocks enable command succeeded but verification failed on ${config.name}`
-    );
-  }
-
-  console.log(`BigBlocks successfully verified as enabled on ${config.name}`);
-}
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -181,7 +33,7 @@ async function main() {
   // Handle BigBlocks setup automatically if supported
   if (isBigBlocksSupported(Number(chainId))) {
     console.log('🔍 BigBlocks supported on this chain, checking status...');
-    await setupBigBlocks(Number(chainId), deployerAddress);
+    await setupBigBlocksForV4Deployment(Number(chainId), deployerAddress);
   }
 
   console.log(
