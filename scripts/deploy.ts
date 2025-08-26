@@ -7,11 +7,8 @@ import {
   saveOutput,
   DeploymentAddresses
 } from '../deployUtils';
-import { enableBigBlocks } from './enableBigBlocks';
-import {
-  getBigBlocksConfig,
-  isBigBlocksSupported
-} from '../config/bigBlocksConfig';
+import { setupBigBlocksForV4Deployment } from './enableBigBlocks';
+import { isBigBlocksSupported } from '../config/bigBlocksConfig';
 
 const NONCE = {
   WALLET: 0,
@@ -20,42 +17,22 @@ const NONCE = {
   FORWARDER_FACTORY: 3
 };
 
-/**
- * Configure BigBlocks for HypeEVM network
- */
-async function setupBigBlocks(chainId: number): Promise<void> {
-  const config = getBigBlocksConfig(chainId);
-  if (!config) return;
-
-  if (!config.envKey) {
-    throw new Error(`Please set the private key for ${config.name}.`);
-  }
-
-  console.log(`Using BigBlocks on ${config.name}`);
-  try {
-    await enableBigBlocks(config.envKey, true, chainId);
-  } catch (error) {
-    throw new Error(
-      `Failed to setup BigBlocks on ${config.name}: ${(error as Error).message}`
-    );
-  }
-}
-
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   const currentNonce = await ethers.provider.getTransactionCount(
     deployerAddress
   );
-  const { chainId } = await ethers.provider.getNetwork(); // More direct way to get chainId
+  const { chainId } = await ethers.provider.getNetwork();
   const chainConfig = await getChainConfig(Number(chainId));
   const output: DeploymentAddresses = loadOutput();
 
   const gasOverrides = chainConfig.gasParams;
 
+  // Handle BigBlocks setup automatically if supported
   if (isBigBlocksSupported(Number(chainId))) {
-    console.log('🔄 Setting up BigBlocks...');
-    await setupBigBlocks(Number(chainId));
+    console.log('🔍 BigBlocks supported on this chain, checking status...');
+    await setupBigBlocksForV4Deployment(Number(chainId), deployerAddress);
   }
 
   console.log(
@@ -105,7 +82,7 @@ async function main() {
       const WalletFactory = await ethers.getContractFactory(
         chainConfig.walletFactoryContractName
       );
-      const contract = await WalletFactory.deploy(walletAddress, gasOverrides); // constructor args + overrides
+      const contract = await WalletFactory.deploy(walletAddress, gasOverrides);
       await contract.waitForDeployment();
       console.log(
         `✅ ${chainConfig.walletFactoryContractName} deployed at ${contract.target}`
@@ -132,7 +109,7 @@ async function main() {
       const Forwarder = await ethers.getContractFactory(
         chainConfig.forwarderContractName
       );
-      const contract = await Forwarder.deploy(gasOverrides); // overrides only
+      const contract = await Forwarder.deploy(gasOverrides);
       await contract.waitForDeployment();
       console.log(
         `✅ ${chainConfig.forwarderContractName} deployed at ${contract.target}`
@@ -157,7 +134,7 @@ async function main() {
       const contract = await ForwarderFactory.deploy(
         forwarderAddress,
         gasOverrides
-      ); // constructor args + overrides
+      );
       await contract.waitForDeployment();
       console.log(
         `✅ ${chainConfig.forwarderFactoryContractName} deployed at ${contract.target}`

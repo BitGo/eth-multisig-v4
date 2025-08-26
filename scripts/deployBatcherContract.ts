@@ -2,6 +2,8 @@ import hre, { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 import { logger, waitAndVerify } from '../deployUtils';
 import fs from 'fs';
+import { setupBigBlocksForBatcherDeployment } from './enableBigBlocks';
+import { isBigBlocksSupported } from '../config/bigBlocksConfig';
 
 // Minimal tx override type compatible with ethers v6
 type TxOverrides = {
@@ -80,6 +82,23 @@ async function main() {
 
   logger.info(`Network: ${hre.network.name} (Chain ID: ${chainId})`);
   logger.info(`Deployer Address: ${address}`);
+
+  // --- 1.5. BigBlocks Setup ---
+  logger.step('1.5. Checking and setting up BigBlocks if supported...');
+
+  if (isBigBlocksSupported(Number(chainId))) {
+    logger.info('🔍 BigBlocks supported on this chain, checking status...');
+    try {
+      await setupBigBlocksForBatcherDeployment(Number(chainId), address);
+      logger.success('✅ BigBlocks setup completed successfully');
+    } catch (error) {
+      logger.warn('⚠️ BigBlocks setup failed after all retry attempts');
+      logger.warn(`BigBlocks error: ${(error as Error).message}`);
+      logger.info('📦 Continuing with deployment without BigBlocks...');
+    }
+  } else {
+    logger.info('ℹ️ BigBlocks not supported on this chain, skipping...');
+  }
 
   // --- 2. Gas Parameter Handling ---
   logger.step('2. Configuring gas parameters for the transaction...');
