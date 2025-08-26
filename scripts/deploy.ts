@@ -9,8 +9,8 @@ import {
 } from '../deployUtils';
 import { enableBigBlocks } from './enableBigBlocks';
 import {
-  getBigBlocksConfig,
-  isBigBlocksSupported
+  getBigBlocksConfigV4Contracts,
+  isBigBlocksSupportedV4Contracts
 } from '../config/bigBlocksConfig';
 
 const NONCE = {
@@ -38,7 +38,7 @@ async function checkBigBlocksStatus(
   userAddress: string,
   chainId: number
 ): Promise<boolean> {
-  const config = getBigBlocksConfig(chainId);
+  const config = getBigBlocksConfigV4Contracts(chainId);
   if (!config) {
     throw new Error(`Chain with ID ${chainId} is not supported for BigBlocks.`);
   }
@@ -128,7 +128,7 @@ async function setupBigBlocks(
   chainId: number,
   deployerAddress: string
 ): Promise<void> {
-  const config = getBigBlocksConfig(chainId);
+  const config = getBigBlocksConfigV4Contracts(chainId);
   if (!config) return;
 
   if (!config.envKey) {
@@ -178,7 +178,7 @@ async function main() {
   const gasOverrides = chainConfig.gasParams;
 
   // Handle BigBlocks setup automatically if supported
-  if (isBigBlocksSupported(Number(chainId))) {
+  if (isBigBlocksSupportedV4Contracts(Number(chainId))) {
     console.log('🔍 BigBlocks supported on this chain, checking status...');
     await setupBigBlocks(Number(chainId), deployerAddress);
   }

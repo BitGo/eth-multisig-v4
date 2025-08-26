@@ -4,8 +4,8 @@ import { logger, waitAndVerify } from '../deployUtils';
 import fs from 'fs';
 import { enableBigBlocks } from './enableBigBlocks';
 import {
-  getBigBlocksConfig,
-  isBigBlocksSupported
+  getBigBlocksConfigBatcher,
+  isBigBlocksSupportedBatcher
 } from '../config/bigBlocksConfig';
 
 // Minimal tx override type compatible with ethers v6
@@ -34,7 +34,7 @@ async function checkBigBlocksStatus(
   userAddress: string,
   chainId: number
 ): Promise<boolean> {
-  const config = getBigBlocksConfig(chainId);
+  const config = getBigBlocksConfigBatcher(chainId);
   if (!config) {
     throw new Error(`Chain with ID ${chainId} is not supported for BigBlocks.`);
   }
@@ -129,7 +129,7 @@ async function setupBigBlocks(
   chainId: number,
   deployerAddress: string
 ): Promise<void> {
-  const config = getBigBlocksConfig(chainId);
+  const config = getBigBlocksConfigBatcher(chainId);
   if (!config) return;
 
   if (!config.envKey) {
@@ -241,7 +241,7 @@ async function main() {
   // --- 1.5. BigBlocks Setup ---
   logger.step('1.5. Checking and setting up BigBlocks if supported...');
 
-  if (isBigBlocksSupported(Number(chainId))) {
+  if (isBigBlocksSupportedBatcher(Number(chainId))) {
     logger.info('🔍 BigBlocks supported on this chain, checking status...');
     try {
       await setupBigBlocks(Number(chainId), address);
