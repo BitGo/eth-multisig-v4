@@ -25,7 +25,28 @@ on:
         type: string
 
 jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approval summary
+        run: |
+          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+          ### Update Batcher transferGasLimit — Approval Summary
+
+          - Environment: ${{ inputs.environment }}
+          - Network: ${{ inputs.network }}
+          - Batcher Address: \`${{ inputs.batcher_address }}\`
+          - New transferGasLimit: \`${{ inputs.gas_limit }}\`
+
+          Actions to be performed after approval:
+          - Run: npm run update-gas-limit -- ${{ inputs.network }}
+          - Set transferGasLimit on the Batcher contract at the above address
+          - Use signer index 2 (same as deploy script)
+
+          > Approve only if the address and limit are correct.
+          EOF
   run-update:
+    needs: preview
     runs-on: ubuntu-latest
     environment: "${{ inputs.environment }}"
     steps:
