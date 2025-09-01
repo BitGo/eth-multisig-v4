@@ -107,6 +107,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.LINEAETH_TESTNET:
     case CHAIN_IDS.IP:
     case CHAIN_IDS.IP_TESTNET:
+    case CHAIN_IDS.OG:
+    case CHAIN_IDS.OG_TESTNET:
       gasParams = {
         maxFeePerGas: 30_000_000_000n,
         maxPriorityFeePerGas: 30_000_000_000n,

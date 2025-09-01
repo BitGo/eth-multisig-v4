@@ -568,6 +568,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    tog: {
+      url: `https://evmrpc-testnet.0g.ai/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    og: {
+      url: `https://evmrpc.0g.ai/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     plasma: {
       url: `https://testnet-rpc.plasma.to`, // TODO: Update with mainnet URL when available
       accounts: [
@@ -678,6 +694,9 @@ const config: HardhatUserConfig = {
       //STORY IP
       ipTestnet: `${IP_EXPLORER_API_KEY}`,
       ipMainnet: `${IP_EXPLORER_API_KEY}`,
+      //Zero Gravity
+      ogTestnet: `${ETHERSCAN_API_KEY}`,
+      ogMainnet: `${ETHERSCAN_API_KEY}`,
       //PLASMA
       plasmaTestnet: `${ETHERSCAN_API_KEY}`,
       plasmaMainnet: `${ETHERSCAN_API_KEY}`
@@ -1104,6 +1123,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://inst-1.cloud.blockscout.com/api', // TODO: Update with mainnet URL when available
           browserURL: 'https://testnet-explorer.irys.xyz/'
+        }
+      },
+      {
+        network: 'ogTestnet',
+        chainId: CHAIN_IDS.OG_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OG_TESTNET}`,
+          browserURL: 'https://chainscan-galileo.0g.ai/'
+        }
+      },
+      {
+        network: 'ogMainnet',
+        chainId: CHAIN_IDS.OG,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OG}`,
+          browserURL: 'https://chainscan.0g.ai/'
         }
       },
       {
