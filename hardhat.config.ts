@@ -552,6 +552,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    tog: {
+      url: `https://winter-blissful-yard.0g-galileo.quiknode.pro/3d77af385daeca1c5fa7290ed1fbd97ce501d34f/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    og: {
+      url: `https://evmrpc.0g.ai/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tirys: {
       url: `http://testnet-rpc.irys.xyz/v1/execution-rpc`,
       accounts: [
@@ -675,6 +691,9 @@ const config: HardhatUserConfig = {
       //LINEA
       lineaethTestnet: `${ETHERSCAN_API_KEY}`,
       lineaethMainnet: `${ETHERSCAN_API_KEY}`,
+      //Zero Gravity
+      ogTestnet: `${ETHERSCAN_API_KEY}`,
+      ogMainnet: `${ETHERSCAN_API_KEY}`,
       //STORY IP
       ipTestnet: `${IP_EXPLORER_API_KEY}`,
       ipMainnet: `${IP_EXPLORER_API_KEY}`,
@@ -894,6 +913,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://sourcify.parsec.finance/verify', // TODO: WIN-5783: add once mainnet api details are available
           browserURL: 'https://hyperevm-explorer.vercel.app/'
+        }
+      },
+      {
+        network: 'ogTestnet',
+        chainId: CHAIN_IDS.OG_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OG_TESTNET}`,
+          browserURL: 'https://chainscan-galileo.0g.ai/'
+        }
+      },
+      {
+        network: 'ogMainnet',
+        chainId: CHAIN_IDS.OG,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OG}`,
+          browserURL: 'https://chainscan.0g.ai/'
         }
       },
       {
