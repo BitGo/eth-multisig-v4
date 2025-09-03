@@ -71,7 +71,7 @@ jobs:
           result-encoding: string
           script: |
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|flr|tflr|sgb|tsgb|txdc|xdc|twemix|wemix|tmon|mon|tstt|stt|tsoneium|soneium|tworld|world|tctc|ctc|tapechain|apechain|tphrs|phrs|thypeevm|hypeevm|tsonic|sonic|seievm|tseievm|kaia|tkaia|irys|tirys|lineaeth|tlineaeth|tip|tplasma|plasma|tog|og)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|flr|tflr|sgb|tsgb|txdc|xdc|twemix|wemix|tmon|mon|tstt|stt|tsoneium|soneium|tworld|world|tctc|ctc|tapechain|apechain|tphrs|phrs|thypeevm|hypeevm|tsonic|sonic|seievm|tseievm|kaia|tkaia|irys|tirys|lineaeth|tlineaeth|tip|ip|tplasma|plasma|tog|og)$/;
             const matchedNetwork = tag.match(regex);
             if (!matchedNetwork) {
               console.log("No match found for the network name, defaulting to 'hteth'.");
