@@ -205,6 +205,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
     case CHAIN_IDS.XDC:
     case CHAIN_IDS.XDC_TESTNET:
+    case CHAIN_IDS.KAVAEVM_TESTNET:
+    case CHAIN_IDS.KAVAEVM:
       gasParams = {
         gasPrice: feeData.gasPrice ?? 0n,
         gasLimit: 3_000_000

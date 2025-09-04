@@ -48,7 +48,8 @@ const {
   SEIEVM_EXPLORER_API_KEY,
   KAIA_EXPLORER_API_KEY,
   IRYS_EXPLORER_API_KEY,
-  IP_EXPLORER_API_KEY
+  IP_EXPLORER_API_KEY,
+  KAVAEVM_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -599,6 +600,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    kavaevm: {
+      url: `https://www.ankr.com/rpc/kava`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tkavaevm: {
+      url: `https://evm.testnet.kava.io`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -699,7 +716,10 @@ const config: HardhatUserConfig = {
       ipMainnet: `${IP_EXPLORER_API_KEY}`,
       //PLASMA
       plasmaTestnet: `${ETHERSCAN_API_KEY}`,
-      plasmaMainnet: `${ETHERSCAN_API_KEY}`
+      plasmaMainnet: `${ETHERSCAN_API_KEY}`,
+      //KAVA
+      kavaEvmTestnet: `${KAVAEVM_EXPLORER_API_KEY}`,
+      kavaEvmMainnet: `${KAVAEVM_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1155,6 +1175,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://testnet.plasmaexplorer.io/api',
           browserURL: 'https://testnet.plasmaexplorer.io/'
+        }
+      },
+      {
+        network: 'kavaEvmTestnet',
+        chainId: CHAIN_IDS.KAVAEVM_TESTNET,
+        urls: {
+          apiURL: 'https://api.verify.mintscan.io/evm/api/0x8ad',
+          browserURL: 'https://testnet.kavascan.com'
+        }
+      },
+      {
+        network: 'kavaEvmMainnet',
+        chainId: CHAIN_IDS.KAVAEVM,
+        urls: {
+          apiURL: 'https://api.verify.mintscan.io/evm/api/0x8ae',
+          browserURL: 'https://kavascan.com'
         }
       }
     ]
