@@ -594,7 +594,7 @@ const config: HardhatUserConfig = {
       ]
     },
     plasma: {
-      url: `https://testnet-rpc.plasma.to`, // TODO: Update with mainnet URL when available
+      url: `https://chaotic-cosmopolitan-waterfall.plasma-mainnet.quiknode.pro/40f306c7667db5b8637b214b2dbd45aac5f1fe3f`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1181,8 +1181,9 @@ const config: HardhatUserConfig = {
         network: 'plasmaMainnet',
         chainId: CHAIN_IDS.PLASMA_MAINNET,
         urls: {
-          apiURL: 'https://testnet.plasmaexplorer.io/api',
-          browserURL: 'https://testnet.plasmaexplorer.io/'
+          apiURL:
+            'https://api.routescan.io/v2/network/mainnet/evm/9745/etherscan/api',
+          browserURL: 'https://plasmascan.to'
         }
       },
       {

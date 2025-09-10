@@ -38,7 +38,7 @@ export const CHAIN_IDS = {
   LINEAETH: 59144,
   IP: 1514,
   OG: 16661,
-  PLASMA_MAINNET: 9746, // Replace with actual mainnet chain ID when available
+  PLASMA_MAINNET: 9745,
   KAVAEVM: 2222,
   // Testnet Networks
   BSC_TESTNET: 97,
