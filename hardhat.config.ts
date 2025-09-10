@@ -49,7 +49,8 @@ const {
   KAIA_EXPLORER_API_KEY,
   IRYS_EXPLORER_API_KEY,
   IP_EXPLORER_API_KEY,
-  KAVAEVM_EXPLORER_API_KEY
+  KAVAEVM_EXPLORER_API_KEY,
+  PLUME_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -624,6 +625,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    plume: {
+      url: `https://rpc.plume.org/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tplume: {
+      url: `https://testnet-rpc.plume.org/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -727,7 +744,11 @@ const config: HardhatUserConfig = {
       plasmaMainnet: `${ETHERSCAN_API_KEY}`,
       //KAVA
       kavaEvmTestnet: `${KAVAEVM_EXPLORER_API_KEY}`,
-      kavaEvmMainnet: `${KAVAEVM_EXPLORER_API_KEY}`
+      kavaEvmMainnet: `${KAVAEVM_EXPLORER_API_KEY}`,
+
+      // PLUME
+      plumeTestnet: `${PLUME_EXPLORER_API_KEY}`,
+      plumeMainnet: `${PLUME_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1199,6 +1220,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.verify.mintscan.io/evm/api/0x8ae',
           browserURL: 'https://kavascan.com'
+        }
+      },
+      {
+        network: 'plumeTestnet',
+        chainId: CHAIN_IDS.PLUME_TESTNET,
+        urls: {
+          apiURL: 'https://testnet-explorer.plume.org/api',
+          browserURL: 'https://testnet-explorer.plume.org'
+        }
+      },
+      {
+        network: 'plumeMainnet',
+        chainId: CHAIN_IDS.PLUME,
+        urls: {
+          apiURL: 'https://explorer.plume.org/api',
+          browserURL: 'https://explorer.plume.org/'
         }
       }
     ]

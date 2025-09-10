@@ -215,6 +215,16 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
+    case CHAIN_IDS.PLUME_TESTNET:
+    case CHAIN_IDS.PLUME:
+      gasParams = {
+        gasPrice: feeData.gasPrice ?? 0n,
+        gasLimit: 7_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
     case CHAIN_IDS.CREDITCOIN_TESTNET:
     case CHAIN_IDS.CREDITCOIN:
     case CHAIN_IDS.WEMIX_TESTNET:

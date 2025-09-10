@@ -40,6 +40,8 @@ export const CHAIN_IDS = {
   OG: 16661,
   PLASMA_MAINNET: 9746, // Replace with actual mainnet chain ID when available
   KAVAEVM: 2222,
+  PLUME: 98866,
+
   // Testnet Networks
   BSC_TESTNET: 97,
   BERA_TESTNET: 80094,
@@ -68,5 +70,6 @@ export const CHAIN_IDS = {
   IP_TESTNET: 1315,
   PLASMA_TESTNET: 9746,
   OG_TESTNET: 16601,
-  KAVAEVM_TESTNET: 2221
+  KAVAEVM_TESTNET: 2221,
+  PLUME_TESTNET: 98867
 } as const;
