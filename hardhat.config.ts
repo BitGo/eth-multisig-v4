@@ -50,7 +50,8 @@ const {
   IRYS_EXPLORER_API_KEY,
   IP_EXPLORER_API_KEY,
   KAVAEVM_EXPLORER_API_KEY,
-  PLUME_EXPLORER_API_KEY
+  PLUME_EXPLORER_API_KEY,
+  FLOW_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -641,6 +642,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    flow: {
+      url: `https://mainnet.evm.nodes.onflow.org/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tflow: {
+      url: `https://testnet.evm.nodes.onflow.org/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -748,7 +765,11 @@ const config: HardhatUserConfig = {
 
       // PLUME
       plumeTestnet: `${PLUME_EXPLORER_API_KEY}`,
-      plumeMainnet: `${PLUME_EXPLORER_API_KEY}`
+      plumeMainnet: `${PLUME_EXPLORER_API_KEY}`,
+
+      // FLOW
+      flowTestnet: `${FLOW_EXPLORER_API_KEY}`,
+      flowMainnet: `${FLOW_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1237,6 +1258,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer.plume.org/api',
           browserURL: 'https://explorer.plume.org/'
+        }
+      },
+      {
+        network: 'flowTestnet',
+        chainId: CHAIN_IDS.FLOW_TESTNET,
+        urls: {
+          apiURL: 'https://evm-testnet.flowscan.io/api',
+          browserURL: 'https://evm.flowscan.io/'
+        }
+      },
+      {
+        network: 'flowMainnet',
+        chainId: CHAIN_IDS.FLOW,
+        urls: {
+          apiURL: 'https://evm.flowscan.io/api',
+          browserURL: 'https://evm-testnet.flowscan.io/'
         }
       }
     ]
