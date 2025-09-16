@@ -958,12 +958,12 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL:
             'https://api.socialscan.io/pharos-testnet/v1/explorer/command_api/contract',
-          browserURL: 'https://testnet.pharosscan.xyz'
+          browserURL: 'https://testnet.pharosscan.xyz/'
         }
       },
       {
         network: 'pharosMainnet',
-        chainId: CHAIN_IDS.PHAROS_TESTNET, // TODO: WIN-5781: change it with mainnet details, when its available
+        chainId: CHAIN_IDS.PHAROS, // TODO: WIN-5781: change it with mainnet details, when its available
         urls: {
           apiURL: '', // TODO: WIN-5781: change it with mainnet details, when its available
           browserURL: '' // TODO: WIN-5781: change it with mainnet details, when its available
