@@ -28,7 +28,7 @@ export const CHAIN_IDS = {
   ETC: 61,
   CREDITCOIN: 102030,
   APECHAIN: 33139,
-  PHAROS: 688688,
+  PHAROS: 688689, // TODO: WIN-5781: change it with correct mainnet details, when its available
   HYPEEVM: 999,
   SONIC: 146,
   SEIEVM: 1329,
