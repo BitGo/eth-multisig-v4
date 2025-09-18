@@ -6,6 +6,24 @@ import { verifyOnCustomEtherscan } from './scripts/customContractVerifier';
 
 const OUTPUT_FILE = 'output.json';
 
+// Balance check configuration
+/**
+ * Safety multiplier for balance checks.
+ * A value of 150n with divisor 100n creates a 1.5x safety buffer.
+ * This ensures we have 50% more funds than the estimated gas cost.
+ */
+export const BALANCE_SAFETY_MULTIPLIER = 150n; // 1.5x safety buffer (150/100 = 1.5)
+export const BALANCE_SAFETY_DIVISOR = 100n;
+
+/**
+ * Calculates the required amount with safety buffer applied.
+ * @param estimatedCost - The estimated gas cost in wei
+ * @returns The required amount with safety buffer applied
+ */
+export function applyBalanceSafetyBuffer(estimatedCost: bigint): bigint {
+  return (estimatedCost * BALANCE_SAFETY_MULTIPLIER) / BALANCE_SAFETY_DIVISOR;
+}
+
 export const logger = {
   info: (msg: string) => console.log(`[INFO] ${msg}`),
   config: (msg: string) => console.log(`[CONFIG] ${msg}`),
@@ -14,6 +32,86 @@ export const logger = {
   warn: (msg: string) => console.warn(`⚠️ [WARN] ${msg}`),
   step: (msg: string) => console.log(`\n--- ${msg} ---`)
 };
+
+/**
+ * Checks if the deployer has sufficient balance for the deployment.
+ * Requires 1.5x the estimated gas cost to provide a safety buffer.
+ */
+export async function checkSufficientBalance(
+  deployerAddress: string,
+  estimatedGasCost: bigint,
+  contractName: string = 'contract'
+): Promise<void> {
+  const balance = await ethers.provider.getBalance(deployerAddress);
+  const requiredAmount = applyBalanceSafetyBuffer(estimatedGasCost);
+
+  logger.info(`💰 Balance check for ${contractName} deployment:`);
+  logger.info(`  Deployer balance: ${ethers.formatEther(balance)} ETH`);
+  logger.info(
+    `  Estimated gas cost: ${ethers.formatEther(estimatedGasCost)} ETH`
+  );
+  logger.info(
+    `  Required (1.5x buffer): ${ethers.formatEther(requiredAmount)} ETH`
+  );
+
+  if (balance < requiredAmount) {
+    const shortfall = requiredAmount - balance;
+    logger.error(`Insufficient funds for ${contractName} deployment!`);
+    logger.error(`  Shortfall: ${ethers.formatEther(shortfall)} ETH`);
+    logger.error(`  Please fund the deployer account: ${deployerAddress}`);
+    throw new Error(
+      `Insufficient funds: need ${ethers.formatEther(
+        requiredAmount
+      )} ETH, have ${ethers.formatEther(balance)} ETH`
+    );
+  }
+
+  logger.success(
+    `✅ Sufficient balance confirmed for ${contractName} deployment`
+  );
+}
+
+/**
+ * Checks balance before individual contract deployment.
+ * Estimates gas for a typical contract deployment transaction.
+ */
+export async function checkIndividualContractBalance(
+  deployerAddress: string,
+  contractName: string,
+  gasOverrides?: any
+): Promise<void> {
+  try {
+    // Get current fee data
+    const feeData = await ethers.provider.getFeeData();
+
+    // Estimate typical contract deployment gas (fallback if we can't estimate precisely)
+    const estimatedGas = 500000n; // 500k gas - reasonable estimate for contract deployment
+
+    // Calculate gas price
+    let gasPrice: bigint;
+    if (gasOverrides?.gasPrice) {
+      gasPrice = gasOverrides.gasPrice;
+    } else if (gasOverrides?.maxFeePerGas) {
+      gasPrice = gasOverrides.maxFeePerGas;
+    } else {
+      gasPrice = feeData.gasPrice || 1_000_000_000n; // 1 gwei fallback
+    }
+
+    const estimatedCost = estimatedGas * gasPrice;
+
+    // Check balance with 1.5x buffer
+    await checkSufficientBalance(deployerAddress, estimatedCost, contractName);
+  } catch (error) {
+    logger.warn(
+      `⚠️ Could not perform precise balance check for ${contractName}: ${
+        (error as Error).message
+      }`
+    );
+    logger.info(
+      `🔄 Proceeding with deployment - will fail fast if insufficient funds`
+    );
+  }
+}
 
 export type DeploymentAddresses = {
   walletImplementation?: string;
@@ -31,7 +129,8 @@ export async function deployIfNeededAtNonce(
   expectedNonce: number,
   deployerAddress: string,
   contractName: string,
-  deployFn: () => Promise<string>
+  deployFn: () => Promise<string>,
+  gasOverrides?: any
 ): Promise<string> {
   const predictedAddress = getCreateAddress({
     from: deployerAddress,
@@ -83,12 +182,19 @@ export async function deployIfNeededAtNonce(
     throw new Error(errorMsg);
   }
 
-  // 5. Deploy
+  // 5. Balance check before deployment
+  await checkIndividualContractBalance(
+    deployerAddress,
+    contractName,
+    gasOverrides
+  );
+
+  // 6. Deploy
   logger.info(`🚀 Deploying ${contractName} at nonce ${expectedNonce}...`);
   return await deployFn();
 }
 
-async function isContractDeployed(address: string) {
+export async function isContractDeployed(address: string) {
   const code = await ethers.provider.getCode(address);
   return code && code !== '0x';
 }
