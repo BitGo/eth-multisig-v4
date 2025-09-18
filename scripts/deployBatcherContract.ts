@@ -1,6 +1,6 @@
 import hre, { ethers } from 'hardhat';
 import { Contract } from 'ethers';
-import { logger, waitAndVerify } from '../deployUtils';
+import { logger, waitAndVerify, checkSufficientBalance } from '../deployUtils';
 import fs from 'fs';
 import { setupBigBlocksForBatcherDeployment } from './enableBigBlocks';
 import { isBigBlocksSupported } from '../config/bigBlocksConfig';
@@ -186,6 +186,31 @@ async function main() {
   } else {
     logger.info(`Using default gas parameters for this network.`);
   }
+
+  // --- 3.5. Balance Check ---
+  logger.step('3.5. Checking deployer balance before deployment...');
+
+  // Estimate gas cost for the deployment
+  const gasEstimate = await batcherDeployer.estimateGas({
+    ...deployTxReq,
+    from: address,
+    ...gasOverrides
+  });
+
+  // Calculate total cost
+  let gasPrice: bigint;
+  if (gasOverrides?.gasPrice) {
+    gasPrice = gasOverrides.gasPrice;
+  } else if (gasOverrides?.maxFeePerGas) {
+    gasPrice = gasOverrides.maxFeePerGas;
+  } else {
+    gasPrice = feeData.gasPrice ?? 1_000_000_000n; // 1 gwei fallback
+  }
+
+  const estimatedCost = gasEstimate * gasPrice;
+
+  // Check if we have 1.5x the required amount
+  await checkSufficientBalance(address, estimatedCost, 'Batcher');
 
   let batcher: Contract;
   if (gasOverrides) {

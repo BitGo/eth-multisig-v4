@@ -5,7 +5,9 @@ import {
   waitAndVerify,
   loadOutput,
   saveOutput,
-  DeploymentAddresses
+  DeploymentAddresses,
+  checkSufficientBalance,
+  isContractDeployed
 } from '../deployUtils';
 import { setupBigBlocksForV4Deployment } from './enableBigBlocks';
 import { isBigBlocksSupported } from '../config/bigBlocksConfig';
@@ -39,6 +41,99 @@ async function main() {
     `🚀 Deployer: ${deployerAddress} (nonce: ${currentNonce}) on chain ${chainId}`
   );
 
+  // Pre-deployment balance check - estimate total cost for all contracts
+  console.log('\n--- Checking deployer balance ---');
+
+  // Estimate gas costs for all potential deployments
+  let totalEstimatedCost = 0n;
+
+  // Only estimate if we need to deploy (not already deployed)
+  if (
+    !output.walletImplementation ||
+    !(await isContractDeployed(output.walletImplementation))
+  ) {
+    const WalletSimple = await ethers.getContractFactory(
+      chainConfig.walletImplementationContractName
+    );
+    const walletGas = await deployer.estimateGas({
+      ...(await WalletSimple.getDeployTransaction(...[], gasOverrides)),
+      from: deployerAddress
+    });
+    totalEstimatedCost += walletGas;
+  }
+
+  if (
+    !output.walletFactory ||
+    !(await isContractDeployed(output.walletFactory))
+  ) {
+    const WalletFactory = await ethers.getContractFactory(
+      chainConfig.walletFactoryContractName
+    );
+    const factoryGas = await deployer.estimateGas({
+      ...(await WalletFactory.getDeployTransaction(
+        deployerAddress,
+        gasOverrides
+      )), // Use deployer address as placeholder
+      from: deployerAddress
+    });
+    totalEstimatedCost += factoryGas;
+  }
+
+  if (
+    !output.forwarderImplementation ||
+    !(await isContractDeployed(output.forwarderImplementation))
+  ) {
+    const ForwarderV4 = await ethers.getContractFactory(
+      chainConfig.forwarderContractName
+    );
+    const forwarderGas = await deployer.estimateGas({
+      ...(await ForwarderV4.getDeployTransaction(gasOverrides)),
+      from: deployerAddress
+    });
+    totalEstimatedCost += forwarderGas;
+  }
+
+  if (
+    !output.forwarderFactory ||
+    !(await isContractDeployed(output.forwarderFactory))
+  ) {
+    const ForwarderFactory = await ethers.getContractFactory(
+      chainConfig.forwarderFactoryContractName
+    );
+    const forwarderFactoryGas = await deployer.estimateGas({
+      ...(await ForwarderFactory.getDeployTransaction(
+        deployerAddress,
+        gasOverrides
+      )), // Use deployer address as placeholder
+      from: deployerAddress
+    });
+    totalEstimatedCost += forwarderFactoryGas;
+  }
+
+  if (totalEstimatedCost > 0n) {
+    // Get gas price for cost calculation
+    const feeData = await ethers.provider.getFeeData();
+    let gasPrice: bigint;
+
+    if (gasOverrides?.gasPrice) {
+      gasPrice = gasOverrides.gasPrice;
+    } else if (gasOverrides?.maxFeePerGas) {
+      gasPrice = gasOverrides.maxFeePerGas;
+    } else {
+      gasPrice = feeData.gasPrice || 1_000_000_000n; // 1 gwei fallback
+    }
+
+    const estimatedCost = totalEstimatedCost * gasPrice;
+
+    await checkSufficientBalance(
+      deployerAddress,
+      estimatedCost,
+      'all V4 contracts'
+    );
+  } else {
+    console.log('✅ All contracts already deployed, skipping balance check');
+  }
+
   // Deploy Wallet Implementation
   const walletAddress = await deployIfNeededAtNonce(
     output.walletImplementation,
@@ -69,7 +164,8 @@ async function main() {
       output.walletImplementation = contract.target as string;
       saveOutput(output);
       return contract.target as string;
-    }
+    },
+    gasOverrides
   );
 
   // Deploy Wallet Factory
@@ -96,7 +192,8 @@ async function main() {
       output.walletFactory = contract.target as string;
       saveOutput(output);
       return contract.target as string;
-    }
+    },
+    gasOverrides
   );
 
   // Deploy Forwarder
@@ -118,7 +215,8 @@ async function main() {
       output.forwarderImplementation = contract.target as string;
       saveOutput(output);
       return contract.target as string;
-    }
+    },
+    gasOverrides
   );
 
   // Deploy Forwarder Factory
@@ -148,7 +246,8 @@ async function main() {
       output.forwarderFactory = contract.target as string;
       saveOutput(output);
       return contract.target as string;
-    }
+    },
+    gasOverrides
   );
 
   console.log(`🎉 All contracts deployed and verified!`);
