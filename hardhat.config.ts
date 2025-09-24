@@ -612,7 +612,7 @@ const config: HardhatUserConfig = {
       ]
     },
     kavaevm: {
-      url: `https://www.ankr.com/rpc/kava`,
+      url: `https://kava-evm.publicnode.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1273,7 +1273,7 @@ const config: HardhatUserConfig = {
         chainId: CHAIN_IDS.FLOW,
         urls: {
           apiURL: 'https://evm.flowscan.io/api',
-          browserURL: 'https://evm-testnet.flowscan.io/'
+          browserURL: 'https://evm.flowscan.io/'
         }
       }
     ]
