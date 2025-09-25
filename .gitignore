@@ -17,3 +17,4 @@ output.json
 artifacts
 cache
 typechain
+typechain-types
