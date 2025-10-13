@@ -51,7 +51,8 @@ const {
   IP_EXPLORER_API_KEY,
   KAVAEVM_EXPLORER_API_KEY,
   PLUME_EXPLORER_API_KEY,
-  FLOW_EXPLORER_API_KEY
+  FLOW_EXPLORER_API_KEY,
+  MEGAETH_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -658,6 +659,14 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tmegaeth: {
+      url: 'https://carrot.megaeth.com/mafia/rpc/f63rvkkv2t9pf91208ub3d8uv87f12p8kp0k5wy4',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -766,6 +775,10 @@ const config: HardhatUserConfig = {
       // PLUME
       plumeTestnet: `${PLUME_EXPLORER_API_KEY}`,
       plumeMainnet: `${PLUME_EXPLORER_API_KEY}`,
+
+      // MEGAETH
+      megaethTestnet: `${MEGAETH_EXPLORER_API_KEY}`,
+      megaethMainnet: `${MEGAETH_EXPLORER_API_KEY}`,
 
       // FLOW
       flowTestnet: `${FLOW_EXPLORER_API_KEY}`,
@@ -1274,6 +1287,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://evm.flowscan.io/api',
           browserURL: 'https://evm.flowscan.io/'
+        }
+      },
+      {
+        network: 'megaethTestnet',
+        chainId: CHAIN_IDS.MEGAETH_TESTNET,
+        urls: {
+          apiURL: 'https://carrot.megaeth.com/mafia/api',
+          browserURL: 'https://www.megaexplorer.xyz/'
         }
       }
     ]

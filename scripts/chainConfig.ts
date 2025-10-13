@@ -225,6 +225,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
+    case CHAIN_IDS.MEGAETH_TESTNET:
+
     case CHAIN_IDS.FLOW_TESTNET:
     case CHAIN_IDS.FLOW:
     case CHAIN_IDS.CREDITCOIN_TESTNET:
