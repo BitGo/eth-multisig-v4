@@ -28,7 +28,7 @@ const {
   OPTIMISTIC_ETHERSCAN_API_KEY,
   ZKSYNC_EXPLORER_API_KEY,
   BASESCAN_API_KEY,
-  CARTIO_BERA_EXPLORER_API_KEY,
+  BEPOLIA_BERA_EXPLORER_API_KEY,
   BERA_EXPLORER_API_KEY,
   OAS_EXPLORER_API_KEY,
   CORE_DAO_TESTNET_EXPLORER_API_KEY,
@@ -197,7 +197,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tbera: {
-      url: `https://rockbeard-eth-cartio.berachain.com/`,
+      url: `https://bepolia.rpc.berachain.com/`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -697,7 +697,7 @@ const config: HardhatUserConfig = {
       baseSepolia: `${BASESCAN_API_KEY}`,
       base: `${BASESCAN_API_KEY}`,
       // bera
-      cartioBera: `${CARTIO_BERA_EXPLORER_API_KEY}`,
+      bepoliaBera: `${BEPOLIA_BERA_EXPLORER_API_KEY}`,
       bera: `${BERA_EXPLORER_API_KEY}`,
       //OAS
       oasTestnet: `${OAS_EXPLORER_API_KEY}`,
@@ -826,12 +826,12 @@ const config: HardhatUserConfig = {
         }
       },
       {
-        network: 'cartioBera',
+        network: 'bepoliaBera',
         chainId: CHAIN_IDS.BERA,
         urls: {
           apiURL:
-            'https://api.routescan.io/v2/network/testnet/evm/80000/etherscan/api',
-          browserURL: 'https://80000.testnet.routescan.io'
+            'https://api.routescan.io/v2/network/testnet/evm/80069/etherscan/api',
+          browserURL: 'https://80069.testnet.routescan.io'
         }
       },
       {
