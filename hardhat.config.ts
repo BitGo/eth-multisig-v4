@@ -397,7 +397,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tcelo: {
-      url: `https://alfajores-forno.celo-testnet.org`,
+      url: `https://sepolia.celoscan.io`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
