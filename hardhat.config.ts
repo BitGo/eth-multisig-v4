@@ -52,7 +52,8 @@ const {
   KAVAEVM_EXPLORER_API_KEY,
   PLUME_EXPLORER_API_KEY,
   FLOW_EXPLORER_API_KEY,
-  MEGAETH_EXPLORER_API_KEY
+  MEGAETH_EXPLORER_API_KEY,
+  HBAREVM_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -667,6 +668,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    thbarevm: {
+      url: 'https://testnet.hashio.io/api',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    hbarevm: {
+      url: 'https://mainnet.hashio.io/api',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -782,7 +799,11 @@ const config: HardhatUserConfig = {
 
       // FLOW
       flowTestnet: `${FLOW_EXPLORER_API_KEY}`,
-      flowMainnet: `${FLOW_EXPLORER_API_KEY}`
+      flowMainnet: `${FLOW_EXPLORER_API_KEY}`,
+
+      // HBAREVM
+      hbarevmTestnet: `${HBAREVM_EXPLORER_API_KEY}`,
+      hbarevmMainnet: `${HBAREVM_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1295,6 +1316,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://carrot.megaeth.com/mafia/api',
           browserURL: 'https://www.megaexplorer.xyz/'
+        }
+      },
+      {
+        network: 'hbarevmTestnet',
+        chainId: CHAIN_IDS.HBAREVM_TESTNET,
+        urls: {
+          apiURL: 'https://server-verify.hashscan.io', // Hedera's verification API base
+          browserURL: 'https://hashscan.io/testnet' // HashScan explorer link
+        }
+      },
+      {
+        network: 'hbarevmMainnet',
+        chainId: CHAIN_IDS.HBAREVM,
+        urls: {
+          apiURL: 'https://server-verify.hashscan.io', // Hedera's verification API base
+          browserURL: 'https://hashscan.io/mainnet' // HashScan explorer link
         }
       }
     ]
