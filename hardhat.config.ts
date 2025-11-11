@@ -1322,22 +1322,37 @@ const config: HardhatUserConfig = {
         network: 'hbarevmTestnet',
         chainId: CHAIN_IDS.HBAREVM_TESTNET,
         urls: {
-          apiURL: 'https://server-verify.hashscan.io', // Hedera's verification API base
-          browserURL: 'https://hashscan.io/testnet' // HashScan explorer link
+          apiURL: 'https://hashscan.io/api',
+          browserURL: 'https://hashscan.io/testnet'
         }
       },
       {
         network: 'hbarevmMainnet',
         chainId: CHAIN_IDS.HBAREVM,
         urls: {
-          apiURL: 'https://server-verify.hashscan.io', // Hedera's verification API base
-          browserURL: 'https://hashscan.io/mainnet' // HashScan explorer link
+          apiURL: 'https://hashscan.io/api',
+          browserURL: 'https://hashscan.io/mainnet'
         }
       }
     ]
   },
+  sourcify: {
+    enabled: false
+  },
   mocha: {
     timeout: 100000
+  }
+};
+
+export const sourcifyNetworks = {
+  // Hedera networks use HashScan Sourcify
+  [CHAIN_IDS.HBAREVM]: {
+    apiUrl: 'https://server-verify.hashscan.io',
+    browserUrl: 'https://repository-verify.hashscan.io'
+  },
+  [CHAIN_IDS.HBAREVM_TESTNET]: {
+    apiUrl: 'https://server-verify.hashscan.io',
+    browserUrl: 'https://repository-verify.hashscan.io'
   }
 };
 

@@ -33,12 +33,14 @@ const delay = (ms: number): Promise<void> =>
  */
 async function getEtherscanConfig(
   hre: HardhatRuntimeEnvironment,
-  chainId: number
+  chainId: BigInt
 ) {
   const { etherscan } = hre.config;
   const { apiKey, customChains } = etherscan;
 
-  const customChain = customChains.find((chain) => chain.chainId === chainId);
+  const customChain = customChains.find(
+    (chain) => BigInt(chain.chainId) === chainId
+  );
   if (!customChain || !customChain.urls || !customChain.urls.apiURL) {
     throw new VerificationError(
       `Configuration for chainId ${chainId} not found in hardhat.config.ts etherscan.customChains`
@@ -344,7 +346,7 @@ export async function verifyOnCustomEtherscan(
   const { chainId } = await hre.ethers.provider.getNetwork();
   const { apiUrl, etherscanApiKey, networkName } = await getEtherscanConfig(
     hre,
-    chainId
+    BigInt(chainId)
   );
 
   logger.info(
