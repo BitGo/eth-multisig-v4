@@ -214,96 +214,288 @@ export function saveOutput(output: DeploymentAddresses) {
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2));
 }
 
+const VERIFICATION_CONFIG = {
+  CONFIRMATION_BLOCKS: 5,
+  MAX_RETRIES: 10,
+  RETRY_DELAY_MS: 60_000 // 1 minute
+} as const;
+
+/**
+ * Checks if an error indicates the contract is already verified
+ */
+function isAlreadyVerifiedError(error: any): boolean {
+  return error.message.toLowerCase().includes('already verified');
+}
+
+/**
+ * Creates a delay for the specified number of milliseconds
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Waits for contract confirmations
+ */
+async function waitForConfirmations(
+  contract: BaseContract,
+  contractName: string,
+  confirmationBlocks: number = VERIFICATION_CONFIG.CONFIRMATION_BLOCKS
+): Promise<string> {
+  logger.info(
+    `Waiting for ${confirmationBlocks} block confirmations for ${contractName}...`
+  );
+
+  const deployTx = contract.deploymentTransaction();
+  await deployTx?.wait(confirmationBlocks);
+
+  const contractAddress = await contract.getAddress();
+  logger.success(
+    `Contract ${contractName} confirmed after ${confirmationBlocks} confirmations at ${contractAddress}`
+  );
+
+  return contractAddress;
+}
+
+/**
+ * Checks if the current network supports Sourcify verification
+ */
+async function isSourcifyNetwork(
+  hre: HardhatRuntimeEnvironment
+): Promise<boolean> {
+  const { sourcifyNetworks } = await import('./hardhat.config');
+  const network = await hre.ethers.provider.getNetwork();
+  const chainId = Number(network.chainId);
+
+  return chainId in sourcifyNetworks;
+}
+
+/**
+ * Gets the Sourcify configuration for a specific network
+ */
+async function getSourcifyConfig(hre: HardhatRuntimeEnvironment): Promise<{
+  enabled: boolean;
+  apiUrl: string;
+  browserUrl: string;
+}> {
+  const { sourcifyNetworks } = await import('./hardhat.config');
+  const network = await hre.ethers.provider.getNetwork();
+  const chainId = Number(network.chainId);
+
+  // Check if network has custom Sourcify configuration
+  const networkConfig = (
+    sourcifyNetworks as Record<number, { apiUrl: string; browserUrl: string }>
+  )[chainId];
+  if (networkConfig) {
+    return {
+      enabled: true,
+      apiUrl: networkConfig.apiUrl,
+      browserUrl: networkConfig.browserUrl
+    };
+  } else {
+    throw new Error('No Sourcify configuration available for this network');
+  }
+}
+
+/**
+ * Attempts standard Hardhat verification
+ */
+async function attemptStandardVerification(
+  hre: HardhatRuntimeEnvironment,
+  contractAddress: string,
+  contractName: string,
+  constructorArguments: string[]
+): Promise<void> {
+  const artifact = await hre.artifacts.readArtifact(contractName);
+  const verificationString = `${artifact.sourceName}:${artifact.contractName}`;
+
+  logger.info('Attempting verification with standard Hardhat verifier...');
+
+  await hre.run('verify:verify', {
+    address: contractAddress,
+    constructorArguments,
+    contract: verificationString
+  });
+
+  logger.success('Standard verification successful!');
+}
+
+/**
+ * Attempts custom Etherscan verification as fallback
+ */
+async function attemptCustomVerification(
+  hre: HardhatRuntimeEnvironment,
+  contractAddress: string,
+  contractName: string,
+  constructorArguments: string[]
+): Promise<void> {
+  logger.info('Falling back to custom verifier...');
+
+  await verifyOnCustomEtherscan({
+    hre,
+    contractAddress,
+    contractName,
+    constructorArguments
+  });
+
+  logger.success('Custom verifier fallback successful!');
+}
+
+/**
+ * Attempts Sourcify verification via hardhat-verify with dynamic configuration
+ */
+async function attemptSourcifyVerification(
+  hre: HardhatRuntimeEnvironment,
+  contractAddress: string,
+  contractName: string,
+  constructorArguments: string[]
+): Promise<void> {
+  logger.info('Using Sourcify verification...');
+
+  // Get the appropriate Sourcify configuration for this network
+  const sourcifyConfig = await getSourcifyConfig(hre);
+
+  const originalConfig = hre.config.sourcify;
+  hre.config.sourcify = sourcifyConfig;
+
+  try {
+    const artifact = await hre.artifacts.readArtifact(contractName);
+    const verificationString = `${artifact.sourceName}:${artifact.contractName}`;
+
+    logger.info(`Verifying with fully qualified name: ${verificationString}`);
+    logger.info(`Using Sourcify API: ${sourcifyConfig.apiUrl}`);
+
+    await hre.run('verify:sourcify', {
+      address: contractAddress,
+      constructorArguments,
+      contract: verificationString
+    });
+    logger.success('Sourcify verification successful!');
+  } finally {
+    hre.config.sourcify = originalConfig;
+  }
+}
+
+/**
+ * Attempts a single verification (standard + custom + hedera fallback)
+ * Returns true if successful, false if should retry, throws if already verified
+ */
+async function attemptVerification(
+  hre: HardhatRuntimeEnvironment,
+  contractAddress: string,
+  contractName: string,
+  constructorArguments: string[]
+): Promise<boolean> {
+  // Try sourcify verification if network supports it
+  try {
+    if (await isSourcifyNetwork(hre)) {
+      await attemptSourcifyVerification(
+        hre,
+        contractAddress,
+        contractName,
+        constructorArguments
+      );
+      return true; // Success
+    }
+  } catch (sourcifyError: any) {
+    if (isAlreadyVerifiedError(sourcifyError)) {
+      logger.success('Contract is already verified.');
+      throw new Error('ALREADY_VERIFIED');
+    }
+    logger.warn(`Sourcify verification failed: ${sourcifyError.message}`);
+    return false; // Should retry
+  }
+
+  // Try standard verification
+  try {
+    await attemptStandardVerification(
+      hre,
+      contractAddress,
+      contractName,
+      constructorArguments
+    );
+    return true; // Success
+  } catch (standardError: any) {
+    if (isAlreadyVerifiedError(standardError)) {
+      logger.success('Contract is already verified.');
+      throw new Error('ALREADY_VERIFIED');
+    }
+
+    logger.warn(`Standard verifier failed: ${standardError.message}`);
+  }
+
+  // Try custom verification as fallback
+  try {
+    await attemptCustomVerification(
+      hre,
+      contractAddress,
+      contractName,
+      constructorArguments
+    );
+    return true; // Success
+  } catch (customError: any) {
+    if (isAlreadyVerifiedError(customError)) {
+      logger.success('Contract is already verified.');
+      throw new Error('ALREADY_VERIFIED'); // Special error to indicate success
+    }
+
+    logger.warn(`Custom verifier fallback also failed: ${customError.message}`);
+  }
+
+  return false; // Should retry
+}
+
 /**
  * Waits for contract confirmation and then verifies it on a block explorer.
- * It first tries the standard Hardhat verifier and falls back to a custom verifier if the first one fails.
- * The entire process is wrapped in a retry loop.
+ * Uses standard Hardhat verifier, custom verifier, and Sourcify verification.
  */
 export async function waitAndVerify(
   hre: HardhatRuntimeEnvironment,
   contract: BaseContract,
   contractName: string,
   constructorArguments: string[] = []
-) {
+): Promise<void> {
   if (!hre) {
     const errorMsg = 'Hardhat Runtime Environment (hre) is not defined.';
     logger.error(errorMsg);
     throw new Error(errorMsg);
   }
 
-  const confirmationCount = 5;
-  logger.info(
-    `Waiting for ${confirmationCount} block confirmations for ${contractName}...`
-  );
-  const artifact = await hre.artifacts.readArtifact(contractName);
-  const verificationString = `${artifact.sourceName}:${artifact.contractName}`;
-  console.log(`Verification string: ${verificationString}`);
+  // Wait for block confirmations
+  const contractAddress = await waitForConfirmations(contract, contractName);
 
-  const deployTx = contract.deploymentTransaction();
-  await deployTx?.wait(confirmationCount);
+  // Perform verification with retry logic
+  for (let attempt = 1; attempt <= VERIFICATION_CONFIG.MAX_RETRIES; attempt++) {
+    logger.info(`Verification attempt #${attempt} for ${contractName}...`);
 
-  logger.success(
-    `Contract ${contractName} confirmed on the network after ${confirmationCount} confirmations.`
-  );
-  const contractAddress = await contract.getAddress();
-  logger.success(`Contract confirmed on the network at ${contractAddress}.`);
-
-  const maxRetries = 20;
-  const retryDelay = 180000; // 180 seconds
-
-  for (let i = 0; i < maxRetries; i++) {
-    logger.info(`Verification attempt #${i + 1} for ${contractName}...`);
     try {
-      // --- Primary Attempt: Standard Verifier ---
-      logger.info('Attempting verification with standard Hardhat verifier...');
-      await hre.run('verify:verify', {
-        address: contractAddress,
-        constructorArguments: constructorArguments,
-        contract: verificationString
-      });
-      logger.success('Standard verification successful!');
-      return; // Success, exit the loop.
-    } catch (standardError: any) {
-      logger.warn(`Standard verifier failed: ${standardError.message}`);
+      const success = await attemptVerification(
+        hre,
+        contractAddress,
+        contractName,
+        constructorArguments
+      );
 
-      if (standardError.message.toLowerCase().includes('already verified')) {
-        logger.success('Contract is already verified.');
-        return;
+      if (success) {
+        logger.success(`Verification succeeded on attempt #${attempt}.`);
+        return; // Verification succeeded
       }
-
-      // --- Fallback Attempt: Custom Verifier ---
-      logger.info('Falling back to custom verifier...');
-      try {
-        await verifyOnCustomEtherscan({
-          hre,
-          contractAddress: contractAddress, // Use the fetched address
-          contractName: contractName,
-          constructorArguments: constructorArguments
-        });
-        logger.success('Custom verifier fallback successful!');
-        return; // Success, exit the loop.
-      } catch (customError: any) {
-        if (customError.message.toLowerCase().includes('already verified')) {
-          logger.success('Contract is already verified.');
-          return;
-        }
-
-        logger.warn(
-          `Custom verifier fallback also failed: ${customError.message}`
-        );
-        if (i < maxRetries - 1) {
-          logger.info(
-            `Waiting ${
-              retryDelay / 1000
-            } seconds before retrying entire process...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        } else {
-          logger.error(
-            `All verification retries failed. Please verify manually later.`
-          );
-        }
+    } catch (error: any) {
+      if (error.message === 'ALREADY_VERIFIED') {
+        logger.success(`Contract already verified on attempt #${attempt}.`);
+        return; // Already verified - success
+      } else {
+        logger.warn(`Unexpected error during verification: ${error.message}`);
       }
     }
+
+    // If we get here, verification failed and we should retry
+    if (attempt < VERIFICATION_CONFIG.MAX_RETRIES) {
+      const delaySeconds = VERIFICATION_CONFIG.RETRY_DELAY_MS / 1000;
+      logger.info(`Waiting ${delaySeconds} seconds before retrying...`);
+      await delay(VERIFICATION_CONFIG.RETRY_DELAY_MS);
+    }
   }
+
+  logger.error(`Verification process failed: Please verify manually later.`);
 }
