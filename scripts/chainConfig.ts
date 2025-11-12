@@ -138,6 +138,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
+    case CHAIN_IDS.MONAD_TESTNET:
     case CHAIN_IDS.MONAD: {
       const baseFee = 30_000_000_000n; // fallback base fee
       const priority = 1n * GWEI;
@@ -151,7 +152,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       const estimatedTxCost = ethers.formatEther(
         gasParams.maxFeePerGas * BigInt(gasParams.gasLimit)
       );
-      console.log('💸 Estimated Max Deployment Cost:', estimatedTxCost, 'ETH');
       break;
     }
 

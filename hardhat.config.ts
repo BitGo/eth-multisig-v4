@@ -302,7 +302,7 @@ const config: HardhatUserConfig = {
       ]
     },
     mon: {
-      url: `https://testnet-rpc.monad.xyz/`, //TODO: WIN-5225: change it with mainnet url, when its available
+      url: `https://rpc-mainnet.monadinfra.com/rpc/J2rIVAFmDSsGV9tNJ4PR0ZeAMxILBBGD`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1110,11 +1110,11 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'monadMainnet',
-        chainId: CHAIN_IDS.MONAD, //TODO: WIN-5225: change it with mainnet explorer, when its available
+        chainId: CHAIN_IDS.MONAD,
         urls: {
           apiURL:
-            'https://api.socialscan.io/monad-testnet/v1/explorer/command_api/contract', //TODO: WIN-5225: change it with mainnet explorer, when its available
-          browserURL: 'https://monad-testnet.socialscan.io/' //TODO: WIN-5225: change it with mainnet explorer, when its available
+            'https://api.socialscan.io/monad/v1/explorer/command_api/contract',
+          browserURL: 'https://monadexplorer.com/'
         }
       },
       {
