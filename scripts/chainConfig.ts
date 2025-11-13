@@ -139,21 +139,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       break;
 
     case CHAIN_IDS.MONAD_TESTNET:
-    case CHAIN_IDS.MONAD: {
-      const baseFee = 30_000_000_000n; // fallback base fee
-      const priority = 1n * GWEI;
-      gasParams = {
-        maxFeePerGas: baseFee + priority,
-        maxPriorityFeePerGas: priority,
-        gasLimit: 3_000_000
-      };
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
-      const estimatedTxCost = ethers.formatEther(
-        gasParams.maxFeePerGas * BigInt(gasParams.gasLimit)
-      );
-      break;
-    }
+    case CHAIN_IDS.MONAD:
 
     case CHAIN_IDS.FLARE:
     case CHAIN_IDS.FLARE_TESTNET:
