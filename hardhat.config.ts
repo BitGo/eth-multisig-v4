@@ -502,7 +502,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tsonic: {
-      url: `https://rpc.blaze.soniclabs.com`,
+      url: `https://rpc.testnet.soniclabs.com/`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
