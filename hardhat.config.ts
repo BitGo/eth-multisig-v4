@@ -54,7 +54,8 @@ const {
   FLOW_EXPLORER_API_KEY,
   MEGAETH_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
-  FLUENTETH_EXPLORER_API_KEY
+  FLUENTETH_EXPLORER_API_KEY,
+  MANTLE_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -701,6 +702,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tmantle: {
+      url: 'https://rpc.sepolia.mantle.xyz/',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    mantle: {
+      url: 'https://rpc.mantle.xyz/',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -824,7 +841,11 @@ const config: HardhatUserConfig = {
 
       // FLUENTETH
       fluentethTestnet: `${FLUENTETH_EXPLORER_API_KEY}`,
-      fluentethMainnet: `${FLUENTETH_EXPLORER_API_KEY}`
+      fluentethMainnet: `${FLUENTETH_EXPLORER_API_KEY}`,
+
+      // MANTLE
+      mantleTestnet: `${MANTLE_EXPLORER_API_KEY}`,
+      mantleMainnet: `${MANTLE_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1370,6 +1391,22 @@ const config: HardhatUserConfig = {
           // TODO: COIN-6478: update when mainnet is live
           apiURL: 'https://testnet.fluentscan.xyz/api/',
           browserURL: 'https://testnet.fluentscan.xyz/'
+        }
+      },
+      {
+        network: 'mantleTestnet',
+        chainId: CHAIN_IDS.MANTLE_TESTNET,
+        urls: {
+          apiURL: 'https://api-sepolia.mantlescan.xyz/api',
+          browserURL: 'https://sepolia.mantlescan.xyz/'
+        }
+      },
+      {
+        network: 'mantleMainnet',
+        chainId: CHAIN_IDS.MANTLE,
+        urls: {
+          apiURL: 'https://api.mantlescan.xyz/api',
+          browserURL: 'https://mantlescan.xyz/'
         }
       }
     ]
