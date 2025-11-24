@@ -53,7 +53,8 @@ const {
   PLUME_EXPLORER_API_KEY,
   FLOW_EXPLORER_API_KEY,
   MEGAETH_EXPLORER_API_KEY,
-  HBAREVM_EXPLORER_API_KEY
+  HBAREVM_EXPLORER_API_KEY,
+  FLUENTETH_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -684,6 +685,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tfluenteth: {
+      url: 'https://rpc.testnet.fluent.xyz/', // TODO: Replace with actual RPC URL from Fluent docs
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    fluenteth: {
+      url: 'https://rpc.testnet.fluent.xyz/', // TODO: COIN-6478: update when mainnet is live
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -803,7 +820,11 @@ const config: HardhatUserConfig = {
 
       // HBAREVM
       hbarevmTestnet: `${HBAREVM_EXPLORER_API_KEY}`,
-      hbarevmMainnet: `${HBAREVM_EXPLORER_API_KEY}`
+      hbarevmMainnet: `${HBAREVM_EXPLORER_API_KEY}`,
+
+      // FLUENTETH
+      fluentethTestnet: `${FLUENTETH_EXPLORER_API_KEY}`,
+      fluentethMainnet: `${FLUENTETH_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1332,6 +1353,23 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://hashscan.io/api',
           browserURL: 'https://hashscan.io/mainnet'
+        }
+      },
+      {
+        network: 'fluentethTestnet',
+        chainId: CHAIN_IDS.FLUENTETH_TESTNET,
+        urls: {
+          apiURL: 'https://testnet.fluentscan.xyz/api/',
+          browserURL: 'https://testnet.fluentscan.xyz/'
+        }
+      },
+      {
+        network: 'fluentethMainnet',
+        chainId: CHAIN_IDS.FLUENTETH,
+        urls: {
+          // TODO: COIN-6478: update when mainnet is live
+          apiURL: 'https://testnet.fluentscan.xyz/api/',
+          browserURL: 'https://testnet.fluentscan.xyz/'
         }
       }
     ]
