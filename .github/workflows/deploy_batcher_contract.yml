@@ -62,7 +62,6 @@ jobs:
           FLOW_EXPLORER_API_KEY: ${{ secrets.FLOW_EXPLORER_API_KEY }}
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
-          FLUENTETH_EXPLORER_API_KEY: ${{ secrets.FLUENTETH_EXPLORER_API_KEY }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -164,7 +163,6 @@ jobs:
           FLOW_EXPLORER_API_KEY: ${{ secrets.FLOW_EXPLORER_API_KEY }}
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
-          FLUENTETH_EXPLORER_API_KEY: ${{ secrets.FLUENTETH_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
@@ -232,7 +230,6 @@ jobs:
           FLOW_EXPLORER_API_KEY: ${{ secrets.FLOW_EXPLORER_API_KEY }}
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
-          FLUENTETH_EXPLORER_API_KEY: ${{ secrets.FLUENTETH_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
