@@ -566,7 +566,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tog: {
-      url: `https://winter-blissful-yard.0g-galileo.quiknode.pro/3d77af385daeca1c5fa7290ed1fbd97ce501d34f/`,
+      url: `https://evmrpc-testnet.0g.ai`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
