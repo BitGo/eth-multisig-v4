@@ -152,6 +152,18 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
+    // gas params suggested by Mantle foundation
+    case CHAIN_IDS.MANTLE:
+    case CHAIN_IDS.MANTLE_TESTNET:
+      gasParams = {
+        maxFeePerGas: 20_000_000n, // 0.02 gwei
+        maxPriorityFeePerGas: 0n, // 0 gwei (no tip needed)
+        gasLimit: 100_000_000_000 // 1e11
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
     case CHAIN_IDS.SOMNIA:
     case CHAIN_IDS.SOMNIA_TESTNET:
       // Special gas handling for Somnia networks - they require very high gas limits
