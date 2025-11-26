@@ -47,67 +47,92 @@ async function main() {
   // Estimate gas costs for all potential deployments
   let totalEstimatedCost = 0n;
 
+  // For chains with very high gas limits (like Mantle), skip estimation and use configured limit
+  const useConfiguredGasLimit = gasOverrides.gasLimit > 10_000_000_000; // > 10 billion
+
+  if (useConfiguredGasLimit) {
+    console.log(
+      `⚠️  Using configured gas limit (${gasOverrides.gasLimit}) instead of estimation for this chain`
+    );
+  }
+
   // Only estimate if we need to deploy (not already deployed)
   if (
     !output.walletImplementation ||
     !(await isContractDeployed(output.walletImplementation))
   ) {
-    const WalletSimple = await ethers.getContractFactory(
-      chainConfig.walletImplementationContractName
-    );
-    const walletGas = await deployer.estimateGas({
-      ...(await WalletSimple.getDeployTransaction(...[], gasOverrides)),
-      from: deployerAddress
-    });
-    totalEstimatedCost += walletGas;
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const WalletSimple = await ethers.getContractFactory(
+        chainConfig.walletImplementationContractName
+      );
+      const walletGas = await deployer.estimateGas({
+        ...(await WalletSimple.getDeployTransaction(...[], gasOverrides)),
+        from: deployerAddress
+      });
+      totalEstimatedCost += walletGas;
+    }
   }
 
   if (
     !output.walletFactory ||
     !(await isContractDeployed(output.walletFactory))
   ) {
-    const WalletFactory = await ethers.getContractFactory(
-      chainConfig.walletFactoryContractName
-    );
-    const factoryGas = await deployer.estimateGas({
-      ...(await WalletFactory.getDeployTransaction(
-        deployerAddress,
-        gasOverrides
-      )), // Use deployer address as placeholder
-      from: deployerAddress
-    });
-    totalEstimatedCost += factoryGas;
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const WalletFactory = await ethers.getContractFactory(
+        chainConfig.walletFactoryContractName
+      );
+      const factoryGas = await deployer.estimateGas({
+        ...(await WalletFactory.getDeployTransaction(
+          deployerAddress,
+          gasOverrides
+        )), // Use deployer address as placeholder
+        from: deployerAddress
+      });
+      totalEstimatedCost += factoryGas;
+    }
   }
 
   if (
     !output.forwarderImplementation ||
     !(await isContractDeployed(output.forwarderImplementation))
   ) {
-    const ForwarderV4 = await ethers.getContractFactory(
-      chainConfig.forwarderContractName
-    );
-    const forwarderGas = await deployer.estimateGas({
-      ...(await ForwarderV4.getDeployTransaction(gasOverrides)),
-      from: deployerAddress
-    });
-    totalEstimatedCost += forwarderGas;
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const ForwarderV4 = await ethers.getContractFactory(
+        chainConfig.forwarderContractName
+      );
+      const forwarderGas = await deployer.estimateGas({
+        ...(await ForwarderV4.getDeployTransaction(gasOverrides)),
+        from: deployerAddress
+      });
+      totalEstimatedCost += forwarderGas;
+    }
   }
 
   if (
     !output.forwarderFactory ||
     !(await isContractDeployed(output.forwarderFactory))
   ) {
-    const ForwarderFactory = await ethers.getContractFactory(
-      chainConfig.forwarderFactoryContractName
-    );
-    const forwarderFactoryGas = await deployer.estimateGas({
-      ...(await ForwarderFactory.getDeployTransaction(
-        deployerAddress,
-        gasOverrides
-      )), // Use deployer address as placeholder
-      from: deployerAddress
-    });
-    totalEstimatedCost += forwarderFactoryGas;
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const ForwarderFactory = await ethers.getContractFactory(
+        chainConfig.forwarderFactoryContractName
+      );
+      const forwarderFactoryGas = await deployer.estimateGas({
+        ...(await ForwarderFactory.getDeployTransaction(
+          deployerAddress,
+          gasOverrides
+        )), // Use deployer address as placeholder
+        from: deployerAddress
+      });
+      totalEstimatedCost += forwarderFactoryGas;
+    }
   }
 
   if (totalEstimatedCost > 0n) {
