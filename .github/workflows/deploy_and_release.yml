@@ -63,7 +63,6 @@ jobs:
           PLUME_EXPLORER_API_KEY: ${{ secrets.PLUME_EXPLORER_API_KEY }}
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
-          MANTLE_EXPLORER_API_KEY: ${{ secrets.MANTLE_EXPLORER_API_KEY }}
 
   get-network:
     runs-on: ubuntu-latest
@@ -171,7 +170,6 @@ jobs:
           FLOW_EXPLORER_API_KEY: ${{ secrets.FLOW_EXPLORER_API_KEY }}
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
-          MANTLE_EXPLORER_API_KEY: ${{ secrets.MANTLE_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:
@@ -262,7 +260,6 @@ jobs:
           FLOW_EXPLORER_API_KEY: ${{ secrets.FLOW_EXPLORER_API_KEY }}
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
-          MANTLE_EXPLORER_API_KEY: ${{ secrets.MANTLE_EXPLORER_API_KEY }}
       - name: Update release notes
         uses: actions/github-script@v6
         with:
