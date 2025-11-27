@@ -53,8 +53,7 @@ const {
   PLUME_EXPLORER_API_KEY,
   FLOW_EXPLORER_API_KEY,
   MEGAETH_EXPLORER_API_KEY,
-  HBAREVM_EXPLORER_API_KEY,
-  MANTLE_EXPLORER_API_KEY
+  HBAREVM_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -843,8 +842,8 @@ const config: HardhatUserConfig = {
       fluentethMainnet: `${ETHERSCAN_API_KEY}`,
 
       // MANTLE
-      mantleTestnet: `${MANTLE_EXPLORER_API_KEY}`,
-      mantleMainnet: `${MANTLE_EXPLORER_API_KEY}`
+      mantleTestnet: `${ETHERSCAN_API_KEY}`,
+      mantleMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
