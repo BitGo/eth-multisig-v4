@@ -264,6 +264,16 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
+
+    case CHAIN_IDS.DOGEOS_TESTNET:
+    case CHAIN_IDS.DOGEOS:
+      gasParams = {
+        gasPrice: feeData.gasPrice ?? 0n,
+        gasLimit: 7_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
   }
 
   return {

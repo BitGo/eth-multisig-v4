@@ -716,6 +716,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    dogeos: {
+      url: 'https://rpc.testnet.dogeos.com', //TODO: WIN-8075: Replace with mainnet RPC when available
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tdogeos: {
+      url: 'https://rpc.testnet.dogeos.com',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1405,6 +1421,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MANTLE}`,
           browserURL: 'https://mantlescan.xyz/'
+        }
+      },
+      {
+        network: 'dogeosTestnet',
+        chainId: CHAIN_IDS.DOGEOS_TESTNET,
+        urls: {
+          apiURL: 'https://blockscout.testnet.dogeos.com/api',
+          browserURL: 'https://blockscout.testnet.dogeos.com/'
+        }
+      },
+      {
+        network: 'dogeosMainnet',
+        chainId: CHAIN_IDS.DOGEOS,
+        urls: {
+          apiURL: 'https://blockscout.testnet.dogeos.com//api', //TODO: WIN-8075: Replace with mainnet API when available
+          browserURL: 'https://blockscout.testnet.dogeos.com/' //TODO: WIN-8075: Replace with mainnet URL when available
         }
       }
     ]
