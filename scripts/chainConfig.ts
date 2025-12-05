@@ -70,7 +70,12 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.OPTIMISM_SEPOLIA:
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
-
+    case CHAIN_IDS.opBNB_TESTNET:
+    case CHAIN_IDS.opBNB:
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
     case CHAIN_IDS.ZKSYNC_ERA:
     case CHAIN_IDS.ZKSYNC_SEPOLIA:
       walletImplementationContractName = 'ZkethWalletSimple';

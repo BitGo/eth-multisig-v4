@@ -145,6 +145,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    topBNB: {
+      url: `https://opbnb-testnet-rpc.bnbchain.org`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    opBNB: {
+      url: `https://opbnb-mainnet-rpc.bnbchain.org`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tarbeth: {
       url: `${QUICKNODE_ARBITRUM_SEPOLIA_API_KEY}`,
       accounts: [
@@ -749,6 +765,8 @@ const config: HardhatUserConfig = {
       polygonAmoy: `${POLYGONSCAN_API_KEY}`,
       bscTestnet: `${BSCSCAN_API_KEY}`,
       bsc: `${BSCSCAN_API_KEY}`,
+      opBNBTestnet: `${ETHERSCAN_API_KEY}`,
+      opBNB: `${ETHERSCAN_API_KEY}`,
       // arbitrum
       arbitrumOne: `${ARBISCAN_API_KEY}`,
       arbitrumSepolia: `${ARBISCAN_API_KEY}`,
@@ -1437,6 +1455,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://blockscout.testnet.dogeos.com//api', //TODO: WIN-8075: Replace with mainnet API when available
           browserURL: 'https://blockscout.testnet.dogeos.com/' //TODO: WIN-8075: Replace with mainnet URL when available
+        }
+      },
+      {
+        network: 'opBNBTestnet',
+        chainId: CHAIN_IDS.opBNB_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.opBNB_TESTNET}`,
+          browserURL: 'https://opbnb-testnet.bscscan.com/'
+        }
+      },
+      {
+        network: 'opBNBMainnet',
+        chainId: CHAIN_IDS.opBNB,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.opBNB}`,
+          browserURL: 'https://opbnb.bscscan.com/'
         }
       }
     ]
