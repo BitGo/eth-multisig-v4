@@ -590,7 +590,7 @@ const config: HardhatUserConfig = {
       ]
     },
     irys: {
-      url: `http://testnet-rpc.irys.xyz/v1/execution-rpc`, // TODO: Update with mainnet URL when available
+      url: `https://mainnet-beta-rpc.irys.xyz/v1/execution-rpc`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1297,8 +1297,8 @@ const config: HardhatUserConfig = {
         network: 'irysMainnet',
         chainId: CHAIN_IDS.IRYS,
         urls: {
-          apiURL: 'https://inst-1.cloud.blockscout.com/api', // TODO: Update with mainnet URL when available
-          browserURL: 'https://testnet-explorer.irys.xyz/'
+          apiURL: 'https://evm-explorer.irys.xyz/api',
+          browserURL: 'https://evm-explorer.irys.xyz'
         }
       },
       {
