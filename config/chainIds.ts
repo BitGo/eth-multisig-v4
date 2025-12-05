@@ -34,7 +34,7 @@ export const CHAIN_IDS = {
   SEIEVM: 1329,
   WORLD: 480,
   KAIA: 8217,
-  IRYS: 1270,
+  IRYS: 3282,
   LINEAETH: 59144,
   IP: 1514,
   OG: 16661,
