@@ -45,7 +45,7 @@ export const CHAIN_IDS = {
   HBAREVM: 295,
   FLUENTETH: 20993,
   MANTLE: 5000,
-  DOGEOS: 6281971, //TODO: WIN-8075: change it with correct mainnet details, when its available
+  DOGEOS: 123456, //TODO: WIN-8075: change it with correct mainnet details, when its available
   opBNB: 204,
 
   // Testnet Networks
