@@ -12,13 +12,15 @@ async function main() {
 
   const feeData = await ethers.provider.getFeeData();
 
-  const [walletDeployer, forwarderDeployer] = await ethers.getSigners();
+  const signers = await ethers.getSigners();
+  const walletDeployer = signers[0];
+  const forwarderDeployer = signers[1] || signers[0]; // Use first signer if second is not available
 
   const gasParams = {
-    gasPrice: feeData.gasPrice.mul(2) // Use BigNumber arithmetic for ethers v5
+    gasPrice: (feeData.gasPrice ?? 0n) * 2n // Use bigint arithmetic for ethers v6
   };
   const walletTxCount = await ethers.provider.getTransactionCount(
-    walletDeployer.address
+    await walletDeployer.getAddress()
   ); // Updated for ethers v6
 
   console.log('Deploying wallet contracts....');
@@ -26,8 +28,8 @@ async function main() {
   const walletSelfTransactions = 2 - walletTxCount;
   for (let i = 0; i < walletSelfTransactions; i++) {
     const tx = await walletDeployer.sendTransaction({
-      to: walletDeployer.address,
-      value: ethers.utils.parseEther('0'), // ethers v5
+      to: await walletDeployer.getAddress(),
+      value: ethers.parseEther('0'), // ethers v6
       gasPrice: gasParams.gasPrice
     });
     await tx.wait();
@@ -42,11 +44,11 @@ async function main() {
     walletDeployer
   );
   const walletImplementation = await WalletImplementation.deploy(gasParams);
-  await walletImplementation.deployed(); // ethers v5
-  output.walletImplementation = walletImplementation.address; // ethers v5
+  await walletImplementation.waitForDeployment(); // ethers v6
+  output.walletImplementation = await walletImplementation.getAddress(); // ethers v6
   console.log(
     `${walletImplementationContractName} deployed at ` +
-      walletImplementation.address // ethers v5
+      (await walletImplementation.getAddress()) // ethers v6
   );
 
   const WalletFactory = await ethers.getContractFactory(
@@ -54,18 +56,19 @@ async function main() {
     walletDeployer
   );
   const walletFactory = await WalletFactory.deploy(
-    walletImplementation.address, // ethers v5
+    await walletImplementation.getAddress(), // ethers v6
     gasParams
   );
-  await walletFactory.deployed(); // ethers v5
-  output.walletFactory = walletFactory.address; // ethers v5
+  await walletFactory.waitForDeployment(); // ethers v6
+  output.walletFactory = await walletFactory.getAddress(); // ethers v6
   console.log(
-    `${walletFactoryContractName} deployed at ` + walletFactory.address // ethers v5
+    `${walletFactoryContractName} deployed at ` +
+      (await walletFactory.getAddress()) // ethers v6
   );
 
   const forwarderTxCount = await ethers.provider.getTransactionCount(
-    forwarderDeployer.address
-  ); // ethers v5 (no change needed)
+    await forwarderDeployer.getAddress()
+  ); // ethers v6
 
   console.log('Deploying forwarder contracts....');
   console.log('Forwarder Tx Count: ', forwarderTxCount);
@@ -73,8 +76,8 @@ async function main() {
 
   for (let i = 0; i < forwarderSelfTransactions; i++) {
     const tx = await forwarderDeployer.sendTransaction({
-      to: forwarderDeployer.address,
-      value: ethers.utils.parseEther('0'), // ethers v5
+      to: await forwarderDeployer.getAddress(),
+      value: ethers.parseEther('0'), // ethers v6
       gasPrice: gasParams.gasPrice
     });
     await tx.wait();
@@ -92,12 +95,12 @@ async function main() {
   const forwarderImplementation = await ForwarderImplementation.deploy(
     gasParams
   );
-  await forwarderImplementation.deployed(); // ethers v5
-  output.forwarderImplementation = forwarderImplementation.address; // ethers v5
+  await forwarderImplementation.waitForDeployment(); // ethers v6
+  output.forwarderImplementation = await forwarderImplementation.getAddress(); // ethers v6
 
   console.log(
     `${forwarderImplementationContractName} deployed at ` +
-      forwarderImplementation.address // ethers v5
+      (await forwarderImplementation.getAddress()) // ethers v6
   );
 
   const ForwarderFactory = await ethers.getContractFactory(
@@ -106,14 +109,15 @@ async function main() {
   );
 
   const forwarderFactory = await ForwarderFactory.deploy(
-    forwarderImplementation.address, // ethers v5
+    await forwarderImplementation.getAddress(), // ethers v6
     gasParams
   );
 
-  await forwarderFactory.deployed(); // ethers v5
-  output.forwarderFactory = forwarderFactory.address; // ethers v5
+  await forwarderFactory.waitForDeployment(); // ethers v6
+  output.forwarderFactory = await forwarderFactory.getAddress(); // ethers v6
   console.log(
-    `${forwarderFactoryContractName} deployed at ` + forwarderFactory.address // ethers v5
+    `${forwarderFactoryContractName} deployed at ` +
+      (await forwarderFactory.getAddress()) // ethers v6
   );
 
   fs.writeFileSync('output.json', JSON.stringify(output));
@@ -137,16 +141,16 @@ async function main() {
   console.log('Done waiting, verifying');
   await verifyContract(
     walletImplementationContractName,
-    walletImplementation.address, // ethers v5
+    await walletImplementation.getAddress(), // ethers v6
     []
   );
-  await verifyContract('WalletFactory', walletFactory.address, [
-    walletImplementation.address // ethers v5
+  await verifyContract('WalletFactory', await walletFactory.getAddress(), [
+    await walletImplementation.getAddress() // ethers v6
   ]);
 
   await verifyContract(
     forwarderImplementationContractName,
-    forwarderImplementation.address, // ethers v5
+    await forwarderImplementation.getAddress(), // ethers v6
     []
   );
 
