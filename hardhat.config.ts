@@ -749,6 +749,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    jovayeth: {
+      url: `https://rpc.jovay.io`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tjovayeth: {
+      url: `https://api.zan.top/public/jovay-testnet`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -882,7 +898,11 @@ const config: HardhatUserConfig = {
 
       //DOGEOS
       dogeosTestnet: `${DOGEOS_EXPLORER_API_KEY}`,
-      dogeosMainnet: `${DOGEOS_EXPLORER_API_KEY}`
+      dogeosMainnet: `${DOGEOS_EXPLORER_API_KEY}`,
+
+      // JOVAYETH
+      jovayethTestnet: `${ETHERSCAN_API_KEY}`,
+      jovayethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1476,6 +1496,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.opBNB}`,
           browserURL: 'https://opbnb.bscscan.com/'
+        }
+      },
+      {
+        network: 'jovayethTestnet',
+        chainId: CHAIN_IDS.JOVAYETH_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.JOVAYETH_TESTNET}`,
+          browserURL: 'https://sepolia-explorer.jovay.io'
+        }
+      },
+      {
+        network: 'jovayethMainnet',
+        chainId: CHAIN_IDS.JOVAYETH,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.JOVAYETH}`,
+          browserURL: 'https://explorer.jovay.io'
         }
       }
     ]
