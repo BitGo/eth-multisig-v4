@@ -48,6 +48,7 @@ export const CHAIN_IDS = {
   DOGEOS: 123456, //TODO: WIN-8075: change it with correct mainnet details, when its available
   opBNB: 204,
   JOVAYETH: 5734951,
+  OKB: 196,
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -86,5 +87,6 @@ export const CHAIN_IDS = {
   MANTLE_TESTNET: 5003,
   DOGEOS_TESTNET: 6281971,
   opBNB_TESTNET: 5611,
-  JOVAYETH_TESTNET: 2019775
+  JOVAYETH_TESTNET: 2019775,
+  OKB_TESTNET: 1952
 } as const;
