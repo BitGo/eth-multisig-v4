@@ -224,6 +224,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.PLUME:
     case CHAIN_IDS.JOVAYETH:
     case CHAIN_IDS.JOVAYETH_TESTNET:
+    case CHAIN_IDS.OKB:
+    case CHAIN_IDS.OKB_TESTNET:
       gasParams = {
         gasPrice: feeData.gasPrice ?? 0n,
         gasLimit: 7_000_000

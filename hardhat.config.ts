@@ -765,6 +765,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    okb: {
+      url: `https://rpc.xlayer.tech`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tokb: {
+      url: `https://testrpc.xlayer.tech/terigon`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -902,7 +918,11 @@ const config: HardhatUserConfig = {
 
       // JOVAYETH
       jovayethTestnet: `${ETHERSCAN_API_KEY}`,
-      jovayethMainnet: `${ETHERSCAN_API_KEY}`
+      jovayethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // X Layer OKB
+      okbTestnet: `${ETHERSCAN_API_KEY}`,
+      okbMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1512,6 +1532,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.JOVAYETH}`,
           browserURL: 'https://explorer.jovay.io'
+        }
+      },
+      {
+        network: 'okbTestnet',
+        chainId: CHAIN_IDS.OKB_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OKB_TESTNET}`,
+          browserURL: 'https://www.okx.com/web3/explorer/xlayer-test'
+        }
+      },
+      {
+        network: 'okbMainnet',
+        chainId: CHAIN_IDS.OKB,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OKB}`,
+          browserURL: 'https://www.okx.com/web3/explorer/xlayer'
         }
       }
     ]
