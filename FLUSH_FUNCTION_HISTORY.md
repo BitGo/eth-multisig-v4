@@ -57,21 +57,21 @@ fallback() external payable {
 The change was made to fix an issue with the `ForwarderDeposited` event. The problem was:
 
 1. When `flush()` was marked as `external`, it could only be called externally
-2. Calling `this.flush()` forced an external CALL operation
-3. External CALLs change the `msg.sender` to the most recent address in the call stack
+2. Calling `this.flush()` from within the contract forced an external CALL operation
+3. External CALLs change the `msg.sender` to the calling contract's address
 4. This meant the event always showed the forwarder itself as the sender, not the actual original sender
 
 ### Technical Details
 
-The execution flow before the fix:
-- When funds were sent to the forwarder proxy: A (sender) → B (proxy) → DELEGATECALL C (implementation fallback()/receive())
-- Then within the fallback/receive: B (proxy) → CALL B (flush()) → DELEGATECALL C (flush())
-- That external CALL changed `msg.sender` to B (the proxy) instead of A (the original sender)
+The execution flow in a proxy-based architecture:
+- When funds were sent to the forwarder: A (sender) → B (proxy) → DELEGATECALL to C (implementation's fallback()/receive())
+- With external call: The fallback/receive() then triggered: B (proxy) → external CALL to B's flush() 
+- This external CALL changed `msg.sender` from A to B (the proxy address)
 
 The fix:
 1. Changed `flush()` from `external` to `public` so it can be called both externally and internally
 2. Removed the `this.` syntax to make internal calls instead of external calls
-3. This preserves the correct `msg.sender` in the `ForwarderDeposited` event
+3. Internal calls preserve the original `msg.sender`, fixing the event emission
 
 ## Summary
 
