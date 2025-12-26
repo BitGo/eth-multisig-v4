@@ -18,13 +18,15 @@ The functionality of calling `flush()` when receiving funds has been present **s
 
 ## Context
 
-This line is part of the `fallback()` function that gets called when data is sent to the contract but does not match any other function:
+This line is part of the `fallback()` function that gets called when the contract receives a call with data that doesn't match any other function signature:
 
 ```solidity
 fallback() external payable {
     flush();
 }
 ```
+
+Note: There's also a `receive()` function that calls `flush()` when plain Ether is sent without any data.
 
 ## Complete History
 
@@ -61,14 +63,14 @@ The change was made to fix an issue with the `ForwarderDeposited` event. The pro
 
 ### Technical Details
 
-The execution flow before the fix was:
-- A (sender) → B (proxy) → DELEGATECALL C (implementation receive())
-- Then: B (proxy) → CALL B (flush()) → DELEGATECALL C (flush())
-- That CALL changed `msg.sender` to B instead of A
+The execution flow before the fix:
+- When funds were sent to the forwarder proxy: A (sender) → B (proxy) → DELEGATECALL C (implementation fallback()/receive())
+- Then within the fallback/receive: B (proxy) → CALL B (flush()) → DELEGATECALL C (flush())
+- That external CALL changed `msg.sender` to B (the proxy) instead of A (the original sender)
 
 The fix:
 1. Changed `flush()` from `external` to `public` so it can be called both externally and internally
-2. Removed the `this.` syntax to make internal calls
+2. Removed the `this.` syntax to make internal calls instead of external calls
 3. This preserves the correct `msg.sender` in the `ForwarderDeposited` event
 
 ## Summary
