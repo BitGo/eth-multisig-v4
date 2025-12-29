@@ -49,6 +49,7 @@ export const CHAIN_IDS = {
   opBNB: 204,
   JOVAYETH: 5734951,
   OKB: 196,
+  MORPH: 2818,
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -88,5 +89,6 @@ export const CHAIN_IDS = {
   DOGEOS_TESTNET: 6281971,
   opBNB_TESTNET: 5611,
   JOVAYETH_TESTNET: 2019775,
-  OKB_TESTNET: 1952
+  OKB_TESTNET: 1952,
+  MORPH_TESTNET: 2910,
 } as const;
