@@ -17,6 +17,7 @@ const {
   PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT,
   QUICKNODE_ARBITRUM_SEPOLIA_API_KEY,
   QUICKNODE_OPTIMISM_SEPOLIA_API_KEY,
+  QUICKNODE_PLASMA_API_KEY,
   QUICKNODE_ARBITRUM_ONE_API_KEY,
   QUICKNODE_OPTIMISM_API_KEY,
   QUICKNODE_ZKSYNC_SEPOLIA_API_KEY,
@@ -615,7 +616,7 @@ const config: HardhatUserConfig = {
       ]
     },
     plasma: {
-      url: `https://chaotic-cosmopolitan-waterfall.plasma-mainnet.quiknode.pro/40f306c7667db5b8637b214b2dbd45aac5f1fe3f`,
+      url: `${QUICKNODE_PLASMA_API_KEY}`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
