@@ -18,6 +18,9 @@ const {
   QUICKNODE_ARBITRUM_SEPOLIA_API_KEY,
   QUICKNODE_OPTIMISM_SEPOLIA_API_KEY,
   QUICKNODE_PLASMA_API_KEY,
+  SOMNIA_TESTNET_API_KEY,
+  MONAD_MAINNET_API_KEY,
+  MEGAETH_TESTNET_API_KEY,
   QUICKNODE_ARBITRUM_ONE_API_KEY,
   QUICKNODE_OPTIMISM_API_KEY,
   QUICKNODE_ZKSYNC_SEPOLIA_API_KEY,
@@ -296,7 +299,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tstt: {
-      url: `https://rpc.ankr.com/somnia_testnet?apikey=e97af24c8759a6cad0acd837d853aac43bb0903dcdab411d08b77aaf5c4c38a7`,
+      url: `${SOMNIA_TESTNET_API_KEY}`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -320,7 +323,7 @@ const config: HardhatUserConfig = {
       ]
     },
     mon: {
-      url: `https://rpc-mainnet.monadinfra.com/rpc/J2rIVAFmDSsGV9tNJ4PR0ZeAMxILBBGD`,
+      url: `${MONAD_MAINNET_API_KEY}`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -680,7 +683,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tmegaeth: {
-      url: 'https://carrot.megaeth.com/mafia/rpc/f63rvkkv2t9pf91208ub3d8uv87f12p8kp0k5wy4',
+      url: `${MEGAETH_TESTNET_API_KEY}`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
