@@ -58,7 +58,8 @@ const {
   FLOW_EXPLORER_API_KEY,
   MEGAETH_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
-  DOGEOS_EXPLORER_API_KEY
+  DOGEOS_EXPLORER_API_KEY,
+  MORPH_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -785,7 +786,23 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
-    }
+    },
+    morph: {
+      url: 'https://rpc-quicknode.morphl2.io/',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tmorph: {
+      url: 'https://rpc-hoodi.morphl2.io',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
@@ -926,7 +943,11 @@ const config: HardhatUserConfig = {
 
       // X Layer OKB
       okbTestnet: `${ETHERSCAN_API_KEY}`,
-      okbMainnet: `${ETHERSCAN_API_KEY}`
+      okbMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // MORPH
+      morphTestnet: `${ETHERSCAN_API_KEY}`,
+      morphMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1552,6 +1573,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OKB}`,
           browserURL: 'https://www.okx.com/web3/explorer/xlayer'
+        }
+      },
+      {
+        network: 'morphTestnet',
+        chainId: CHAIN_IDS.MORPH_TESTNET,
+        urls: {
+          apiURL: 'https://explorer-api-hoodi.morph.network/api',
+          browserURL: 'https://explorer-hoodi.morphl2.io/'
+        }
+      },
+      {
+        network: 'morphMainnet',
+        chainId: CHAIN_IDS.MORPH,
+        urls: {
+          apiURL: 'https://explorer-api.morphl2.io/api/v2',
+          browserURL: 'https://explorer.morphl2.io/'
         }
       }
     ]
