@@ -49,6 +49,7 @@ export const CHAIN_IDS = {
   opBNB: 204,
   JOVAYETH: 5734951,
   OKB: 196,
+  ftm: 250,
 
   // Testnet Networks
   BSC_TESTNET: 97,
