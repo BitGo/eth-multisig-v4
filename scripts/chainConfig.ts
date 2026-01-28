@@ -76,6 +76,11 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactory';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
+    case CHAIN_IDS.ftm:
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
+      break;
     case CHAIN_IDS.ZKSYNC_ERA:
     case CHAIN_IDS.ZKSYNC_SEPOLIA:
       walletImplementationContractName = 'ZkethWalletSimple';
