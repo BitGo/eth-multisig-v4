@@ -83,7 +83,7 @@ jobs:
           result-encoding: string
           script: |
             const tag = process.env.GITHUB_REF_NAME;
-            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|tflr|flr|tsgb|sgb|txdc|xdc|twemix|wemix|tmon|mon|tstt|stt|tsoneium|soneium|world|tworld|tctc|ctc|tapechain|apechain|tphrs|phrs|thypeevm|hypeevm|tsonic|sonic|seievm|tseievm|kaia|tkaia|irys|tirys|tlineaeth|lineaeth|ip|tip|plasma|tplasma|kavaevm|tkavaevm|plume|tplume|tog|og|flow|tflow|megaeth|tmegaeth|hbarevm|thbarevm|fluenteth|tfluenteth|mantle|tmantle|dogeos|tdogeos|opBNB|topBNB|jovayeth|tjovayeth|okb|tokb)$/;
+            const regex = /v.*\-(eth|hteth|matic|tmatic|bsc|tbsc|arbeth|tarbeth|opeth|topeth|zketh|tzketh|baseeth|tbaseeth|bera|tbera|tavaxc|avaxc|toas|oas|tcoredao|coredao|tflr|flr|tsgb|sgb|txdc|xdc|twemix|wemix|tmon|mon|tstt|stt|tsoneium|soneium|world|tworld|tctc|ctc|tapechain|apechain|tphrs|phrs|thypeevm|hypeevm|tsonic|sonic|seievm|tseievm|kaia|tkaia|irys|tirys|tlineaeth|lineaeth|ip|tip|plasma|tplasma|kavaevm|tkavaevm|plume|tplume|tog|og|flow|tflow|megaeth|tmegaeth|hbarevm|thbarevm|fluenteth|tfluenteth|mantle|tmantle|dogeos|tdogeos|opBNB|topBNB|jovayeth|tjovayeth|okb|tokb|ftm)$/;
             const network = tag.match(regex);
             return network ? network[1] : "hteth";
   preview:
