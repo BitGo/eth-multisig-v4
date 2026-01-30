@@ -809,6 +809,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    morpheth: {
+      url: 'https://rpc-quicknode.morphl2.io/',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tmorpheth: {
+      url: 'https://rpc-hoodi.morphl2.io',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -950,7 +966,11 @@ const config: HardhatUserConfig = {
 
       // X Layer OKB
       okbTestnet: `${ETHERSCAN_API_KEY}`,
-      okbMainnet: `${ETHERSCAN_API_KEY}`
+      okbMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // MORPHETH
+      morphethTestnet: `${ETHERSCAN_API_KEY}`,
+      morphethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1578,6 +1598,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.OKB}`,
           browserURL: 'https://www.okx.com/web3/explorer/xlayer'
+        }
+      },
+      {
+        network: 'morphethTestnet',
+        chainId: CHAIN_IDS.MORPHETH_TESTNET,
+        urls: {
+          apiURL: 'https://explorer-api-hoodi.morph.network/api',
+          browserURL: 'https://explorer-hoodi.morphl2.io/'
+        }
+      },
+      {
+        network: 'morphethMainnet',
+        chainId: CHAIN_IDS.MORPHETH,
+        urls: {
+          apiURL: 'https://explorer-api.morphl2.io/api/v2',
+          browserURL: 'https://explorer.morphl2.io/'
         }
       }
     ]
