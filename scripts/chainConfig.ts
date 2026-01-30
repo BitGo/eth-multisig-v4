@@ -72,13 +72,13 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       break;
     case CHAIN_IDS.opBNB_TESTNET:
     case CHAIN_IDS.opBNB:
-      forwarderContractName = 'Forwarder';
-      forwarderFactoryContractName = 'ForwarderFactory';
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     case CHAIN_IDS.ftm:
-      forwarderContractName = 'ForwarderV4';
-      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      forwarderContractName = 'Forwarder';
+      forwarderFactoryContractName = 'ForwarderFactory';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
 
