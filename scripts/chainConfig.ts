@@ -81,11 +81,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
-    case CHAIN_IDS.ZKSYNC_ERA:
-    case CHAIN_IDS.ZKSYNC_SEPOLIA:
-      walletImplementationContractName = 'ZkethWalletSimple';
-      contractPath = `contracts/coins/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
-      break;
 
     case CHAIN_IDS.BASE_SEPOLIA:
     case CHAIN_IDS.BASE:
@@ -234,6 +229,17 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       gasParams = {
         gasPrice: feeData.gasPrice ?? 0n,
         gasLimit: 7_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
+    case CHAIN_IDS.ZKSYNCERA:
+    case CHAIN_IDS.ZKSYNCERA_TESTNET:
+      gasParams = {
+        maxFeePerGas: ethers.parseUnits('1', 'gwei'),
+        maxPriorityFeePerGas: ethers.parseUnits('0.25', 'gwei'),
+        gasLimit: 30_000_000
       };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
