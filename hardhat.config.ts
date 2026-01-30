@@ -793,6 +793,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tzksyncera: {
+      url: `https://sepolia.era.zksync.dev`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    zksyncera: {
+      url: `https://mainnet.era.zksync.io`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -965,7 +981,8 @@ const config: HardhatUserConfig = {
         network: 'zksync',
         chainId: CHAIN_IDS.ZKSYNC_ERA,
         urls: {
-          apiURL: 'https://block-explorer-api.mainnet.zksync.io/api',
+          apiURL:
+            'https://zksync2-mainnet-explorer.zksync.io/contract_verification',
           browserURL: 'https://explorer.zksync.io'
         }
       },
@@ -973,7 +990,8 @@ const config: HardhatUserConfig = {
         network: 'zksyncSepolia',
         chainId: CHAIN_IDS.ZKSYNC_SEPOLIA,
         urls: {
-          apiURL: 'https://block-explorer-api.sepolia.zksync.dev/api',
+          apiURL:
+            'https://explorer.sepolia.era.zksync.dev/contract_verification',
           browserURL: 'https://sepolia.explorer.zksync.io'
         }
       },

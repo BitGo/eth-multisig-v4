@@ -50,6 +50,7 @@ export const CHAIN_IDS = {
   JOVAYETH: 5734951,
   OKB: 196,
   ftm: 250,
+  ZKSYNCERA: 324,
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -89,5 +90,6 @@ export const CHAIN_IDS = {
   DOGEOS_TESTNET: 6281971,
   opBNB_TESTNET: 5611,
   JOVAYETH_TESTNET: 2019775,
-  OKB_TESTNET: 1952
+  OKB_TESTNET: 1952,
+  ZKSYNCERA_TESTNET: 300
 } as const;
