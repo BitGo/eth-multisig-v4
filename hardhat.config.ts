@@ -161,8 +161,8 @@ const config: HardhatUserConfig = {
     opBNB: {
       url: `https://opbnb-mainnet-rpc.bnbchain.org`,
       accounts: [
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -789,8 +789,8 @@ const config: HardhatUserConfig = {
     ftm: {
       url: `https://rpcapi.fantom.network`,
       accounts: [
-        `${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },

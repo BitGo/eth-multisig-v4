@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "deploy-prod": "hardhat run scripts/deploy.ts --network",
+    "deploy-prod": "hardhat run scripts/deployV1FactoryContracts.ts --network",
     "deploy-test": "hardhat run scripts/deploy.ts --network",
     "deploy-batcher": "hardhat run scripts/deployBatcherContract.ts --network",
     "update-gas-limit": "hardhat run scripts/updateTransferGasLimit.ts --network",
