@@ -52,6 +52,7 @@ export const CHAIN_IDS = {
   ftm: 250,
   ZKSYNCERA: 324,
   MORPHETH: 2818,
+  ARCUSDC: 5042002, //TODO: WIN-8039: change it with correct mainnet details, when its available
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -93,5 +94,6 @@ export const CHAIN_IDS = {
   JOVAYETH_TESTNET: 2019775,
   OKB_TESTNET: 1952,
   ZKSYNCERA_TESTNET: 300,
+  ARCUSDC_TESTNET: 5042002,
   MORPHETH_TESTNET: 2910
 } as const;

@@ -58,6 +58,7 @@ const {
   FLOW_EXPLORER_API_KEY,
   MEGAETH_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
+  ARCUSDC_EXPLORER_API_KEY,
   DOGEOS_EXPLORER_API_KEY
 } = process.env;
 
@@ -810,6 +811,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    tarcusdc: {
+      url: 'https://rpc.testnet.arc.network',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    arcusdc: {
+      url: 'https://rpc.testnet.arc.network', //TODO: WIN-8039: Replace with mainnet RPC when available
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     morpheth: {
       url: 'https://rpc-quicknode.morphl2.io/',
       accounts: [
@@ -931,6 +948,10 @@ const config: HardhatUserConfig = {
       //KAVA
       kavaEvmTestnet: `${KAVAEVM_EXPLORER_API_KEY}`,
       kavaEvmMainnet: `${KAVAEVM_EXPLORER_API_KEY}`,
+
+      // ARCUSDC
+      arcusdcTestnet: `${ARCUSDC_EXPLORER_API_KEY}`,
+      arcusdcMainnet: `${ARCUSDC_EXPLORER_API_KEY}`,
 
       // PLUME
       plumeTestnet: `${PLUME_EXPLORER_API_KEY}`,
@@ -1461,6 +1482,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer.plume.org/api',
           browserURL: 'https://explorer.plume.org/'
+        }
+      },
+      {
+        network: 'arcusdcTestnet',
+        chainId: CHAIN_IDS.ARCUSDC_TESTNET,
+        urls: {
+          apiURL: 'https://testnet.arcscan.app/api',
+          browserURL: 'https://testnet.arcscan.app/'
+        }
+      },
+      {
+        network: 'arcusdcMainnet',
+        chainId: CHAIN_IDS.ARCUSDC,
+        urls: {
+          apiURL: 'https://testnet.arcscan.app/api', // TODO: WIN-8039: Replace with mainnet API when available
+          browserURL: 'https://testnet.arcscan.app/' // TODO: WIN-8039: Replace with mainnet Browser URL when available
         }
       },
       {
