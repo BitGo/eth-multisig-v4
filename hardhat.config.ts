@@ -59,7 +59,8 @@ const {
   MEGAETH_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
   ARCUSDC_EXPLORER_API_KEY,
-  DOGEOS_EXPLORER_API_KEY
+  DOGEOS_EXPLORER_API_KEY,
+  CHILIZ_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -842,6 +843,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    chiliz: {
+      url: 'https://rpc.ankr.com/chiliz',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tchiliz: {
+      url: 'https://spicy-rpc.chiliz.com',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -991,7 +1008,11 @@ const config: HardhatUserConfig = {
 
       // MORPHETH
       morphethTestnet: `${ETHERSCAN_API_KEY}`,
-      morphethMainnet: `${ETHERSCAN_API_KEY}`
+      morphethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // CHILIZ
+      chilizTestnet: `${CHILIZ_EXPLORER_API_KEY}`,
+      chilizMainnet: `${CHILIZ_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1651,6 +1672,24 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer-api.morphl2.io/api/v2',
           browserURL: 'https://explorer.morphl2.io/'
+        }
+      },
+      {
+        network: 'chilizTestnet',
+        chainId: CHAIN_IDS.CHILIZ_TESTNET,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/88882/etherscan/api',
+          browserURL: 'https://testnet.chiliscan.com/'
+        }
+      },
+      {
+        network: 'chilizMainnet',
+        chainId: CHAIN_IDS.CHILIZ,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/mainnet/evm/88888/etherscan/api',
+          browserURL: 'https://chiliscan.com/'
         }
       }
     ]
