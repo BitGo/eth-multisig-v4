@@ -70,4 +70,5 @@ jobs:
           KAIA_EXPLORER_API_KEY: ${{ secrets.KAIA_EXPLORER_API_KEY }}
           IRYS_EXPLORER_API_KEY: ${{ secrets.IRYS_EXPLORER_API_KEY }}
           IP_EXPLORER_API_KEY: ${{ secrets.IP_EXPLORER_API_KEY }}
+          CHILIZ_EXPLORER_API_KEY: ${{ secrets.CHILIZ_EXPLORER_API_KEY }}
       - run: npm run lint
