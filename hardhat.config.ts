@@ -691,6 +691,14 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    megaeth: {
+      url: 'https://mainnet.megaeth.com/rpc',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     thbarevm: {
       url: 'https://testnet.hashio.io/api',
       accounts: [
@@ -1522,6 +1530,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://carrot.megaeth.com/mafia/api',
           browserURL: 'https://www.megaexplorer.xyz/'
+        }
+      },
+      {
+        network: 'megaethMainnet',
+        chainId: CHAIN_IDS.MEGAETH,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MEGAETH}`,
+          browserURL: 'https://mega.etherscan.io/'
         }
       },
       {
