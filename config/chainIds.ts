@@ -53,6 +53,7 @@ export const CHAIN_IDS = {
   ZKSYNCERA: 324,
   MORPHETH: 2818,
   ARCUSDC: 5042002, //TODO: WIN-8039: change it with correct mainnet details, when its available
+  MEGAETH: 4326,
 
   // Testnet Networks
   BSC_TESTNET: 97,
