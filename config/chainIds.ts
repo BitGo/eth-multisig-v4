@@ -53,6 +53,7 @@ export const CHAIN_IDS = {
   ZKSYNCERA: 324,
   MORPHETH: 2818,
   ARCUSDC: 5042002, //TODO: WIN-8039: change it with correct mainnet details, when its available
+  MEGAETH: 4326,
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -85,7 +86,7 @@ export const CHAIN_IDS = {
   KAVAEVM_TESTNET: 2221,
   PLUME_TESTNET: 98867,
   FLOW_TESTNET: 545,
-  MEGAETH_TESTNET: 6342,
+  MEGAETH_TESTNET: 6343,
   HBAREVM_TESTNET: 296,
   FLUENTETH_TESTNET: 20994,
   MANTLE_TESTNET: 5003,
