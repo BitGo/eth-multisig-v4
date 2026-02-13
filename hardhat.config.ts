@@ -1665,7 +1665,7 @@ const config: HardhatUserConfig = {
         network: 'morphethMainnet',
         chainId: CHAIN_IDS.MORPHETH,
         urls: {
-          apiURL: 'https://explorer-api.morphl2.io/api/v2',
+          apiURL: 'https://explorer-api.morph.network/api?',
           browserURL: 'https://explorer.morphl2.io/'
         }
       }
