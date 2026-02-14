@@ -106,6 +106,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.PHAROS_TESTNET:
     case CHAIN_IDS.APECHAIN:
     case CHAIN_IDS.APECHAIN_TESTNET:
+    case CHAIN_IDS.MEGAETH:
+    case CHAIN_IDS.MEGAETH_TESTNET:
     case CHAIN_IDS.CORE_DAO:
     case CHAIN_IDS.CORE_DAO_TESTNET:
     case CHAIN_IDS.LINEAETH:
@@ -244,8 +246,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
-
-    case CHAIN_IDS.MEGAETH_TESTNET:
 
     case CHAIN_IDS.HBAREVM:
     case CHAIN_IDS.HBAREVM_TESTNET:

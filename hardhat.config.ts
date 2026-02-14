@@ -1528,8 +1528,16 @@ const config: HardhatUserConfig = {
         network: 'megaethTestnet',
         chainId: CHAIN_IDS.MEGAETH_TESTNET,
         urls: {
-          apiURL: 'https://carrot.megaeth.com/mafia/api',
-          browserURL: 'https://www.megaexplorer.xyz/'
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MEGAETH_TESTNET}`,
+          browserURL: 'https://testnet-mega.etherscan.io/'
+        }
+      },
+      {
+        network: 'megaethMainnet',
+        chainId: CHAIN_IDS.MEGAETH,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MEGAETH}`,
+          browserURL: 'https://mega.etherscan.io/'
         }
       },
       {
