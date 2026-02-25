@@ -226,9 +226,11 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.JOVAYETH_TESTNET:
     case CHAIN_IDS.OKB:
     case CHAIN_IDS.OKB_TESTNET:
+    case CHAIN_IDS.MEGAETH:
+    case CHAIN_IDS.MEGAETH_TESTNET:
       gasParams = {
         gasPrice: feeData.gasPrice ?? 0n,
-        gasLimit: 7_000_000
+        gasLimit: 1_000_000_000 // 1B
       };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
@@ -244,8 +246,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
-
-    case CHAIN_IDS.MEGAETH_TESTNET:
 
     case CHAIN_IDS.HBAREVM:
     case CHAIN_IDS.HBAREVM_TESTNET:

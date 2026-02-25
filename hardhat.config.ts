@@ -20,7 +20,6 @@ const {
   QUICKNODE_PLASMA_API_KEY,
   SOMNIA_TESTNET_API_KEY,
   MONAD_MAINNET_API_KEY,
-  MEGAETH_TESTNET_API_KEY,
   QUICKNODE_ARBITRUM_ONE_API_KEY,
   QUICKNODE_OPTIMISM_API_KEY,
   QUICKNODE_ZKSYNC_SEPOLIA_API_KEY,
@@ -56,7 +55,6 @@ const {
   KAVAEVM_EXPLORER_API_KEY,
   PLUME_EXPLORER_API_KEY,
   FLOW_EXPLORER_API_KEY,
-  MEGAETH_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
   ARCUSDC_EXPLORER_API_KEY,
   DOGEOS_EXPLORER_API_KEY
@@ -684,7 +682,15 @@ const config: HardhatUserConfig = {
       ]
     },
     tmegaeth: {
-      url: `${MEGAETH_TESTNET_API_KEY}`,
+      url: 'https://carrot.megaeth.com/rpc',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    megaeth: {
+      url: 'https://mainnet.megaeth.com/rpc',
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -958,8 +964,8 @@ const config: HardhatUserConfig = {
       plumeMainnet: `${PLUME_EXPLORER_API_KEY}`,
 
       // MEGAETH
-      megaethTestnet: `${MEGAETH_EXPLORER_API_KEY}`,
-      megaethMainnet: `${MEGAETH_EXPLORER_API_KEY}`,
+      megaethTestnet: `${ETHERSCAN_API_KEY}`,
+      megaethMainnet: `${ETHERSCAN_API_KEY}`,
 
       // FLOW
       flowTestnet: `${FLOW_EXPLORER_API_KEY}`,
@@ -1520,8 +1526,16 @@ const config: HardhatUserConfig = {
         network: 'megaethTestnet',
         chainId: CHAIN_IDS.MEGAETH_TESTNET,
         urls: {
-          apiURL: 'https://carrot.megaeth.com/mafia/api',
-          browserURL: 'https://www.megaexplorer.xyz/'
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MEGAETH_TESTNET}`,
+          browserURL: 'https://testnet-mega.etherscan.io/'
+        }
+      },
+      {
+        network: 'megaethMainnet',
+        chainId: CHAIN_IDS.MEGAETH,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MEGAETH}`,
+          browserURL: 'https://mega.etherscan.io/'
         }
       },
       {
