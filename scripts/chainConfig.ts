@@ -325,6 +325,15 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
+    case CHAIN_IDS.HEMIETH:
+    case CHAIN_IDS.HEMIETH_TESTNET:
+      gasParams = {
+        gasPrice: feeData.gasPrice ?? 0n,
+        gasLimit: 3_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
   }
 
   return {
