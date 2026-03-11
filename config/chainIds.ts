@@ -55,6 +55,7 @@ export const CHAIN_IDS = {
   ARCUSDC: 5042002, //TODO: WIN-8039: change it with correct mainnet details, when its available
   MEGAETH: 4326,
   CHILIZ: 88888,
+  UNICHAIN: 130,
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -98,5 +99,6 @@ export const CHAIN_IDS = {
   ZKSYNCERA_TESTNET: 300,
   ARCUSDC_TESTNET: 5042002,
   MORPHETH_TESTNET: 2910,
-  CHILIZ_TESTNET: 88882
+  CHILIZ_TESTNET: 88882,
+  UNICHAIN_TESTNET: 1301
 } as const;

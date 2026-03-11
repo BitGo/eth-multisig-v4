@@ -697,14 +697,6 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
-    megaeth: {
-      url: 'https://mainnet.megaeth.com/rpc',
-      accounts: [
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
-        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
-      ]
-    },
     thbarevm: {
       url: 'https://testnet.hashio.io/api',
       accounts: [
@@ -872,6 +864,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    unichain: {
+      url: 'https://mainnet.unichain.org',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tunichain: {
+      url: 'https://sepolia.unichain.org',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1025,7 +1033,11 @@ const config: HardhatUserConfig = {
 
       // CHILIZ
       chilizTestnet: `${ETHERSCAN_API_KEY}`,
-      chilizMainnet: `${ETHERSCAN_API_KEY}`
+      chilizMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // UNICHAIN (uniscan.xyz)
+      unichainTestnet: `${ETHERSCAN_API_KEY}`,
+      unichainMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1567,14 +1579,6 @@ const config: HardhatUserConfig = {
         }
       },
       {
-        network: 'megaethMainnet',
-        chainId: CHAIN_IDS.MEGAETH,
-        urls: {
-          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MEGAETH}`,
-          browserURL: 'https://mega.etherscan.io/'
-        }
-      },
-      {
         network: 'hbarevmTestnet',
         chainId: CHAIN_IDS.HBAREVM_TESTNET,
         urls: {
@@ -1719,6 +1723,22 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/88888/etherscan/api',
           browserURL: 'https://chiliscan.com/'
+        }
+      },
+      {
+        network: 'unichainTestnet',
+        chainId: CHAIN_IDS.UNICHAIN_TESTNET,
+        urls: {
+          apiURL: 'https://unichain-sepolia.blockscout.com/api',
+          browserURL: 'https://sepolia.uniscan.xyz'
+        }
+      },
+      {
+        network: 'unichainMainnet',
+        chainId: CHAIN_IDS.UNICHAIN,
+        urls: {
+          apiURL: 'https://unichain.blockscout.com/api',
+          browserURL: 'https://uniscan.xyz'
         }
       }
     ]
