@@ -102,8 +102,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.KAIA_TESTNET:
     case CHAIN_IDS.IRYS:
     case CHAIN_IDS.IRYS_TESTNET:
-    case CHAIN_IDS.PHAROS:
-    case CHAIN_IDS.PHAROS_TESTNET:
     case CHAIN_IDS.APECHAIN:
     case CHAIN_IDS.APECHAIN_TESTNET:
     case CHAIN_IDS.CORE_DAO:
@@ -147,7 +145,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
     case CHAIN_IDS.MONAD_TESTNET:
     case CHAIN_IDS.MONAD:
-
+    case CHAIN_IDS.PHAROS:
+    case CHAIN_IDS.PHAROS_TESTNET:
     case CHAIN_IDS.FLARE:
     case CHAIN_IDS.FLARE_TESTNET:
     case CHAIN_IDS.SONEIUM_TESTNET:
