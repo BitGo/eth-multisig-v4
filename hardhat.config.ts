@@ -880,6 +880,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    hpp: {
+      url: 'https://mainnet.hpp.io',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    thpp: {
+      url: 'https://sepolia.hpp.io',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1037,7 +1053,11 @@ const config: HardhatUserConfig = {
 
       // UNICHAIN (uniscan.xyz)
       unichainTestnet: `${ETHERSCAN_API_KEY}`,
-      unichainMainnet: `${ETHERSCAN_API_KEY}`
+      unichainMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // HPP (explorer.hpp.io)
+      hppTestnet: `${ETHERSCAN_API_KEY}`,
+      hppMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1739,6 +1759,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://unichain.blockscout.com/api',
           browserURL: 'https://uniscan.xyz'
+        }
+      },
+      {
+        network: 'hppTestnet',
+        chainId: CHAIN_IDS.HPP_TESTNET,
+        urls: {
+          apiURL: 'https://sepolia-explorer.hpp.io/api',
+          browserURL: 'https://sepolia-explorer.hpp.io'
+        }
+      },
+      {
+        network: 'hppMainnet',
+        chainId: CHAIN_IDS.HPP,
+        urls: {
+          apiURL: 'https://explorer.hpp.io/api',
+          browserURL: 'https://explorer.hpp.io'
         }
       }
     ]
