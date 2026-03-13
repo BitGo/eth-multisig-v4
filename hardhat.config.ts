@@ -474,7 +474,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tphrs: {
-      url: `https://testnet.dplabs-internal.com`,
+      url: `https://atlantic.dplabs-internal.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1247,8 +1247,8 @@ const config: HardhatUserConfig = {
         chainId: CHAIN_IDS.PHAROS_TESTNET,
         urls: {
           apiURL:
-            'https://api.socialscan.io/pharos-testnet/v1/explorer/command_api/contract',
-          browserURL: 'https://testnet.pharosscan.xyz/'
+            'https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract',
+          browserURL: 'https://pharos-testnet.socialscan.io/'
         }
       },
       {
