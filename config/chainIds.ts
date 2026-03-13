@@ -57,6 +57,7 @@ export const CHAIN_IDS = {
   CHILIZ: 88888,
   UNICHAIN: 130,
   HPP: 190415,
+  HOODETH: 999999, //TODO: update with correct mainnet chain ID when available
 
   // Testnet Networks
   BSC_TESTNET: 97,
@@ -102,5 +103,6 @@ export const CHAIN_IDS = {
   MORPHETH_TESTNET: 2910,
   CHILIZ_TESTNET: 88882,
   UNICHAIN_TESTNET: 1301,
-  HPP_TESTNET: 181228
+  HPP_TESTNET: 181228,
+  HOODETH_TESTNET: 46630
 } as const;
