@@ -912,6 +912,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    h: {
+      url: 'https://humanity-mainnet.g.alchemy.com/public',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    th: {
+      url: 'https://humanity-testnet.g.alchemy.com/public',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1074,6 +1090,10 @@ const config: HardhatUserConfig = {
       // HPP (explorer.hpp.io)
       hppTestnet: `${ETHERSCAN_API_KEY}`,
       hppMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // Humanity Protocol (humanity explorer)
+      hTestnet: `${ETHERSCAN_API_KEY}`,
+      hMainnet: `${ETHERSCAN_API_KEY}`,
 
       // Robinhood Chain (explorer.testnet.chain.robinhood.com)
       hoodethTestnet: `${ETHERSCAN_API_KEY}`,
@@ -1795,6 +1815,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer.hpp.io/api',
           browserURL: 'https://explorer.hpp.io'
+        }
+      },
+      {
+        network: 'hTestnet',
+        chainId: CHAIN_IDS.H_TESTNET,
+        urls: {
+          apiURL: 'https://humanity-testnet.explorer.alchemy.com/api',
+          browserURL: 'https://humanity-testnet.explorer.alchemy.com'
+        }
+      },
+      {
+        network: 'hMainnet',
+        chainId: CHAIN_IDS.H,
+        urls: {
+          apiURL: 'https://humanity-mainnet.explorer.alchemy.com/api',
+          browserURL: 'https://humanity-mainnet.explorer.alchemy.com'
         }
       },
       {
