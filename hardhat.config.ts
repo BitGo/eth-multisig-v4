@@ -865,6 +865,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    hemieth: {
+      url: 'https://rpc.hemi.network/rpc',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    themieth: {
+      url: 'https://testnet.rpc.hemi.network/rpc',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     unichain: {
       url: 'https://mainnet.unichain.org',
       accounts: [
@@ -1082,6 +1098,10 @@ const config: HardhatUserConfig = {
       // CHILIZ
       chilizTestnet: `${ETHERSCAN_API_KEY}`,
       chilizMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // HEMIETH
+      hemiethTestnet: `${ETHERSCAN_API_KEY}`,
+      hemiethMainnet: `${ETHERSCAN_API_KEY}`,
 
       // UNICHAIN (uniscan.xyz)
       unichainTestnet: `${ETHERSCAN_API_KEY}`,
@@ -1783,6 +1803,24 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/88888/etherscan/api',
           browserURL: 'https://chiliscan.com/'
+        }
+      },
+      {
+        network: 'hemiethTestnet',
+        chainId: CHAIN_IDS.HEMIETH_TESTNET,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/743111/etherscan/api',
+          browserURL: 'https://testnet.explorer.hemi.xyz'
+        }
+      },
+      {
+        network: 'hemiethMainnet',
+        chainId: CHAIN_IDS.HEMIETH,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/mainnet/evm/43111/etherscan/api',
+          browserURL: 'https://explorer.hemi.xyz'
         }
       },
       {
