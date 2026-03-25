@@ -474,7 +474,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tphrs: {
-      url: `https://testnet.dplabs-internal.com`,
+      url: `https://atlantic.dplabs-internal.com`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -697,14 +697,6 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
-    megaeth: {
-      url: 'https://mainnet.megaeth.com/rpc',
-      accounts: [
-        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
-        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
-      ]
-    },
     thbarevm: {
       url: 'https://testnet.hashio.io/api',
       accounts: [
@@ -888,6 +880,70 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    unichain: {
+      url: 'https://mainnet.unichain.org',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tunichain: {
+      url: 'https://sepolia.unichain.org',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    hpp: {
+      url: 'https://mainnet.hpp.io',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    thpp: {
+      url: 'https://sepolia.hpp.io',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    hoodeth: {
+      url: 'https://rpc.testnet.chain.robinhood.com', // TODO: update to mainnet RPC when available
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    thoodeth: {
+      url: 'https://rpc.testnet.chain.robinhood.com',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    h: {
+      url: 'https://humanity-mainnet.g.alchemy.com/public',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    th: {
+      url: 'https://humanity-testnet.g.alchemy.com/public',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1045,7 +1101,23 @@ const config: HardhatUserConfig = {
 
       // HEMIETH
       hemiethTestnet: `${ETHERSCAN_API_KEY}`,
-      hemiethMainnet: `${ETHERSCAN_API_KEY}`
+      hemiethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // UNICHAIN (uniscan.xyz)
+      unichainTestnet: `${ETHERSCAN_API_KEY}`,
+      unichainMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // HPP (explorer.hpp.io)
+      hppTestnet: `${ETHERSCAN_API_KEY}`,
+      hppMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // Humanity Protocol (humanity explorer)
+      hTestnet: `${ETHERSCAN_API_KEY}`,
+      hMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // Robinhood Chain (explorer.testnet.chain.robinhood.com)
+      hoodethTestnet: `${ETHERSCAN_API_KEY}`,
+      hoodethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1235,8 +1307,8 @@ const config: HardhatUserConfig = {
         chainId: CHAIN_IDS.PHAROS_TESTNET,
         urls: {
           apiURL:
-            'https://api.socialscan.io/pharos-testnet/v1/explorer/command_api/contract',
-          browserURL: 'https://testnet.pharosscan.xyz/'
+            'https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract',
+          browserURL: 'https://pharos-testnet.socialscan.io/'
         }
       },
       {
@@ -1587,14 +1659,6 @@ const config: HardhatUserConfig = {
         }
       },
       {
-        network: 'megaethMainnet',
-        chainId: CHAIN_IDS.MEGAETH,
-        urls: {
-          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.MEGAETH}`,
-          browserURL: 'https://mega.etherscan.io/'
-        }
-      },
-      {
         network: 'hbarevmTestnet',
         chainId: CHAIN_IDS.HBAREVM_TESTNET,
         urls: {
@@ -1757,6 +1821,70 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/43111/etherscan/api',
           browserURL: 'https://explorer.hemi.xyz'
+        }
+      },
+      {
+        network: 'unichainTestnet',
+        chainId: CHAIN_IDS.UNICHAIN_TESTNET,
+        urls: {
+          apiURL: 'https://unichain-sepolia.blockscout.com/api',
+          browserURL: 'https://sepolia.uniscan.xyz'
+        }
+      },
+      {
+        network: 'unichainMainnet',
+        chainId: CHAIN_IDS.UNICHAIN,
+        urls: {
+          apiURL: 'https://unichain.blockscout.com/api',
+          browserURL: 'https://uniscan.xyz'
+        }
+      },
+      {
+        network: 'hppTestnet',
+        chainId: CHAIN_IDS.HPP_TESTNET,
+        urls: {
+          apiURL: 'https://sepolia-explorer.hpp.io/api',
+          browserURL: 'https://sepolia-explorer.hpp.io'
+        }
+      },
+      {
+        network: 'hppMainnet',
+        chainId: CHAIN_IDS.HPP,
+        urls: {
+          apiURL: 'https://explorer.hpp.io/api',
+          browserURL: 'https://explorer.hpp.io'
+        }
+      },
+      {
+        network: 'hTestnet',
+        chainId: CHAIN_IDS.H_TESTNET,
+        urls: {
+          apiURL: 'https://humanity-testnet.explorer.alchemy.com/api',
+          browserURL: 'https://humanity-testnet.explorer.alchemy.com'
+        }
+      },
+      {
+        network: 'hMainnet',
+        chainId: CHAIN_IDS.H,
+        urls: {
+          apiURL: 'https://humanity-mainnet.explorer.alchemy.com/api',
+          browserURL: 'https://humanity-mainnet.explorer.alchemy.com'
+        }
+      },
+      {
+        network: 'hoodethTestnet',
+        chainId: CHAIN_IDS.HOODETH_TESTNET,
+        urls: {
+          apiURL: 'https://explorer.testnet.chain.robinhood.com/api',
+          browserURL: 'https://explorer.testnet.chain.robinhood.com'
+        }
+      },
+      {
+        network: 'hoodethMainnet',
+        chainId: CHAIN_IDS.HOODETH,
+        urls: {
+          apiURL: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
+          browserURL: 'https://explorer.testnet.chain.robinhood.com' // TODO: update to mainnet explorer when available
         }
       }
     ]

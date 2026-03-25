@@ -102,8 +102,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.KAIA_TESTNET:
     case CHAIN_IDS.IRYS:
     case CHAIN_IDS.IRYS_TESTNET:
-    case CHAIN_IDS.PHAROS:
-    case CHAIN_IDS.PHAROS_TESTNET:
     case CHAIN_IDS.APECHAIN:
     case CHAIN_IDS.APECHAIN_TESTNET:
     case CHAIN_IDS.CORE_DAO:
@@ -147,7 +145,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
     case CHAIN_IDS.MONAD_TESTNET:
     case CHAIN_IDS.MONAD:
-
+    case CHAIN_IDS.PHAROS:
+    case CHAIN_IDS.PHAROS_TESTNET:
     case CHAIN_IDS.FLARE:
     case CHAIN_IDS.FLARE_TESTNET:
     case CHAIN_IDS.SONEIUM_TESTNET:
@@ -325,12 +324,29 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
+
     case CHAIN_IDS.HEMIETH:
     case CHAIN_IDS.HEMIETH_TESTNET:
       gasParams = {
         gasPrice: feeData.gasPrice ?? 0n,
         gasLimit: 3_000_000
       };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
+    case CHAIN_IDS.UNICHAIN:
+    case CHAIN_IDS.UNICHAIN_TESTNET:
+    case CHAIN_IDS.HPP:
+    case CHAIN_IDS.HPP_TESTNET:
+    case CHAIN_IDS.HOODETH:
+    case CHAIN_IDS.HOODETH_TESTNET:
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
+    case CHAIN_IDS.H:
+    case CHAIN_IDS.H_TESTNET:
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
