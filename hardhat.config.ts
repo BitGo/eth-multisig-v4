@@ -865,6 +865,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    codexeth: {
+      url: 'https://rpc.codex.xyz/',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tcodexeth: {
+      url: 'https://rpc.codex-stg.xyz/',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     chiliz: {
       url: 'https://rpc.ankr.com/chiliz',
       accounts: [
@@ -1134,6 +1150,10 @@ const config: HardhatUserConfig = {
       // USDT0
       usdt0Testnet: `${ETHERSCAN_API_KEY}`,
       usdt0Mainnet: `${ETHERSCAN_API_KEY}`,
+
+      // CodexETH
+      codexethTestnet: `${ETHERSCAN_API_KEY}`,
+      codexethMainnet: `${ETHERSCAN_API_KEY}`,
 
       // Robinhood Chain (explorer.testnet.chain.robinhood.com)
       hoodethTestnet: `${ETHERSCAN_API_KEY}`,
@@ -1821,6 +1841,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.USDT0}`,
           browserURL: 'https://stablescan.xyz/'
+        }
+      },
+      {
+        network: 'codexethTestnet',
+        chainId: CHAIN_IDS.CODEXETH_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.CODEXETH_TESTNET}`,
+          browserURL: 'https://explorer.codex-stg.xyz/'
+        }
+      },
+      {
+        network: 'codexethMainnet',
+        chainId: CHAIN_IDS.CODEXETH,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.CODEXETH}`,
+          browserURL: 'https://explorer.codex.xyz/'
         }
       },
       {
