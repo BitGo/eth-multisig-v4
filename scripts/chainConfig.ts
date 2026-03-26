@@ -153,6 +153,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.FLARE_TESTNET:
     case CHAIN_IDS.SONEIUM_TESTNET:
     case CHAIN_IDS.SONEIUM:
+    case CHAIN_IDS.XTZEVM:
+    case CHAIN_IDS.XTZEVM_TESTNET:
       gasParams.gasLimit = 5_000_000;
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';

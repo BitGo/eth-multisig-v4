@@ -60,6 +60,7 @@ export const CHAIN_IDS = {
   HPP: 190415,
   H: 6985385,
   USDT0: 988,
+  XTZEVM: 42793,
   HOODETH: 999999, //TODO: update with correct mainnet chain ID when available
 
   // Testnet Networks
@@ -108,6 +109,7 @@ export const CHAIN_IDS = {
   HEMIETH_TESTNET: 743111,
   UNICHAIN_TESTNET: 1301,
   HPP_TESTNET: 181228,
+  XTZEVM_TESTNET: 128123,
   H_TESTNET: 7080969,
   HOODETH_TESTNET: 46630,
   USDT0_TESTNET: 2201
