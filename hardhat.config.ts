@@ -649,6 +649,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    xtzevm: {
+      url: `https://node.mainnet.etherlink.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    txtzevm: {
+      url: `https://node.shadownet.etherlink.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     plume: {
       url: `https://rpc.plume.org/`,
       accounts: [
@@ -1111,6 +1127,10 @@ const config: HardhatUserConfig = {
       hTestnet: `${ETHERSCAN_API_KEY}`,
       hMainnet: `${ETHERSCAN_API_KEY}`,
 
+      // Humanity Protocol (humanity explorer)
+      xtzevmTestnet: `${ETHERSCAN_API_KEY}`,
+      xtzevmMainnet: `${ETHERSCAN_API_KEY}`,
+
       // USDT0
       usdt0Testnet: `${ETHERSCAN_API_KEY}`,
       usdt0Mainnet: `${ETHERSCAN_API_KEY}`,
@@ -1543,6 +1563,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.LINEAETH_TESTNET}`,
           browserURL: 'https://sepolia.lineascan.build/'
+        }
+      },
+      {
+        network: 'xtzevmMainnet',
+        chainId: CHAIN_IDS.XTZEVM,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.XTZEVM}`,
+          browserURL: 'https://explorer.etherlink.com/'
+        }
+      },
+      {
+        network: 'xtzevmTestnet',
+        chainId: CHAIN_IDS.XTZEVM_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.XTZEVM_TESTNET}`,
+          browserURL: 'https://shadownet.explorer.etherlink.com/'
         }
       },
       {

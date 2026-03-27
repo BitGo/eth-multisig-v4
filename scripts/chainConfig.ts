@@ -170,6 +170,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
     case CHAIN_IDS.SOMNIA:
     case CHAIN_IDS.SOMNIA_TESTNET:
+    case CHAIN_IDS.XTZEVM:
+    case CHAIN_IDS.XTZEVM_TESTNET:
       // Special gas handling for Somnia networks - they require very high gas limits
       if (
         feeData.maxFeePerGas != null &&
