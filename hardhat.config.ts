@@ -722,7 +722,7 @@ const config: HardhatUserConfig = {
       ]
     },
     fluenteth: {
-      url: 'https://rpc.testnet.fluent.xyz/', // TODO: COIN-6478: update when mainnet is live
+      url: 'https://rpc.fluent.xyz/',
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1702,9 +1702,8 @@ const config: HardhatUserConfig = {
         network: 'fluentethMainnet',
         chainId: CHAIN_IDS.FLUENTETH,
         urls: {
-          // TODO: COIN-6478: update when mainnet is live
-          apiURL: 'https://testnet.fluentscan.xyz/api/',
-          browserURL: 'https://testnet.fluentscan.xyz/'
+          apiURL: 'https://fluentscan.xyz/api/',
+          browserURL: 'https://fluentscan.xyz/'
         }
       },
       {
