@@ -114,8 +114,6 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.OG_TESTNET:
     case CHAIN_IDS.USDT0:
     case CHAIN_IDS.USDT0_TESTNET:
-    case CHAIN_IDS.FLUENTETH:
-    case CHAIN_IDS.FLUENTETH_TESTNET:
       gasParams = {
         maxFeePerGas: 30_000_000_000n,
         maxPriorityFeePerGas: 30_000_000_000n,
@@ -232,6 +230,16 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       gasParams = {
         gasPrice: feeData.gasPrice ?? 0n,
         gasLimit: 1_000_000_000 // 1B
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
+    case CHAIN_IDS.FLUENTETH:
+    case CHAIN_IDS.FLUENTETH_TESTNET:
+      gasParams = {
+        gasPrice: feeData.gasPrice ?? 1_000_000_000n,
+        gasLimit: 3_000_000
       };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
