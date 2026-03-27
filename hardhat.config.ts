@@ -817,6 +817,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    usdt0: {
+      url: `https://rpc.stable.xyz/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tusdt0: {
+      url: `https://rpc.testnet.stable.xyz/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     tarcusdc: {
       url: 'https://rpc.testnet.arc.network',
       accounts: [
@@ -1094,6 +1110,10 @@ const config: HardhatUserConfig = {
       // Humanity Protocol (humanity explorer)
       hTestnet: `${ETHERSCAN_API_KEY}`,
       hMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // USDT0
+      usdt0Testnet: `${ETHERSCAN_API_KEY}`,
+      usdt0Mainnet: `${ETHERSCAN_API_KEY}`,
 
       // Robinhood Chain (explorer.testnet.chain.robinhood.com)
       hoodethTestnet: `${ETHERSCAN_API_KEY}`,
@@ -1556,6 +1576,22 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/9745/etherscan/api',
           browserURL: 'https://plasmascan.to'
+        }
+      },
+      {
+        network: 'usdt0Testnet',
+        chainId: CHAIN_IDS.USDT0_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.USDT0_TESTNET}`,
+          browserURL: 'https://testnet.stablescan.xyz/'
+        }
+      },
+      {
+        network: 'usdt0Mainnet',
+        chainId: CHAIN_IDS.USDT0,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.USDT0}`,
+          browserURL: 'https://stablescan.xyz/'
         }
       },
       {
