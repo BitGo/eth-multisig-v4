@@ -112,6 +112,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.IP_TESTNET:
     case CHAIN_IDS.OG:
     case CHAIN_IDS.OG_TESTNET:
+    case CHAIN_IDS.USDT0:
+    case CHAIN_IDS.USDT0_TESTNET:
     case CHAIN_IDS.FLUENTETH:
     case CHAIN_IDS.FLUENTETH_TESTNET:
       gasParams = {
