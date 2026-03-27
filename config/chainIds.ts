@@ -43,7 +43,7 @@ export const CHAIN_IDS = {
   PLUME: 98866,
   FLOW: 747,
   HBAREVM: 295,
-  FLUENTETH: 20993,
+  FLUENTETH: 25363,
   MANTLE: 5000,
   DOGEOS: 123456, //TODO: WIN-8075: change it with correct mainnet details, when its available
   opBNB: 204,
