@@ -57,7 +57,8 @@ const {
   FLOW_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
   ARCUSDC_EXPLORER_API_KEY,
-  DOGEOS_EXPLORER_API_KEY
+  DOGEOS_EXPLORER_API_KEY,
+  STABLE_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -1131,9 +1132,9 @@ const config: HardhatUserConfig = {
       xtzevmTestnet: `${ETHERSCAN_API_KEY}`,
       xtzevmMainnet: `${ETHERSCAN_API_KEY}`,
 
-      // USDT0
-      usdt0Testnet: `${ETHERSCAN_API_KEY}`,
-      usdt0Mainnet: `${ETHERSCAN_API_KEY}`,
+      // USDT0 (STABLE)
+      usdt0Testnet: `${STABLE_EXPLORER_API_KEY}`,
+      usdt0Mainnet: `${STABLE_EXPLORER_API_KEY}`,
 
       // Robinhood Chain (explorer.testnet.chain.robinhood.com)
       hoodethTestnet: `${ETHERSCAN_API_KEY}`,
@@ -1618,16 +1619,16 @@ const config: HardhatUserConfig = {
         network: 'usdt0Testnet',
         chainId: CHAIN_IDS.USDT0_TESTNET,
         urls: {
-          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.USDT0_TESTNET}`,
-          browserURL: 'https://testnet.stablescan.xyz/'
+          apiURL: 'https://testnet.stablescan.xyz/api',
+          browserURL: 'https://testnet.stablescan.xyz'
         }
       },
       {
         network: 'usdt0Mainnet',
         chainId: CHAIN_IDS.USDT0,
         urls: {
-          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.USDT0}`,
-          browserURL: 'https://stablescan.xyz/'
+          apiURL: 'https://stablescan.xyz/api',
+          browserURL: 'https://stablescan.xyz'
         }
       },
       {
