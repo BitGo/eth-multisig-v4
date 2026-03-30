@@ -57,7 +57,8 @@ const {
   FLOW_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
   ARCUSDC_EXPLORER_API_KEY,
-  DOGEOS_EXPLORER_API_KEY
+  DOGEOS_EXPLORER_API_KEY,
+  CODEX_EXPLORER_API_KEY
 } = process.env;
 
 const PLACEHOLDER_KEY: string =
@@ -960,6 +961,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    codexeth: {
+      url: `https://rpc.codex.xyz/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tcodexeth: {
+      url: `https://rpc.codex-stg.xyz/`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1137,7 +1154,11 @@ const config: HardhatUserConfig = {
 
       // Robinhood Chain (explorer.testnet.chain.robinhood.com)
       hoodethTestnet: `${ETHERSCAN_API_KEY}`,
-      hoodethMainnet: `${ETHERSCAN_API_KEY}`
+      hoodethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // CODEXETH
+      codexethTestnet: `${CODEX_EXPLORER_API_KEY}`,
+      codexethMainnet: `${CODEX_EXPLORER_API_KEY}`
     },
     customChains: [
       {
@@ -1918,6 +1939,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
           browserURL: 'https://explorer.testnet.chain.robinhood.com' // TODO: update to mainnet explorer when available
+        }
+      },
+      {
+        network: 'codexethTestnet',
+        chainId: CHAIN_IDS.CODEXETH_TESTNET,
+        urls: {
+          apiURL: 'https://explorer.codex-stg.xyz/api',
+          browserURL: 'https://explorer.codex-stg.xyz'
+        }
+      },
+      {
+        network: 'codexethMainnet',
+        chainId: CHAIN_IDS.CODEXETH,
+        urls: {
+          apiURL: 'https://explorer.codex.xyz/api',
+          browserURL: 'https://explorer.codex.xyz'
         }
       }
     ]
