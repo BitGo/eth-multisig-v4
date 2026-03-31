@@ -331,6 +331,8 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.HPP_TESTNET:
     case CHAIN_IDS.HOODETH:
     case CHAIN_IDS.HOODETH_TESTNET:
+    case CHAIN_IDS.INKETH:
+    case CHAIN_IDS.INKETH_TESTNET:
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;

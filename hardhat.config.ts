@@ -913,6 +913,22 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    inketh: {
+      url: 'https://rpc-gel.inkonchain.com',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tinketh: {
+      url: 'https://rpc-qnd-sepolia.inkonchain.com',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     h: {
       url: 'https://humanity-mainnet.g.alchemy.com/public',
       accounts: [
@@ -1097,7 +1113,11 @@ const config: HardhatUserConfig = {
 
       // Robinhood Chain (explorer.testnet.chain.robinhood.com)
       hoodethTestnet: `${ETHERSCAN_API_KEY}`,
-      hoodethMainnet: `${ETHERSCAN_API_KEY}`
+      hoodethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // INKETH
+      inkethTestnet: `${ETHERSCAN_API_KEY}`,
+      inkethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1847,6 +1867,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
           browserURL: 'https://explorer.testnet.chain.robinhood.com' // TODO: update to mainnet explorer when available
+        }
+      },
+      {
+        network: 'inkethTestnet',
+        chainId: CHAIN_IDS.INKETH_TESTNET,
+        urls: {
+          apiURL: 'https://explorer-sepolia.inkonchain.com/api',
+          browserURL: 'https://explorer-sepolia.inkonchain.com'
+        }
+      },
+      {
+        network: 'inkethMainnet',
+        chainId: CHAIN_IDS.INKETH,
+        urls: {
+          apiURL: 'https://explorer.inkonchain.com/api',
+          browserURL: 'https://explorer.inkonchain.com'
         }
       }
     ]
