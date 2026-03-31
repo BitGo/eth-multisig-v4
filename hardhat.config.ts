@@ -960,6 +960,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    hemieth: {
+      url: `https://rpc.hemi.network/rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    themieth: {
+      url: `https://testnet.rpc.hemi.network/rpc`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1137,7 +1153,11 @@ const config: HardhatUserConfig = {
 
       // Robinhood Chain (explorer.testnet.chain.robinhood.com)
       hoodethTestnet: `${ETHERSCAN_API_KEY}`,
-      hoodethMainnet: `${ETHERSCAN_API_KEY}`
+      hoodethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // HEMIETH
+      hemiethTestnet: `${ETHERSCAN_API_KEY}`,
+      hemiethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1918,6 +1938,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
           browserURL: 'https://explorer.testnet.chain.robinhood.com' // TODO: update to mainnet explorer when available
+        }
+      },
+      {
+        network: 'hemiethTestnet',
+        chainId: CHAIN_IDS.HEMIETH_TESTNET,
+        urls: {
+          apiURL: 'https://testnet.explorer.hemi.xyz/api',
+          browserURL: 'https://testnet.explorer.hemi.xyz'
+        }
+      },
+      {
+        network: 'hemiethMainnet',
+        chainId: CHAIN_IDS.HEMIETH,
+        urls: {
+          apiURL: 'https://explorer.hemi.xyz/api',
+          browserURL: 'https://explorer.hemi.xyz'
         }
       }
     ]
