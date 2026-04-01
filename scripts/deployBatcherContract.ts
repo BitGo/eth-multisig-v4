@@ -4,14 +4,11 @@ import { logger, waitAndVerify, checkSufficientBalance } from '../deployUtils';
 import fs from 'fs';
 import { setupBigBlocksForBatcherDeployment } from './enableBigBlocks';
 import { isBigBlocksSupported } from '../config/bigBlocksConfig';
-
-// Minimal tx override type compatible with ethers v6
-type TxOverrides = {
-  gasLimit?: number;
-  maxFeePerGas?: bigint;
-  maxPriorityFeePerGas?: bigint;
-  gasPrice?: bigint;
-};
+import {
+  TxOverrides,
+  resolveGasOverrides,
+  getChainGasConfig
+} from '../config/batcherDeployGasConfig';
 
 async function main() {
   logger.step('🚀 Starting Batcher Contract Deployment 🚀');
@@ -31,13 +28,15 @@ async function main() {
     throw new Error('No signers available');
   }
 
-  // New: dynamic deployer selection (env override / fallback / funded account)
+  // Use BATCHER_DEPLOYER_INDEX to override the signer used for deployment.
+  // Defaults to index 2, which maps to PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT in hardhat.config.ts.
+  // Falls back to the most funded account if the desired index has no balance.
   const desiredIndex = process.env.BATCHER_DEPLOYER_INDEX
     ? Number(process.env.BATCHER_DEPLOYER_INDEX)
-    : 2; // legacy default
+    : 2;
   let batcherDeployer = signers[desiredIndex] || signers[signers.length - 1];
 
-  // Gather balances to ensure we pick a funded account (EOA must have funds)
+  // Fetch balances upfront to validate the selected deployer and log diagnostics.
   const signerInfos = await Promise.all(
     signers.map(async (s, i) => {
       const addr = await s.getAddress();
@@ -103,10 +102,7 @@ async function main() {
   // --- 2. Gas Parameter Handling ---
   logger.step('2. Configuring gas parameters for the transaction...');
 
-  // Maintain the legacy behavior: selectively set fee overrides for specific chains
-  const eip1559Chains = [10143, 480, 4801, 1946, 1868, 1114, 1112, 1111, 50312];
   const feeData = await ethers.provider.getFeeData();
-  let gasOverrides: TxOverrides | undefined = undefined;
 
   // --- 3. Contract Deployment ---
   logger.step("3. Deploying the 'Batcher' contract...");
@@ -118,98 +114,59 @@ async function main() {
   const erc20BatchLimit = 256;
   const nativeBatchLimit = 256;
 
-  // Build the deploy transaction request for estimation
+  // Build the unsigned deploy transaction so we can pre-estimate gas before deploying.
   const deployTxReq = await Batcher.getDeployTransaction(
     transferGasLimit,
     erc20BatchLimit,
     nativeBatchLimit
   );
 
-  if (Number(chainId) === 50312 || Number(chainId) === 5031) {
-    // Somnia testnet & mainnet quirks: ensure non-zero priority fee; estimate gas and cap to block gas limit
-    const latestBlock = await ethers.provider.getBlock('latest');
-    const has1559 =
-      feeData.maxFeePerGas != null && feeData.maxPriorityFeePerGas != null;
+  const gasConfig = getChainGasConfig(Number(chainId));
+  logger.info(`Gas strategy for chain ${chainId}: '${gasConfig.strategy}'`);
 
-    if (has1559) {
-      const minPriority = 1_000_000_000n; // 1 gwei
-      const priority =
-        (feeData.maxPriorityFeePerGas ?? 0n) > 0n
-          ? (feeData.maxPriorityFeePerGas as bigint)
-          : minPriority;
-      const base = feeData.maxFeePerGas ?? 0n;
-      const maxFee = base > priority * 2n ? base : priority * 2n;
-      gasOverrides = { maxFeePerGas: maxFee, maxPriorityFeePerGas: priority };
-      logger.info(
-        `EIP-1559 params (Somnia): maxFeePerGas=${String(
-          maxFee
-        )}, maxPriorityFeePerGas=${String(priority)}`
-      );
-    } else {
-      const fallbackGasPrice = feeData.gasPrice ?? 6_000_000_000n; // 6 gwei fallback
-      gasOverrides = { gasPrice: fallbackGasPrice };
-      logger.info(
-        `Legacy gasPrice (Somnia): gasPrice=${String(fallbackGasPrice)}`
-      );
-    }
+  const gasOverrides = await resolveGasOverrides(
+    Number(chainId),
+    feeData,
+    batcherDeployer,
+    deployTxReq,
+    address
+  );
 
-    // Estimate gas for contract creation
-    const est = await batcherDeployer.estimateGas({
-      ...deployTxReq,
-      from: address,
-      ...gasOverrides
-    });
-
-    const estWithBuffer = (est * 120n) / 100n; // +20%
-    let chosenGasLimit = Number(estWithBuffer);
-    if (latestBlock?.gasLimit) {
-      const blockLimit = Number(latestBlock.gasLimit);
-      chosenGasLimit = Math.min(chosenGasLimit, Math.floor(blockLimit * 0.95));
-    }
-    gasOverrides.gasLimit = chosenGasLimit;
+  if (gasOverrides) {
     logger.info(
-      `Estimated gas: ${est.toString()}, using gasLimit=${chosenGasLimit}`
-    );
-  } else if (eip1559Chains.includes(Number(chainId))) {
-    gasOverrides = {
-      maxFeePerGas: feeData.maxFeePerGas ?? feeData.gasPrice ?? undefined,
-      maxPriorityFeePerGas:
-        feeData.maxPriorityFeePerGas ?? feeData.gasPrice ?? undefined
-    };
-    logger.info(
-      `Gas params set: maxFeePerGas=${String(
-        gasOverrides.maxFeePerGas ?? ''
-      )}, maxPriorityFeePerGas=${String(
-        gasOverrides.maxPriorityFeePerGas ?? ''
-      )}, gasLimit=<auto>`
+      `Gas overrides resolved: ${JSON.stringify(gasOverrides, (_, v) =>
+        typeof v === 'bigint' ? v.toString() : v
+      )}`
     );
   } else {
-    logger.info(`Using default gas parameters for this network.`);
+    logger.info('Gas overrides: none (Hardhat auto-detection)');
   }
 
   // --- 3.5. Balance Check ---
   logger.step('3.5. Checking deployer balance before deployment...');
 
-  // Estimate gas cost for the deployment
+  // Estimate gas and effective price to verify the deployer has sufficient funds.
+  // For chains with manual-gas overrides the estimate reuses the resolved gasLimit;
+  // for default chains Hardhat auto-estimates here.
   const gasEstimate = await batcherDeployer.estimateGas({
     ...deployTxReq,
     from: address,
     ...gasOverrides
   });
 
-  // Calculate total cost
+  // Use the effective gas price from overrides when present, otherwise fall back to
+  // the live fee data (maxFeePerGas represents the worst-case spend for EIP-1559 txs).
   let gasPrice: bigint;
   if (gasOverrides?.gasPrice) {
     gasPrice = gasOverrides.gasPrice;
   } else if (gasOverrides?.maxFeePerGas) {
     gasPrice = gasOverrides.maxFeePerGas;
   } else {
-    gasPrice = feeData.gasPrice ?? 1_000_000_000n; // 1 gwei fallback
+    gasPrice = feeData.gasPrice ?? 1_000_000_000n;
   }
 
   const estimatedCost = gasEstimate * gasPrice;
 
-  // Check if we have 1.5x the required amount
   await checkSufficientBalance(address, estimatedCost, 'Batcher');
 
   let batcher: Contract;
