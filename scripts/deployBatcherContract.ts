@@ -125,7 +125,29 @@ async function main() {
     nativeBatchLimit
   );
 
-  if (Number(chainId) === 50312 || Number(chainId) === 5031) {
+  if (Number(chainId) === 43111 || Number(chainId) === 743111) {
+    // Hemi mainnet & testnet: eth_estimateGas hangs inside Hardhat's deploy() when no gasLimit is set.
+    // Estimate gas manually here and pass explicit gasLimit to avoid the hang.
+    const minPriority = 1_000_000_000n; // 1 gwei minimum
+    const priority =
+      (feeData.maxPriorityFeePerGas ?? 0n) > 0n
+        ? (feeData.maxPriorityFeePerGas as bigint)
+        : minPriority;
+    const base = feeData.maxFeePerGas ?? feeData.gasPrice ?? minPriority;
+    const maxFee = base > priority * 2n ? base : priority * 2n;
+    gasOverrides = { maxFeePerGas: maxFee, maxPriorityFeePerGas: priority };
+
+    const est = await batcherDeployer.estimateGas({
+      ...deployTxReq,
+      from: address,
+      ...gasOverrides
+    });
+    const estWithBuffer = (est * 120n) / 100n; // +20% buffer
+    gasOverrides.gasLimit = Number(estWithBuffer);
+    logger.info(
+      `Gas params set (Hemi): maxFeePerGas=${String(maxFee)}, maxPriorityFeePerGas=${String(priority)}, gasLimit=${gasOverrides.gasLimit}`
+    );
+  } else if (Number(chainId) === 50312 || Number(chainId) === 5031) {
     // Somnia testnet & mainnet quirks: ensure non-zero priority fee; estimate gas and cap to block gas limit
     const latestBlock = await ethers.provider.getBlock('latest');
     const has1559 =
