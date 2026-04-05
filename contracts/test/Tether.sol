@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  *Submitted for verification at Etherscan.io on 2017-11-28
  */
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 
 /**
  * @title SafeMath
@@ -389,7 +391,7 @@ contract TetherToken is Pausable, StandardToken, BlackList {
   }
 
   // Forward ERC20 methods to upgraded contract if this one is deprecated
-  function transfer(address _to, uint256 _value) public override whenNotPaused {
+  function transfer(address _to, uint256 _value) public override(BasicToken, ERC20Basic) whenNotPaused {
     require(!isBlackListed[msg.sender]);
     if (deprecated) {
       return
@@ -424,7 +426,7 @@ contract TetherToken is Pausable, StandardToken, BlackList {
   }
 
   // Forward ERC20 methods to upgraded contract if this one is deprecated
-  function balanceOf(address who) public override returns (uint256) {
+  function balanceOf(address who) public override(BasicToken, ERC20Basic) returns (uint256) {
     if (deprecated) {
       return UpgradedStandardToken(upgradedAddress).balanceOf(who);
     } else {

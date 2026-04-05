@@ -1,117 +1,140 @@
-pragma solidity 0.8.10;
-
 // SPDX-License-Identifier: Apache-2.0
+pragma solidity 0.8.20;
 
-/**
- *
- * Batcher
- * =======
- *
- * Contract that can take a batch of transfers, presented in the form of a recipients array and a values array, and
- * funnel off those funds to the correct accounts in a single transaction. This is useful for saving on gas when a
- * bunch of funds need to be transferred to different accounts.
- *
- * If more ETH is sent to `batch` than it is instructed to transfer, contact the contract owner in order to recover the excess.
- * If any tokens are accidentally transferred to this account, contact the contract owner in order to recover them.
- *
- */
+import '@openzeppelin/contracts/access/Ownable2Step.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
-contract Batcher {
+/// @notice Thrown when attempting a batch transfer with an empty recipients list
+/// @dev This error indicates an invalid attempt to perform a batch transfer without any recipients
+error EmptyRecipientsList();
+
+/// @notice Thrown when the number of recipients doesn't match the number of values/amounts
+/// @dev Arrays must be of equal length for batch transfers to work correctly
+error UnequalRecipientsAndValues();
+
+/// @notice Thrown when the batch size exceeds the configured limit
+/// @param provided The number of recipients in the attempted batch
+/// @param limit The maximum allowed number of recipients
+error TooManyRecipients(uint256 provided, uint256 limit);
+
+/// @title Batcher - Batch transfer contract for ETH and ERC20 tokens
+/// @notice Allows batch transfers of ETH and ERC20 tokens to multiple recipients in a single transaction
+/// @dev Implements reentrancy protection and configurable gas limits for transfers
+
+contract Batcher is Ownable2Step, ReentrancyGuard {
+  using SafeERC20 for IERC20;
+
   event BatchTransfer(address sender, address recipient, uint256 value);
-  event OwnerChange(address prevOwner, address newOwner);
   event TransferGasLimitChange(
     uint256 prevTransferGasLimit,
     uint256 newTransferGasLimit
   );
+  event BatchTransferLimitChange(
+    uint256 prevBatchTransferLimit,
+    uint256 newBatchTransferLimit
+  );
+  event NativeBatchTransferLimitChange(
+    uint256 prevNativeBatchTransferLimit,
+    uint256 newNativeBatchTransferLimit
+  );
+  event RecoveryInitiated(address to, uint256 value, bytes data);
 
-  address public owner;
-  uint256 public lockCounter;
   uint256 public transferGasLimit;
+  uint256 public batchTransferLimit;
+  uint256 public nativeBatchTransferLimit;
 
-  constructor() {
-    lockCounter = 1;
-    owner = msg.sender;
-    emit OwnerChange(address(0), owner);
-    transferGasLimit = 20000;
+  /// @notice Contract constructor
+  /// @param _transferGasLimit Gas limit for individual transfers
+  /// @param _batchTransferLimit Maximum number of ERC20 transfers allowed in a batch
+  /// @param _nativeBatchTransferLimit Maximum number of native coin transfers allowed in a batch
+  /// @dev Sets initial values for transfer limits and initializes the reentrancy guard
+  constructor(uint256 _transferGasLimit, uint256 _batchTransferLimit, uint256 _nativeBatchTransferLimit) Ownable(msg.sender) {
+    transferGasLimit = _transferGasLimit;
+    batchTransferLimit = _batchTransferLimit;
+    nativeBatchTransferLimit = _nativeBatchTransferLimit;
     emit TransferGasLimitChange(0, transferGasLimit);
+    emit BatchTransferLimitChange(0, batchTransferLimit);
+    emit NativeBatchTransferLimitChange(0, nativeBatchTransferLimit);
   }
 
-  modifier lockCall() {
-    lockCounter++;
-    uint256 localCounter = lockCounter;
-    _;
-    require(localCounter == lockCounter, 'Reentrancy attempt detected');
-  }
-
-  modifier onlyOwner() {
-    require(msg.sender == owner, 'Not owner');
-    _;
-  }
-
-  /**
-   * Transfer funds in a batch to each of recipients
-   * @param recipients The list of recipients to send to
-   * @param values The list of values to send to recipients.
-   *  The recipient with index i in recipients array will be sent values[i].
-   *  Thus, recipients and values must be the same length
-   */
+  /// @notice Batch transfer ETH to multiple recipients
+  /// @param recipients The list of recipients to send to
+  /// @param values The list of values to send to recipients.
+  /// @dev Total value sent must match msg.value exactly
+  /// @dev Reverts if any transfer fails or if arrays are mismatched
   function batch(address[] calldata recipients, uint256[] calldata values)
     external
     payable
-    lockCall
+    nonReentrant
   {
-    require(recipients.length != 0, 'Must send to at least one person');
-    require(
-      recipients.length == values.length,
-      'Unequal recipients and values'
-    );
-    require(recipients.length < 256, 'Too many recipients');
+    if (recipients.length == 0) revert EmptyRecipientsList();
+    if (recipients.length != values.length) revert UnequalRecipientsAndValues();
+    if (recipients.length > nativeBatchTransferLimit) revert TooManyRecipients(recipients.length, nativeBatchTransferLimit);
+
+    uint256 totalSent = 0;
 
     // Try to send all given amounts to all given recipients
     // Revert everything if any transfer fails
-    for (uint8 i = 0; i < recipients.length; i++) {
+    for (uint256 i = 0; i < recipients.length; i++) {
       require(recipients[i] != address(0), 'Invalid recipient address');
+      emit BatchTransfer(msg.sender, recipients[i], values[i]);
       (bool success, ) = recipients[i].call{
         value: values[i],
         gas: transferGasLimit
       }('');
       require(success, 'Send failed');
-      emit BatchTransfer(msg.sender, recipients[i], values[i]);
+
+      totalSent += values[i];
+    }
+
+    require(totalSent == msg.value, 'Total sent out must equal total received');
+  }
+
+  /// @notice Batch transfer ERC20 tokens from sender to multiple recipients
+  /// @param token Address of the ERC20 token contract
+  /// @param recipients Array of recipient addresses
+  /// @param amounts Array of token amounts to transfer to each recipient
+  /// @dev Requires prior approval for token spending
+  /// @dev Uses SafeERC20 for secure token transfers
+  function batchTransferFrom(
+    address token,
+    address[] calldata recipients,
+    uint256[] calldata amounts
+  ) external nonReentrant {
+    if (recipients.length == 0) revert EmptyRecipientsList();
+    if (recipients.length != amounts.length) revert UnequalRecipientsAndValues();
+    if (recipients.length > batchTransferLimit) revert TooManyRecipients(recipients.length, batchTransferLimit);
+
+    IERC20 safeToken = IERC20(token);
+    for (uint256 i = 0; i < recipients.length; i++) {
+      safeToken.safeTransferFrom(msg.sender, recipients[i], amounts[i]);
     }
   }
 
-  /**
-   * Recovery function for the contract owner to recover any ERC20 tokens or ETH that may get lost in the control of this contract.
-   * @param to The recipient to send to
-   * @param value The ETH value to send with the call
-   * @param data The data to send along with the call
-   */
+  /// @notice Recover any ETH or tokens accidentally sent to the contract
+  /// @param to Destination address for recovery
+  /// @param value Amount of ETH to send
+  /// @param data Calldata for the recovery transaction
+  /// @return bytes The return data from the recovery call
+  /// @dev Only callable by contract owner
   function recover(
     address to,
     uint256 value,
     bytes calldata data
   ) external onlyOwner returns (bytes memory) {
+    require(to != address(0), "Recovery to zero address not allowed");
+    emit RecoveryInitiated(to, value, data);
     (bool success, bytes memory returnData) = to.call{ value: value }(data);
     require(success, 'Recover failed');
     return returnData;
   }
 
-  /**
-   * Transfers ownership of the contract ot the new owner
-   * @param newOwner The address to transfer ownership of the contract to
-   */
-  function transferOwnership(address newOwner) external onlyOwner {
-    require(newOwner != address(0), 'Invalid new owner');
-    emit OwnerChange(owner, newOwner);
-    owner = newOwner;
-  }
-
-  /**
-   * Change the gas limit that is sent along with batched transfers.
-   * This is intended to protect against any EVM level changes that would require
-   * a new amount of gas for an internal send to complete.
-   * @param newTransferGasLimit The new gas limit to send along with batched transfers
-   */
+  /// @notice Update the gas limit for individual transfers
+  /// @param newTransferGasLimit New gas limit value
+  /// @dev Minimum value of 2300 required for basic ETH transfers
+  /// @dev Only callable by contract owner
   function changeTransferGasLimit(uint256 newTransferGasLimit)
     external
     onlyOwner
@@ -121,11 +144,29 @@ contract Batcher {
     transferGasLimit = newTransferGasLimit;
   }
 
-  fallback() external payable {
-    revert('Invalid fallback');
+  /// @notice Update the maximum number of transfers allowed in a batch
+  /// @param newBatchTransferLimit New maximum batch size
+  /// @dev Must be greater than zero
+  /// @dev Only callable by contract owner
+  function changeBatchTransferLimit(uint256 newBatchTransferLimit)
+    external
+    onlyOwner
+  {
+    require(newBatchTransferLimit > 0, 'Batch transfer limit too low');
+    emit BatchTransferLimitChange(batchTransferLimit, newBatchTransferLimit);
+    batchTransferLimit = newBatchTransferLimit;
   }
 
-  receive() external payable {
-    revert('Invalid receive');
+  /// @notice Update the maximum number of transfers for native coin allowed in a batch
+  /// @param newNativeBatchTransferLimit New maximum batch size for native coin transfers
+  /// @dev Must be greater than zero
+  /// @dev Only callable by contract owner
+  function changeNativeBatchTransferLimit(uint256 newNativeBatchTransferLimit)
+    external
+    onlyOwner
+  {
+    require(newNativeBatchTransferLimit > 0, 'Native batch transfer limit too low');
+    emit NativeBatchTransferLimitChange(nativeBatchTransferLimit, newNativeBatchTransferLimit);
+    nativeBatchTransferLimit = newNativeBatchTransferLimit;
   }
 }

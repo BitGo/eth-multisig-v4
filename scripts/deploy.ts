@@ -1,81 +1,281 @@
-import { ethers } from 'hardhat';
-const hre = require('hardhat');
-const fs = require('fs');
+import hre, { ethers } from 'hardhat';
+import { getChainConfig } from './chainConfig';
+import {
+  deployIfNeededAtNonce,
+  waitAndVerify,
+  loadOutput,
+  saveOutput,
+  DeploymentAddresses,
+  checkSufficientBalance,
+  isContractDeployed
+} from '../deployUtils';
+import { setupBigBlocksForV4Deployment } from './enableBigBlocks';
+import { isBigBlocksSupported } from '../config/bigBlocksConfig';
+
+const NONCE = {
+  WALLET: 0,
+  WALLET_FACTORY: 1,
+  FORWARDER: 2,
+  FORWARDER_FACTORY: 3
+};
 
 async function main() {
-  const output = {
-    walletImplementation: '',
-    walletFactory: '',
-    forwarderImplementation: '',
-    forwarderFactory: ''
-  };
+  const [deployer] = await ethers.getSigners();
+  const deployerAddress = await deployer.getAddress();
+  const currentNonce = await ethers.provider.getTransactionCount(
+    deployerAddress
+  );
+  const { chainId } = await ethers.provider.getNetwork();
+  const chainConfig = await getChainConfig(Number(chainId));
+  const output: DeploymentAddresses = loadOutput();
 
-  const WalletSimple = await ethers.getContractFactory('WalletSimple');
-  const walletSimple = await WalletSimple.deploy();
-  await walletSimple.deployed();
-  output.walletImplementation = walletSimple.address;
-  console.log('WalletSimple deployed at ' + walletSimple.address);
+  const gasOverrides = chainConfig.gasParams;
 
-  const WalletFactory = await ethers.getContractFactory('WalletFactory');
-  const walletFactory = await WalletFactory.deploy(walletSimple.address);
-  await walletFactory.deployed();
-  output.walletFactory = walletFactory.address;
-  console.log('WalletFactory deployed at ' + walletFactory.address);
+  // Handle BigBlocks setup automatically if supported
+  if (isBigBlocksSupported(Number(chainId))) {
+    console.log('🔍 BigBlocks supported on this chain, checking status...');
+    await setupBigBlocksForV4Deployment(Number(chainId), deployerAddress);
+  }
 
-  const Forwarder = await ethers.getContractFactory('Forwarder');
-  const forwarder = await Forwarder.deploy();
-  await forwarder.deployed();
-  output.forwarderImplementation = forwarder.address;
-  console.log('Forwarder deployed at ' + forwarder.address);
+  console.log(
+    `🚀 Deployer: ${deployerAddress} (nonce: ${currentNonce}) on chain ${chainId}`
+  );
 
-  const ForwarderFactory = await ethers.getContractFactory('ForwarderFactory');
-  const forwarderFactory = await ForwarderFactory.deploy(forwarder.address);
-  await forwarderFactory.deployed();
-  output.forwarderFactory = forwarderFactory.address;
-  console.log('ForwarderFactory deployed at ' + forwarderFactory.address);
+  // Pre-deployment balance check - estimate total cost for all contracts
+  console.log('\n--- Checking deployer balance ---');
 
-  fs.writeFileSync('output.json', JSON.stringify(output));
+  // Estimate gas costs for all potential deployments
+  let totalEstimatedCost = 0n;
 
-  // Wait 5 minutes. It takes some time for the etherscan backend to index the transaction and store the contract.
-  console.log('Waiting for 5 minutes before verifying.....');
-  await new Promise((r) => setTimeout(r, 1000 * 300));
+  // For chains with very high gas limits (like Mantle), skip estimation and use configured limit
+  const useConfiguredGasLimit = gasOverrides.gasLimit > 10_000_000_000; // > 10 billion
 
-  // We have to wait for a minimum of 10 block confirmations before we can call the etherscan api to verify
-  await walletSimple.deployTransaction.wait(10);
-  await walletFactory.deployTransaction.wait(10);
-  await forwarder.deployTransaction.wait(10);
-  await forwarderFactory.deployTransaction.wait(10);
+  if (useConfiguredGasLimit) {
+    console.log(
+      `⚠️  Using configured gas limit (${gasOverrides.gasLimit}) instead of estimation for this chain`
+    );
+  }
 
-  console.log('Done waiting, verifying');
-  await verifyContract('WalletSimple', walletSimple.address, []);
-  await verifyContract('WalletFactory', walletFactory.address, [
-    walletSimple.address
-  ]);
-  await verifyContract('Forwarder', forwarder.address, []);
-  await verifyContract('ForwarderFactory', forwarderFactory.address, [
-    forwarder.address
-  ]);
-  console.log('Contracts verified');
-}
-
-async function verifyContract(
-  contractName: string,
-  contractAddress: string,
-  constructorArguments: string[]
-) {
-  try {
-    await hre.run('verify:verify', {
-      address: contractAddress,
-      constructorArguments: constructorArguments
-    });
-  } catch (e) {
-    // @ts-ignore
-    // We get a failure API response if the source code has already been uploaded, don't throw in this case.
-    if (!e.message.includes('Reason: Already Verified')) {
-      throw e;
+  // Only estimate if we need to deploy (not already deployed)
+  if (
+    !output.walletImplementation ||
+    !(await isContractDeployed(output.walletImplementation))
+  ) {
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const WalletSimple = await ethers.getContractFactory(
+        chainConfig.walletImplementationContractName
+      );
+      const walletGas = await deployer.estimateGas({
+        ...(await WalletSimple.getDeployTransaction(...[], gasOverrides)),
+        from: deployerAddress
+      });
+      totalEstimatedCost += walletGas;
     }
   }
-  console.log(`Verified ${contractName} on Etherscan!`);
+
+  if (
+    !output.walletFactory ||
+    !(await isContractDeployed(output.walletFactory))
+  ) {
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const WalletFactory = await ethers.getContractFactory(
+        chainConfig.walletFactoryContractName
+      );
+      const factoryGas = await deployer.estimateGas({
+        ...(await WalletFactory.getDeployTransaction(
+          deployerAddress,
+          gasOverrides
+        )), // Use deployer address as placeholder
+        from: deployerAddress
+      });
+      totalEstimatedCost += factoryGas;
+    }
+  }
+
+  if (
+    !output.forwarderImplementation ||
+    !(await isContractDeployed(output.forwarderImplementation))
+  ) {
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const ForwarderV4 = await ethers.getContractFactory(
+        chainConfig.forwarderContractName
+      );
+      const forwarderGas = await deployer.estimateGas({
+        ...(await ForwarderV4.getDeployTransaction(gasOverrides)),
+        from: deployerAddress
+      });
+      totalEstimatedCost += forwarderGas;
+    }
+  }
+
+  if (
+    !output.forwarderFactory ||
+    !(await isContractDeployed(output.forwarderFactory))
+  ) {
+    if (useConfiguredGasLimit) {
+      totalEstimatedCost += BigInt(gasOverrides.gasLimit);
+    } else {
+      const ForwarderFactory = await ethers.getContractFactory(
+        chainConfig.forwarderFactoryContractName
+      );
+      const forwarderFactoryGas = await deployer.estimateGas({
+        ...(await ForwarderFactory.getDeployTransaction(
+          deployerAddress,
+          gasOverrides
+        )), // Use deployer address as placeholder
+        from: deployerAddress
+      });
+      totalEstimatedCost += forwarderFactoryGas;
+    }
+  }
+
+  if (totalEstimatedCost > 0n) {
+    // Get gas price for cost calculation
+    const feeData = await ethers.provider.getFeeData();
+    let gasPrice: bigint;
+
+    if (gasOverrides?.gasPrice) {
+      gasPrice = gasOverrides.gasPrice;
+    } else if (gasOverrides?.maxFeePerGas) {
+      gasPrice = gasOverrides.maxFeePerGas;
+    } else {
+      gasPrice = feeData.gasPrice || 1_000_000_000n; // 1 gwei fallback
+    }
+
+    const estimatedCost = totalEstimatedCost * gasPrice;
+
+    await checkSufficientBalance(
+      deployerAddress,
+      estimatedCost,
+      'all V4 contracts'
+    );
+  } else {
+    console.log('✅ All contracts already deployed, skipping balance check');
+  }
+
+  // Deploy Wallet Implementation
+  const walletAddress = await deployIfNeededAtNonce(
+    output.walletImplementation,
+    NONCE.WALLET,
+    deployerAddress,
+    chainConfig.walletImplementationContractName,
+    async () => {
+      const WalletSimple = await ethers.getContractFactory(
+        chainConfig.walletImplementationContractName
+      );
+      const constructorArgs: string[] = [];
+
+      const contract = await WalletSimple.deploy(
+        ...constructorArgs,
+        gasOverrides
+      );
+      await contract.waitForDeployment();
+
+      console.log(
+        `✅ ${chainConfig.walletImplementationContractName} deployed at ${contract.target}`
+      );
+      await waitAndVerify(
+        hre,
+        contract,
+        chainConfig.walletImplementationContractName,
+        constructorArgs
+      );
+      output.walletImplementation = contract.target as string;
+      saveOutput(output);
+      return contract.target as string;
+    },
+    gasOverrides
+  );
+
+  // Deploy Wallet Factory
+  await deployIfNeededAtNonce(
+    output.walletFactory,
+    NONCE.WALLET_FACTORY,
+    deployerAddress,
+    chainConfig.walletFactoryContractName,
+    async () => {
+      const WalletFactory = await ethers.getContractFactory(
+        chainConfig.walletFactoryContractName
+      );
+      const contract = await WalletFactory.deploy(walletAddress, gasOverrides);
+      await contract.waitForDeployment();
+      console.log(
+        `✅ ${chainConfig.walletFactoryContractName} deployed at ${contract.target}`
+      );
+      await waitAndVerify(
+        hre,
+        contract,
+        chainConfig.walletFactoryContractName,
+        [walletAddress]
+      );
+      output.walletFactory = contract.target as string;
+      saveOutput(output);
+      return contract.target as string;
+    },
+    gasOverrides
+  );
+
+  // Deploy Forwarder
+  const forwarderAddress = await deployIfNeededAtNonce(
+    output.forwarderImplementation,
+    NONCE.FORWARDER,
+    deployerAddress,
+    chainConfig.forwarderContractName,
+    async () => {
+      const Forwarder = await ethers.getContractFactory(
+        chainConfig.forwarderContractName
+      );
+      const contract = await Forwarder.deploy(gasOverrides);
+      await contract.waitForDeployment();
+      console.log(
+        `✅ ${chainConfig.forwarderContractName} deployed at ${contract.target}`
+      );
+      await waitAndVerify(hre, contract, chainConfig.forwarderContractName, []);
+      output.forwarderImplementation = contract.target as string;
+      saveOutput(output);
+      return contract.target as string;
+    },
+    gasOverrides
+  );
+
+  // Deploy Forwarder Factory
+  await deployIfNeededAtNonce(
+    output.forwarderFactory,
+    NONCE.FORWARDER_FACTORY,
+    deployerAddress,
+    chainConfig.forwarderFactoryContractName,
+    async () => {
+      const ForwarderFactory = await ethers.getContractFactory(
+        chainConfig.forwarderFactoryContractName
+      );
+      const contract = await ForwarderFactory.deploy(
+        forwarderAddress,
+        gasOverrides
+      );
+      await contract.waitForDeployment();
+      console.log(
+        `✅ ${chainConfig.forwarderFactoryContractName} deployed at ${contract.target}`
+      );
+      await waitAndVerify(
+        hre,
+        contract,
+        chainConfig.forwarderFactoryContractName,
+        [forwarderAddress]
+      );
+      output.forwarderFactory = contract.target as string;
+      saveOutput(output);
+      return contract.target as string;
+    },
+    gasOverrides
+  );
+
+  console.log(`🎉 All contracts deployed and verified!`);
 }
 
 main().catch((error) => {

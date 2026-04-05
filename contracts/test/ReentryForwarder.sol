@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 
 // import "./MockERC1155.sol";
 
@@ -42,8 +42,8 @@ contract ReentryForwarder {
     address _from,
     uint256 id,
     uint256 value,
-    bytes calldata data
-  ) external returns (bytes4) {
+    bytes memory data
+  ) public returns (bytes4) {
     if (reentry) {
       (bool success, ) = forwarder.call(
         abi.encodeWithSignature(
@@ -64,10 +64,10 @@ contract ReentryForwarder {
   function onERC1155BatchReceived(
     address _operator,
     address _from,
-    uint256[] calldata ids,
-    uint256[] calldata values,
-    bytes calldata data
-  ) external returns (bytes4) {
+    uint256[] memory ids,
+    uint256[] memory values,
+    bytes memory data
+  ) public returns (bytes4) {
     if (reentry) {
       (bool success, ) = forwarder.call(
         abi.encodeWithSignature(

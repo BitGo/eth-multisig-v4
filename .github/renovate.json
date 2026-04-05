@@ -1,0 +1,8 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>BitGo/gha-renovate-bot//presets/default",
+    "github>BitGo/gha-renovate-bot//presets/nodejs-security"
+  ],
+  "baseBranches": ["master"]
+}

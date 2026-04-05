@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 
 /**
  * Contract that exposes the needed erc20 token functions
@@ -15,7 +15,7 @@ abstract contract ERC20Interface {
   // Get the account balance of another account with address _owner
   function balanceOf(address _owner)
     public
-    virtual
     view
+    virtual
     returns (uint256 balance);
 }

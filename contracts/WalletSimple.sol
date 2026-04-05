@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 import './TransferHelper.sol';
 import './ERC20Interface.sol';
 import './IForwarder.sol';
 
 /** ERC721, ERC1155 imports */
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
+import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
+import '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  *
@@ -29,12 +30,12 @@ import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol';
  * Unlike eth_sign, the message is not prefixed.
  *
  * The operationHash the result of keccak256(prefix, toAddress, value, data, expireTime).
- * For ether transactions, `prefix` is "ETHER".
- * For token transaction, `prefix` is "ERC20" and `data` is the tokenContractAddress.
+ * For ether transactions, `prefix` is chain id of the coin i.e. for eth mainnet it is "1".
+ * For token transaction, `prefix` is chain id + "-ERC20" i.e. for mainnet it is "1-ERC20" and `data` is the tokenContractAddress.
  *
  *
  */
-contract WalletSimple is IERC721Receiver, ERC1155Receiver {
+contract WalletSimple is IERC721Receiver, ERC1155Holder {
   // Events
   event Deposited(address from, uint256 value, bytes data);
   event SafeModeActivated(address msgSender);
@@ -93,8 +94,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getNetworkId() internal virtual pure returns (string memory) {
-    return 'ETHER';
+  function getNetworkId() internal view virtual returns (string memory) {
+    return Strings.toString(block.chainid);
   }
 
   /**
@@ -105,8 +106,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getTokenNetworkId() internal virtual pure returns (string memory) {
-    return 'ERC20';
+  function getTokenNetworkId() internal view virtual returns (string memory) {
+    return string.concat(Strings.toString(block.chainid), '-ERC20');
   }
 
   /**
@@ -117,31 +118,22 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    *    to allow this contract to be used by proxy with delegatecall, which will
    *    not pick up on state variables
    */
-  function getBatchNetworkId() internal virtual pure returns (string memory) {
-    return 'ETHER-Batch';
-  }
-
-  /**
-   * Determine if an address is a signer on this wallet
-   * @param signer address to check
-   * returns boolean indicating whether address is signer or not
-   */
-  function isSigner(address signer) public view returns (bool) {
-    return signers[signer];
+  function getBatchNetworkId() internal view virtual returns (string memory) {
+    return string.concat(Strings.toString(block.chainid), '-Batch');
   }
 
   /**
    * Modifier that will execute internal code block only if the sender is an authorized signer on this wallet
    */
-  modifier onlySigner {
-    require(isSigner(msg.sender), 'Non-signer in onlySigner method');
+  modifier onlySigner() {
+    require(signers[msg.sender], 'Non-signer in onlySigner method');
     _;
   }
 
   /**
    * Modifier that will execute internal code block only if the contract has not been initialized yet
    */
-  modifier onlyUninitialized {
+  modifier onlyUninitialized() {
     require(!initialized, 'Contract already initialized');
     _;
   }
@@ -188,14 +180,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   ) external onlySigner {
     // Verify the other signer
     bytes32 operationHash = keccak256(
-      abi.encodePacked(
-        getNetworkId(),
-        toAddress,
-        value,
-        data,
-        expireTime,
-        sequenceId
-      )
+      abi.encode(getNetworkId(), toAddress, value, data, expireTime, sequenceId)
     );
 
     address otherSigner = verifyMultiSig(
@@ -206,10 +191,6 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       sequenceId
     );
 
-    // Success, send the transaction
-    (bool success, ) = toAddress.call{ value: value }(data);
-    require(success, 'Call execution failed');
-
     emit Transacted(
       msg.sender,
       otherSigner,
@@ -218,6 +199,10 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       value,
       data
     );
+
+    // Success, send the transaction
+    (bool success, ) = toAddress.call{ value: value }(data);
+    require(success, 'Call execution failed');
   }
 
   /**
@@ -247,7 +232,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
 
     // Verify the other signer
     bytes32 operationHash = keccak256(
-      abi.encodePacked(
+      abi.encode(
         getBatchNetworkId(),
         recipients,
         values,
@@ -267,8 +252,8 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
       sequenceId
     );
 
-    batchTransfer(recipients, values);
     emit BatchTransacted(msg.sender, otherSigner, operationHash);
+    batchTransfer(recipients, values);
   }
 
   /**
@@ -281,14 +266,14 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   function batchTransfer(
     address[] calldata recipients,
     uint256[] calldata values
-  ) internal {
+  ) private {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(address(this).balance >= values[i], 'Insufficient funds');
 
+      emit BatchTransfer(msg.sender, recipients[i], values[i]);
+
       (bool success, ) = recipients[i].call{ value: values[i] }('');
       require(success, 'Call failed');
-
-      emit BatchTransfer(msg.sender, recipients[i], values[i]);
     }
   }
 
@@ -438,7 +423,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     address otherSigner = recoverAddressFromSignature(operationHash, signature);
 
     // Verify if we are in safe mode. In safe mode, the wallet can only send to signers
-    require(!safeMode || isSigner(toAddress), 'External transfer in safe mode');
+    require(!safeMode || signers[toAddress], 'External transfer in safe mode');
 
     // Verify that the transaction has not expired
     require(expireTime >= block.timestamp, 'Transaction expired');
@@ -446,7 +431,7 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
     // Try to insert the sequence ID. Will revert if the sequence id was invalid
     tryInsertSequenceId(sequenceId);
 
-    require(isSigner(otherSigner), 'Invalid signer');
+    require(signers[otherSigner], 'Invalid signer');
 
     require(otherSigner != msg.sender, 'Signers cannot be equal');
 
@@ -471,28 +456,28 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155Received(
     address _operator,
     address _from,
     uint256 id,
     uint256 value,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     return this.onERC1155Received.selector;
   }
 
   /**
-   * @inheritdoc IERC1155Receiver
+   * @inheritdoc ERC1155Holder
    */
   function onERC1155BatchReceived(
     address _operator,
     address _from,
-    uint256[] calldata ids,
-    uint256[] calldata values,
-    bytes calldata data
-  ) external virtual override returns (bytes4) {
+    uint256[] memory ids,
+    uint256[] memory values,
+    bytes memory data
+  ) public virtual override returns (bytes4) {
     return this.onERC1155BatchReceived.selector;
   }
 
@@ -552,14 +537,13 @@ contract WalletSimple is IERC721Receiver, ERC1155Receiver {
    * greater than the minimum element in the window.
    * @param sequenceId to insert into array of stored ids
    */
-  function tryInsertSequenceId(uint256 sequenceId) private onlySigner {
+  function tryInsertSequenceId(uint256 sequenceId) private {
     // Keep a pointer to the lowest value element in the window
     uint256 lowestValueIndex = 0;
     // fetch recentSequenceIds into memory for function context to avoid unnecessary sloads
 
-
-      uint256[SEQUENCE_ID_WINDOW_SIZE] memory _recentSequenceIds
-     = recentSequenceIds;
+    uint256[SEQUENCE_ID_WINDOW_SIZE]
+      memory _recentSequenceIds = recentSequenceIds;
     for (uint256 i = 0; i < SEQUENCE_ID_WINDOW_SIZE; i++) {
       require(_recentSequenceIds[i] != sequenceId, 'Sequence ID already used');
 

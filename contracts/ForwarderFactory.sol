@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 import './Forwarder.sol';
 import './CloneFactory.sol';
 
 contract ForwarderFactory is CloneFactory {
-  address public implementationAddress;
+  address public immutable implementationAddress;
 
   event ForwarderCreated(
     address newForwarderAddress,
@@ -27,17 +27,18 @@ contract ForwarderFactory is CloneFactory {
     bool shouldAutoFlushERC721,
     bool shouldAutoFlushERC1155
   ) external {
-    // include the signers in the salt so any contract deployed to a given address must have the same signers
+    // include the parent in the salt so any contract deployed to a given address must have the same parent
     bytes32 finalSalt = keccak256(abi.encodePacked(parent, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
-    Forwarder(clone).init(
+
+    emit ForwarderCreated(
+      clone,
       parent,
       shouldAutoFlushERC721,
       shouldAutoFlushERC1155
     );
-    emit ForwarderCreated(
-      clone,
+    Forwarder(clone).init(
       parent,
       shouldAutoFlushERC721,
       shouldAutoFlushERC1155

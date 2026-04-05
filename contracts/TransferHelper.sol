@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // source: https://github.com/Uniswap/solidity-lib/blob/master/contracts/libraries/TransferHelper.sol
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 
 import '@openzeppelin/contracts/utils/Address.sol';
 
@@ -31,10 +31,6 @@ library TransferHelper {
     (bool success, bytes memory returndata) = token.call(
       abi.encodeWithSelector(0x23b872dd, from, to, value)
     );
-    Address.verifyCallResult(
-      success,
-      returndata,
-      'TransferHelper::transferFrom: transferFrom failed'
-    );
+    Address.verifyCallResult(success, returndata);
   }
 }

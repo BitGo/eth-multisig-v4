@@ -1,0 +1,5 @@
+# Github Actions
+.github @BitGo/production
+
+## Do not add anything below codeowners line ##
+CODEOWNERS @BitGo/production

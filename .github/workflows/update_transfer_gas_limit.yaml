@@ -1,0 +1,110 @@
+name: Update Batcher transferGasLimit
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - testnet
+          - mainnet
+      network:
+        description: "Hardhat network (e.g., tstt, stt)"
+        required: true
+        type: string
+      gas_limit:
+        description: "transferGasLimit to set (required)"
+        required: true
+        default: '300000'
+        type: string
+      batcher_address:
+        description: "Batcher contract address (required)"
+        required: true
+        default: ''
+        type: string
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approval summary
+        run: |
+          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+          ### Update Batcher transferGasLimit — Approval Summary
+
+          - Environment: ${{ inputs.environment }}
+          - Network: ${{ inputs.network }}
+          - Batcher Address: \`${{ inputs.batcher_address }}\`
+          - New transferGasLimit: \`${{ inputs.gas_limit }}\`
+
+          Actions to be performed after approval:
+          - Run: npm run update-gas-limit -- ${{ inputs.network }}
+          - Set transferGasLimit on the Batcher contract at the above address
+          - Use signer index 2 (same as deploy script)
+
+          > Approve only if the address and limit are correct.
+          EOF
+  run-update:
+    needs: preview
+    runs-on: ubuntu-latest
+    environment: "${{ inputs.environment }}"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - run: npm install
+      - name: Run update script
+        run: |
+          export BATCHER_ADDRESS="${{ inputs.batcher_address }}"
+          export TRANSFER_GAS_LIMIT="${{ inputs.gas_limit }}"
+          npm run update-gas-limit -- ${{ inputs.network }}
+        env:
+          MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
+          PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT }}
+          PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP: ${{ secrets.PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP }}
+          PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT }}
+          PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT }}
+          QUICKNODE_ETH_MAINNET_API_KEY: ${{ secrets.QUICKNODE_ETH_MAINNET_API_KEY }}
+          QUICKNODE_ETH_HOLESKY_API_KEY: ${{ secrets.QUICKNODE_ETH_HOLESKY_API_KEY }}
+          QUICKNODE_ARBITRUM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_SEPOLIA_API_KEY }}
+          QUICKNODE_PLASMA_API_KEY: ${{ secrets.QUICKNODE_PLASMA_API_KEY }}
+          SOMNIA_TESTNET_API_KEY: ${{ secrets.SOMNIA_TESTNET_API_KEY }}
+          MONAD_MAINNET_API_KEY: ${{ secrets.MONAD_MAINNET_API_KEY }}
+          MEGAETH_TESTNET_API_KEY: ${{ secrets.MEGAETH_TESTNET_API_KEY }}
+          QUICKNODE_ARBITRUM_ONE_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_ONE_API_KEY }}
+          QUICKNODE_OPTIMISM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_SEPOLIA_API_KEY }}
+          QUICKNODE_OPTIMISM_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_API_KEY }}
+          QUICKNODE_ZKSYNC_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ZKSYNC_SEPOLIA_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          ALCHEMY_POLYGON_API_KEY: ${{ secrets.ALCHEMY_POLYGON_API_KEY }}
+          POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+          BSCSCAN_API_KEY: ${{ secrets.BSCSCAN_API_KEY }}
+          ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+          OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
+          ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
+          BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
+          BEPOLIA_BERA_EXPLORER_API_KEY: ${{ secrets.BEPOLIA_BERA_EXPLORER_API_KEY }}
+          BERA_EXPLORER_API_KEY: ${{ secrets.BERA_EXPLORER_API_KEY }}
+          OAS_EXPLORER_API_KEY: ${{ secrets.OAS_EXPLORER_API_KEY }}
+          CORE_DAO_TESTNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_TESTNET_EXPLORER_API_KEY }}
+          CORE_DAO_MAINNET_EXPLORER_API_KEY: ${{ secrets.CORE_DAO_MAINNET_EXPLORER_API_KEY }}
+          FLARE_EXPLORER_API_KEY: ${{ secrets.FLARE_EXPLORER_API_KEY }}
+          SONGBIRD_EXPLORER_API_KEY: ${{ secrets.SONGBIRD_EXPLORER_API_KEY }}
+          XDC_EXPLORER_API_KEY: ${{ secrets.XDC_EXPLORER_API_KEY }}
+          WEMIX_EXPLORER_API_KEY: ${{ secrets.WEMIX_EXPLORER_API_KEY }}
+          BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
+          MONAD_EXPLORER_API_KEY: ${{ secrets.MONAD_EXPLORER_API_KEY }}
+          SOMNIA_EXPLORER_API_KEY: ${{ secrets.SOMNIA_EXPLORER_API_KEY }}
+          SONEIUM_EXPLORER_API_KEY: ${{ secrets.SONEIUM_EXPLORER_API_KEY }}
+          WORLD_EXPLORER_API_KEY: ${{ secrets.WORLD_EXPLORER_API_KEY }}
+          CTC_EXPLORER_API_KEY: ${{ secrets.CTC_EXPLORER_API_KEY }}
+          PHAROS_EXPLORER_API_KEY: ${{ secrets.PHAROS_EXPLORER_API_KEY }}
+          HYPEEVM_EXPLORER_API_KEY: ${{ secrets.HYPEEVM_EXPLORER_API_KEY }}
+          SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
+          KAIA_EXPLORER_API_KEY: ${{ secrets.KAIA_EXPLORER_API_KEY }}
+          IP_EXPLORER_API_KEY: ${{ secrets.IP_EXPLORER_API_KEY }}

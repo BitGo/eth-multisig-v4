@@ -16,4 +16,4 @@ output.json
 #Hardhat files
 artifacts
 cache
-typechain
+typechain-types

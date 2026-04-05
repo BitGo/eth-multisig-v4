@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.10;
+pragma solidity 0.8.20;
 import './WalletSimple.sol';
 import './CloneFactory.sol';
 
 contract WalletFactory is CloneFactory {
-  address public implementationAddress;
+  address public immutable implementationAddress;
 
   event WalletCreated(address newWalletAddress, address[] allowedSigners);
 
@@ -19,7 +19,7 @@ contract WalletFactory is CloneFactory {
     bytes32 finalSalt = keccak256(abi.encodePacked(allowedSigners, salt));
 
     address payable clone = createClone(implementationAddress, finalSalt);
-    WalletSimple(clone).init(allowedSigners);
     emit WalletCreated(clone, allowedSigners);
+    WalletSimple(clone).init(allowedSigners);
   }
 }
