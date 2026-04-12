@@ -976,6 +976,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    abstracteth: {
+      url: `https://api.mainnet.abs.xyz`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tabstracteth: {
+      url: `https://api.testnet.abs.xyz`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1157,7 +1173,11 @@ const config: HardhatUserConfig = {
 
       // HEMIETH
       hemiethTestnet: `${ETHERSCAN_API_KEY}`,
-      hemiethMainnet: `${ETHERSCAN_API_KEY}`
+      hemiethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // Abstract L2
+      abstractethTestnet: `${ETHERSCAN_API_KEY}`,
+      abstractethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -1954,6 +1974,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer.hemi.xyz/api',
           browserURL: 'https://explorer.hemi.xyz'
+        }
+      },
+      {
+        network: 'abstractethTestnet',
+        chainId: CHAIN_IDS.ABSTRACTETH_TESTNET,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.ABSTRACTETH_TESTNET}`,
+          browserURL: 'https://sepolia.abscan.org'
+        }
+      },
+      {
+        network: 'abstractethMainnet',
+        chainId: CHAIN_IDS.ABSTRACTETH,
+        urls: {
+          apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.ABSTRACTETH}`,
+          browserURL: 'https://abscan.org'
         }
       }
     ]

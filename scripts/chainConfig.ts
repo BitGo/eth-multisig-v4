@@ -209,6 +209,18 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
 
+    case CHAIN_IDS.ABSTRACTETH:
+    case CHAIN_IDS.ABSTRACTETH_TESTNET:
+      // ZKsync-based chain: first-time bytecode publication to L1 requires
+      // much higher gas (~14M estimated). Use 30M to match ZKsync ERA config.
+      gasParams = {
+        gasPrice: feeData.gasPrice ?? 1_000_000_000n,
+        gasLimit: 30_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
+
     case CHAIN_IDS.SONGBIRD:
     case CHAIN_IDS.SONGBIRD_TESTNET:
     case CHAIN_IDS.OAS_TESTNET:
