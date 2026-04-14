@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+import './config/hppHardhatEstimateGasFix';
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-verify';
