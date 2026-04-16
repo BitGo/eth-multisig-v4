@@ -61,6 +61,7 @@ export const CHAIN_IDS = {
   XTZEVM: 42793,
   H: 6985385,
   HOODETH: 999999, //TODO: update with correct mainnet chain ID when available
+  INKETH: 57073,
   HEMIETH: 43111,
   ABSTRACTETH: 2741,
 
@@ -113,6 +114,7 @@ export const CHAIN_IDS = {
   HPP_TESTNET: 181228,
   H_TESTNET: 7080969,
   HOODETH_TESTNET: 46630,
+  INKETH_TESTNET: 763373,
   HEMIETH_TESTNET: 743111,
   ABSTRACTETH_TESTNET: 11124
 } as const;
