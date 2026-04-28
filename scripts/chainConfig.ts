@@ -378,6 +378,10 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       break;
   }
 
+  if (chainId === CHAIN_IDS.HPP) {
+    gasParams = { ...gasParams, gasLimit: 16_000_000 };
+  }
+
   return {
     walletImplementationContractName,
     walletFactoryContractName,
