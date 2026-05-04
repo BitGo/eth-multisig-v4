@@ -379,7 +379,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
   }
 
   if (chainId === CHAIN_IDS.HPP) {
-    gasParams = { ...gasParams, gasLimit: 16_000_000 };
+    gasParams = { ...gasParams, gasLimit: 60_000_000 };
   }
 
   return {
