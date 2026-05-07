@@ -931,7 +931,8 @@ const config: HardhatUserConfig = {
       ]
     },
     hoodeth: {
-      url: 'https://rpc.testnet.chain.robinhood.com', // TODO: update to mainnet RPC when available
+      url: 'https://ac23019b22f1ae5a.offchainlabs.com/rpc/a6186cb065b52ca24da0d197e33b303c',
+      chainId: CHAIN_IDS.HOODETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1977,8 +1978,8 @@ const config: HardhatUserConfig = {
         network: 'hoodethMainnet',
         chainId: CHAIN_IDS.HOODETH,
         urls: {
-          apiURL: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
-          browserURL: 'https://explorer.testnet.chain.robinhood.com' // TODO: update to mainnet explorer when available
+          apiURL: 'https://8crv4vmq6tiu1yqr.blockscout.com/api',
+          browserURL: 'https://8crv4vmq6tiu1yqr.blockscout.com'
         }
       },
       {

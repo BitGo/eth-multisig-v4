@@ -3,8 +3,23 @@ import fs from 'fs';
 import { BaseContract, getCreateAddress } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { verifyOnCustomEtherscan } from './scripts/customContractVerifier';
+import { CHAIN_IDS } from './config/chainIds';
 
 const OUTPUT_FILE = 'output.json';
+
+// Per-chain verification overrides for chains with slow block times or restricted explorers.
+// All other chains use the defaults in VERIFICATION_CONFIG.
+const CHAIN_VERIFICATION_OVERRIDES: Partial<
+  Record<
+    number,
+    {
+      confirmationBlocks: number;
+      maxRetries: number;
+    }
+  >
+> = {
+  [CHAIN_IDS.HOODETH]: { confirmationBlocks: 2, maxRetries: 2 }
+};
 
 // Balance check configuration
 /**
@@ -461,11 +476,21 @@ export async function waitAndVerify(
     throw new Error(errorMsg);
   }
 
+  const chainId = hre.network?.config?.chainId;
+  const override = chainId ? CHAIN_VERIFICATION_OVERRIDES[chainId] : undefined;
+  const confirmationBlocks =
+    override?.confirmationBlocks ?? VERIFICATION_CONFIG.CONFIRMATION_BLOCKS;
+  const maxRetries = override?.maxRetries ?? VERIFICATION_CONFIG.MAX_RETRIES;
+
   // Wait for block confirmations
-  const contractAddress = await waitForConfirmations(contract, contractName);
+  const contractAddress = await waitForConfirmations(
+    contract,
+    contractName,
+    confirmationBlocks
+  );
 
   // Perform verification with retry logic
-  for (let attempt = 1; attempt <= VERIFICATION_CONFIG.MAX_RETRIES; attempt++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     logger.info(`Verification attempt #${attempt} for ${contractName}...`);
 
     try {
@@ -490,7 +515,7 @@ export async function waitAndVerify(
     }
 
     // If we get here, verification failed and we should retry
-    if (attempt < VERIFICATION_CONFIG.MAX_RETRIES) {
+    if (attempt < maxRetries) {
       const delaySeconds = VERIFICATION_CONFIG.RETRY_DELAY_MS / 1000;
       logger.info(`Waiting ${delaySeconds} seconds before retrying...`);
       await delay(VERIFICATION_CONFIG.RETRY_DELAY_MS);
