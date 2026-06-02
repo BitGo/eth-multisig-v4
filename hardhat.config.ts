@@ -715,7 +715,11 @@ const config: HardhatUserConfig = {
       ]
     },
     thbarevm: {
-      url: 'https://testnet.hashio.io/api',
+      // Hashio relay (0.77.1) rejects contract-creation eth_estimateGas when a
+      // `from` field is present (returns INSUFFICIENT_TX_FEE), which breaks the
+      // deploy scripts. Thirdweb's Hedera gateway handles this correctly.
+      // Keep Hashio/HashScan for contract verification only.
+      url: 'https://296.rpc.thirdweb.com',
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -723,7 +727,11 @@ const config: HardhatUserConfig = {
       ]
     },
     hbarevm: {
-      url: 'https://mainnet.hashio.io/api',
+      // Hashio relay (0.77.1) rejects contract-creation eth_estimateGas when a
+      // `from` field is present (returns INSUFFICIENT_TX_FEE), which breaks the
+      // deploy scripts. Thirdweb's Hedera gateway handles this correctly.
+      // Keep Hashio/HashScan for contract verification only.
+      url: 'https://295.rpc.thirdweb.com',
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -2041,14 +2049,18 @@ const config: HardhatUserConfig = {
 };
 
 export const sourcifyNetworks = {
-  // Hedera networks use HashScan Sourcify
+  // Hedera verification is handled by Sourcify (chainId 295 mainnet / 296 testnet).
+  // The legacy HashScan hosts (server-verify/repository-verify.hashscan.io) are
+  // decommissioned and now return HTML 404s, which breaks verification with
+  // "Unexpected token '<' ... is not valid JSON". Use the official Sourcify server.
+  // HashScan automatically shows the verified badge once Sourcify has the contract.
   [CHAIN_IDS.HBAREVM]: {
-    apiUrl: 'https://server-verify.hashscan.io',
-    browserUrl: 'https://repository-verify.hashscan.io'
+    apiUrl: 'https://sourcify.dev/server',
+    browserUrl: 'https://repo.sourcify.dev'
   },
   [CHAIN_IDS.HBAREVM_TESTNET]: {
-    apiUrl: 'https://server-verify.hashscan.io',
-    browserUrl: 'https://repository-verify.hashscan.io'
+    apiUrl: 'https://sourcify.dev/server',
+    browserUrl: 'https://repo.sourcify.dev'
   }
 };
 
