@@ -1018,6 +1018,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    katanaeth: {
+      url: 'https://rpc.katanarpc.com',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    tkatanaeth: {
+      url: 'https://rpc-bokuto.katanarpc.com',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1207,7 +1223,11 @@ const config: HardhatUserConfig = {
 
       // Abstract L2
       abstractethTestnet: `${ETHERSCAN_API_KEY}`,
-      abstractethMainnet: `${ETHERSCAN_API_KEY}`
+      abstractethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // KATANAETH
+      katanaethTestnet: `${ETHERSCAN_API_KEY}`,
+      katanaethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -2036,6 +2056,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: `${ETHERSCAN_V2_URL}${CHAIN_IDS.ABSTRACTETH}`,
           browserURL: 'https://abscan.org'
+        }
+      },
+      {
+        network: 'katanaethTestnet',
+        chainId: CHAIN_IDS.KATANAETH_TESTNET,
+        urls: {
+          apiURL: 'https://explorer-bokuto.katanarpc.com/api',
+          browserURL: 'https://explorer-bokuto.katanarpc.com'
+        }
+      },
+      {
+        network: 'katanaethMainnet',
+        chainId: CHAIN_IDS.KATANAETH,
+        urls: {
+          apiURL: 'https://katanascan.com/api',
+          browserURL: 'https://katanascan.com'
         }
       }
     ]

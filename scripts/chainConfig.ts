@@ -381,6 +381,12 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
+
+    case CHAIN_IDS.KATANAETH:
+    case CHAIN_IDS.KATANAETH_TESTNET:
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
   }
 
   if (chainId === CHAIN_IDS.HPP) {
