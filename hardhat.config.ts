@@ -299,7 +299,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tstt: {
-      url: `${SOMNIA_TESTNET_API_KEY}`,
+      url: SOMNIA_TESTNET_API_KEY || 'https://dream-rpc.somnia.network',
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
