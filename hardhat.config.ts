@@ -58,6 +58,7 @@ const {
   FLOW_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
   ARCUSDC_EXPLORER_API_KEY,
+  ARCUSDC_RPC_URL,
   DOGEOS_EXPLORER_API_KEY
 } = process.env;
 
@@ -867,7 +868,7 @@ const config: HardhatUserConfig = {
       ]
     },
     arcusdc: {
-      url: 'https://rpc.testnet.arc.network', //TODO: WIN-8039: Replace with mainnet RPC when available
+      url: `${ARCUSDC_RPC_URL}`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1764,8 +1765,8 @@ const config: HardhatUserConfig = {
         network: 'arcusdcMainnet',
         chainId: CHAIN_IDS.ARCUSDC,
         urls: {
-          apiURL: 'https://testnet.arcscan.app/api', // TODO: WIN-8039: Replace with mainnet API when available
-          browserURL: 'https://testnet.arcscan.app/' // TODO: WIN-8039: Replace with mainnet Browser URL when available
+          apiURL: 'https://explorer.arc.io/api',
+          browserURL: 'https://explorer.arc.io/'
         }
       },
       {

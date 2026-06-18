@@ -108,3 +108,4 @@ jobs:
           SEIEVM_EXPLORER_API_KEY: ${{ secrets.SEIEVM_EXPLORER_API_KEY }}
           KAIA_EXPLORER_API_KEY: ${{ secrets.KAIA_EXPLORER_API_KEY }}
           IP_EXPLORER_API_KEY: ${{ secrets.IP_EXPLORER_API_KEY }}
+          ARCUSDC_RPC_URL: ${{ secrets.ARCUSDC_RPC_URL }}

@@ -52,7 +52,7 @@ export const CHAIN_IDS = {
   ftm: 250,
   ZKSYNCERA: 324,
   MORPHETH: 2818,
-  ARCUSDC: 5042002, //TODO: WIN-8039: change it with correct mainnet details, when its available
+  ARCUSDC: 5042,
   MEGAETH: 4326,
   CHILIZ: 88888,
   UNICHAIN: 130,
