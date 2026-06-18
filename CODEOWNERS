@@ -1,3 +1,6 @@
+# All changes require ecosystem-ems review
+* @BitGo/ecosystem-ems
+
 # Github Actions
 .github @BitGo/production
 
