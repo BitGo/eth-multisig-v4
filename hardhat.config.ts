@@ -42,6 +42,7 @@ const {
   XDC_EXPLORER_API_KEY,
   WEMIX_EXPLORER_API_KEY,
   BERA_RPC_URL,
+  HOODETH_RPC_URL,
   MONAD_EXPLORER_API_KEY,
   SOMNIA_EXPLORER_API_KEY,
   SONEIUM_EXPLORER_API_KEY,
@@ -939,7 +940,7 @@ const config: HardhatUserConfig = {
       ]
     },
     hoodeth: {
-      url: 'https://ac23019b22f1ae5a.offchainlabs.com/rpc/a6186cb065b52ca24da0d197e33b303c',
+      url: `${HOODETH_RPC_URL}`,
       chainId: CHAIN_IDS.HOODETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
