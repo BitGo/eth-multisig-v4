@@ -69,6 +69,7 @@ jobs:
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
           ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
+          ARCUSDC_RPC_URL: ${{ secrets.ARCUSDC_RPC_URL }}
           opBNB_EXPLORER_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
 
   get-network:
@@ -184,6 +185,7 @@ jobs:
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
           opBNB_EXPLORER_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
+          ARCUSDC_RPC_URL: ${{ secrets.ARCUSDC_RPC_URL }}
 
       - name: Update release notes
         uses: actions/github-script@v6
@@ -281,6 +283,7 @@ jobs:
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
           ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
+          ARCUSDC_RPC_URL: ${{ secrets.ARCUSDC_RPC_URL }}
           opBNB_EXPLORER_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
 
       - name: Update release notes
