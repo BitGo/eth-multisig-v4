@@ -1036,6 +1036,22 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tbobaeth: {
+      url: 'https://sepolia.boba.network',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    bobaeth: {
+      url: 'https://boba-ethereum.gateway.tenderly.co',
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1229,7 +1245,11 @@ const config: HardhatUserConfig = {
 
       // KATANAETH
       katanaethTestnet: `${ETHERSCAN_API_KEY}`,
-      katanaethMainnet: `${ETHERSCAN_API_KEY}`
+      katanaethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // BOBAETH
+      bobaethTestnet: `${ETHERSCAN_API_KEY}`,
+      bobaethMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -2074,6 +2094,24 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://katanascan.com/api',
           browserURL: 'https://katanascan.com'
+        }
+      },
+      {
+        network: 'bobaethTestnet',
+        chainId: CHAIN_IDS.BOBAETH_TESTNET,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/28882/etherscan/api',
+          browserURL: 'https://testnet.bobascan.com'
+        }
+      },
+      {
+        network: 'bobaethMainnet',
+        chainId: CHAIN_IDS.BOBAETH,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/mainnet/evm/288/etherscan/api',
+          browserURL: 'https://bobascan.com'
         }
       }
     ]
