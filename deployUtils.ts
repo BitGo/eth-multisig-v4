@@ -233,6 +233,8 @@ const VERIFICATION_CONFIG = {
   CONFIRMATION_BLOCKS: 5,
   MAX_RETRIES: 10,
   RETRY_DELAY_MS: 60_000 // 1 minute
+  RETRY_DELAY_MS: 60_000, // 1 minute
+  VERIFY_TIMEOUT_MS: 300_000 // 5 minute per verification attempt before giving up
 } as const;
 
 /**
@@ -247,6 +249,25 @@ function isAlreadyVerifiedError(error: any): boolean {
  */
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Wraps a promise with a timeout. Rejects if the promise doesn't resolve within the timeout period.
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  errorMessage: string
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Timeout: ${errorMessage}`)),
+        timeoutMs
+      )
+    )
+  ]);
 }
 
 /**
@@ -494,11 +515,18 @@ export async function waitAndVerify(
     logger.info(`Verification attempt #${attempt} for ${contractName}...`);
 
     try {
-      const success = await attemptVerification(
-        hre,
-        contractAddress,
-        contractName,
-        constructorArguments
+      // Wrap verification attempt with timeout to prevent indefinite hanging
+      const success = await withTimeout(
+        attemptVerification(
+          hre,
+          contractAddress,
+          contractName,
+          constructorArguments
+        ),
+        VERIFICATION_CONFIG.VERIFY_TIMEOUT_MS,
+        `Verification attempt #${attempt} exceeded ${
+          VERIFICATION_CONFIG.VERIFY_TIMEOUT_MS / 1000
+        } second timeout`
       );
 
       if (success) {
@@ -509,6 +537,12 @@ export async function waitAndVerify(
       if (error.message === 'ALREADY_VERIFIED') {
         logger.success(`Contract already verified on attempt #${attempt}.`);
         return; // Already verified - success
+      } else if (error.message?.startsWith('Timeout:')) {
+        logger.warn(
+          `Verification attempt #${attempt} timed out after ${
+            VERIFICATION_CONFIG.VERIFY_TIMEOUT_MS / 1000
+          } seconds`
+        );
       } else {
         logger.warn(`Unexpected error during verification: ${error.message}`);
       }
