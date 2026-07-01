@@ -387,6 +387,17 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
+
+    case CHAIN_IDS.BOBAETH:
+    case CHAIN_IDS.BOBAETH_TESTNET:
+      gasParams = {
+        maxFeePerGas: feeData.maxFeePerGas ?? feeData.gasPrice!,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ?? feeData.gasPrice!,
+        gasLimit: 3_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
   }
 
   if (chainId === CHAIN_IDS.HPP) {
