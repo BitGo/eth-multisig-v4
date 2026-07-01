@@ -331,9 +331,9 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
     case CHAIN_IDS.ARCUSDC_TESTNET:
     case CHAIN_IDS.ARCUSDC:
       gasParams = {
-        maxFeePerGas: feeData.gasPrice!,
-        maxPriorityFeePerGas: feeData.gasPrice!,
-        gasLimit: 30_000_000
+        maxFeePerGas: feeData.maxFeePerGas ?? feeData.gasPrice!,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ?? feeData.gasPrice!,
+        gasLimit: 3_000_000
       };
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
