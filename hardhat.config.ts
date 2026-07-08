@@ -59,7 +59,6 @@ const {
   FLOW_EXPLORER_API_KEY,
   HBAREVM_EXPLORER_API_KEY,
   ARCUSDC_EXPLORER_API_KEY,
-  ARCUSDC_RPC_URL,
   DOGEOS_EXPLORER_API_KEY
 } = process.env;
 
@@ -869,7 +868,7 @@ const config: HardhatUserConfig = {
       ]
     },
     arcusdc: {
-      url: `${ARCUSDC_RPC_URL}`,
+      url: 'https://rpc.blockdaemon.mainnet.arc.io',
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
