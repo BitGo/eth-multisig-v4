@@ -68,7 +68,6 @@ jobs:
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
           ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
-          ARCUSDC_RPC_URL: ${{ secrets.ARCUSDC_RPC_URL }}
   get-network:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
@@ -176,7 +175,6 @@ jobs:
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
           ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
-          ARCUSDC_RPC_URL: ${{ secrets.ARCUSDC_RPC_URL }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
@@ -250,7 +248,6 @@ jobs:
           MEGAETH_EXPLORER_API_KEY: ${{ secrets.MEGAETH_EXPLORER_API_KEY }}
           HBAREVM_EXPLORER_API_KEY: ${{ secrets.HBAREVM_EXPLORER_API_KEY }}
           ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
-          ARCUSDC_RPC_URL: ${{ secrets.ARCUSDC_RPC_URL }}
       - name: Update release notes
         uses: actions/github-script@v7
         with:
