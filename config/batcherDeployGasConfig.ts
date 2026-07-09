@@ -78,7 +78,10 @@ const CHAIN_GAS_CONFIGS: Partial<Record<number, ChainGasConfig>> = {
   [CHAIN_IDS.SOMNIA_TESTNET]: {
     strategy: 'manual-gas',
     capToBlockGasLimit: true
-  }
+  },
+  // Neo X: requires minGasTipCap of 20 Gwei; Hardhat auto-detection computes gasFeeCap too low.
+  [CHAIN_IDS.GASEVM]: { strategy: 'manual-gas', minPriorityFeeGwei: 20 },
+  [CHAIN_IDS.GASEVM_TESTNET]: { strategy: 'manual-gas', minPriorityFeeGwei: 20 }
 };
 
 export function getChainGasConfig(chainId: number): ChainGasConfig {

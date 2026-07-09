@@ -398,6 +398,18 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
+
+    case CHAIN_IDS.GASEVM:
+    case CHAIN_IDS.GASEVM_TESTNET:
+      // Neo X requires minGasTipCap of 20 Gwei (same as baseFee)
+      gasParams = {
+        maxFeePerGas: 50_000_000_000n,
+        maxPriorityFeePerGas: 20_000_000_000n,
+        gasLimit: 3_000_000
+      };
+      forwarderContractName = 'ForwarderV4';
+      forwarderFactoryContractName = 'ForwarderFactoryV4';
+      break;
   }
 
   if (chainId === CHAIN_IDS.HPP) {

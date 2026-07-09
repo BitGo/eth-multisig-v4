@@ -1051,6 +1051,24 @@ const config: HardhatUserConfig = {
         `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
+    },
+    tgasevm: {
+      url: 'https://neoxt4seed1.ngd.network',
+      chainId: CHAIN_IDS.GASEVM_TESTNET,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
+    gasevm: {
+      url: 'https://mainnet-1.rpc.banelabs.org',
+      chainId: CHAIN_IDS.GASEVM,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
     }
   },
   gasReporter: {
@@ -1248,7 +1266,11 @@ const config: HardhatUserConfig = {
 
       // BOBAETH
       bobaethTestnet: `${ETHERSCAN_API_KEY}`,
-      bobaethMainnet: `${ETHERSCAN_API_KEY}`
+      bobaethMainnet: `${ETHERSCAN_API_KEY}`,
+
+      // GASEVM (Neo X)
+      gasevmTestnet: `${ETHERSCAN_API_KEY}`,
+      gasevmMainnet: `${ETHERSCAN_API_KEY}`
     },
     customChains: [
       {
@@ -2111,6 +2133,22 @@ const config: HardhatUserConfig = {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/288/etherscan/api',
           browserURL: 'https://bobascan.com'
+        }
+      },
+      {
+        network: 'gasevmTestnet',
+        chainId: CHAIN_IDS.GASEVM_TESTNET,
+        urls: {
+          apiURL: 'https://xt4scan.ngd.network:8877/api',
+          browserURL: 'https://neoxt4scan.ngd.network'
+        }
+      },
+      {
+        network: 'gasevmMainnet',
+        chainId: CHAIN_IDS.GASEVM,
+        urls: {
+          apiURL: 'https://neoxscan.ngd.network/api',
+          browserURL: 'https://neoxscan.ngd.network'
         }
       }
     ]
