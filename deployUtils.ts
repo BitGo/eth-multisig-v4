@@ -18,7 +18,10 @@ const CHAIN_VERIFICATION_OVERRIDES: Partial<
     }
   >
 > = {
-  [CHAIN_IDS.HOODETH]: { confirmationBlocks: 2, maxRetries: 2 }
+  [CHAIN_IDS.HOODETH]: { confirmationBlocks: 2, maxRetries: 2 },
+  // Neo X: auto-verification is intentionally disabled; verify manually via Sourcify or the explorer.
+  [CHAIN_IDS.GASEVM]: { confirmationBlocks: 5, maxRetries: 0 },
+  [CHAIN_IDS.GASEVM_TESTNET]: { confirmationBlocks: 5, maxRetries: 0 }
 };
 
 // Balance check configuration
@@ -488,6 +491,14 @@ export async function waitAndVerify(
     contractName,
     confirmationBlocks
   );
+
+  // maxRetries: 0 means verification is intentionally disabled for this chain
+  if (maxRetries === 0) {
+    logger.warn(
+      `Auto-verification disabled for ${contractName} on this chain. Please verify manually.`
+    );
+    return;
+  }
 
   // Perform verification with retry logic
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
