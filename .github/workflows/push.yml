@@ -21,7 +21,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - run: npm install
+
+      # Repo variable SOCKET_DEV_FIREWALL_MODE: disabled / monitor / block (default)
+      - name: Install Socket Firewall
+        if: vars.SOCKET_DEV_FIREWALL_MODE != 'disabled'
+        uses: SocketDev/action@2d3f25590c6ed6ba11a9a14c064d962a3a04698f # v1.3.1
+        with:
+          mode: firewall-free
+
+      - name: Install dependencies
+        run: ${{ vars.SOCKET_DEV_FIREWALL_MODE != 'disabled' && 'sfw npm install' || 'npm install' }}
+        continue-on-error: ${{ vars.SOCKET_DEV_FIREWALL_MODE == 'monitor' }}
       - run: npm run test
         env:
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
