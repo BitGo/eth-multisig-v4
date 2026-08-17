@@ -118,6 +118,14 @@ const config: HardhatUserConfig = {
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
+    sepeth: {
+      url: `https://ethereum-sepolia-rpc.publicnode.com`,
+      accounts: [
+        `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
+        `${PLACEHOLDER_KEY}`,
+        `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
+      ]
+    },
     matic: {
       url: `https://polygon-rpc.com/`,
       accounts: [
@@ -1081,6 +1089,7 @@ const config: HardhatUserConfig = {
       mainnet: `${ETHERSCAN_API_KEY}`,
       goerli: `${ETHERSCAN_API_KEY}`,
       hoodi: `${ETHERSCAN_API_KEY}`,
+      sepolia: `${ETHERSCAN_API_KEY}`,
       //polygon
       polygon: `${POLYGONSCAN_API_KEY}`,
       polygonAmoy: `${POLYGONSCAN_API_KEY}`,
@@ -1279,6 +1288,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-hoodi.etherscan.io/api',
           browserURL: 'https://hoodi.etherscan.io'
+        }
+      },
+      {
+        network: 'sepolia',
+        chainId: CHAIN_IDS.SEPETH,
+        urls: {
+          apiURL: 'https://api-sepolia.etherscan.io/api',
+          browserURL: 'https://sepolia.etherscan.io'
         }
       },
       {
