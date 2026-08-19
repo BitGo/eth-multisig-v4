@@ -58,6 +58,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
       break;
     case CHAIN_IDS.HOODI:
+    case CHAIN_IDS.SEPETH:
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
