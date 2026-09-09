@@ -516,7 +516,7 @@ const config: HardhatUserConfig = {
       ]
     },
     ip: {
-      url: `https://mainnet.storyrpc.io/`,
+      url: `https://mainnet.datarpc.io/`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -524,7 +524,7 @@ const config: HardhatUserConfig = {
       ]
     },
     tip: {
-      url: `https://aeneid.storyrpc.io/`,
+      url: `https://aeneid.datarpc.io/`,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1687,16 +1687,16 @@ const config: HardhatUserConfig = {
         network: 'ipTestnet',
         chainId: CHAIN_IDS.IP_TESTNET,
         urls: {
-          apiURL: 'https://aeneid.storyscan.io/api',
-          browserURL: 'https://aeneid.storyscan.io/'
+          apiURL: 'https://aeneid.datanetscan.io/api',
+          browserURL: 'https://aeneid.datanetscan.io/'
         }
       },
       {
         network: 'ipMainnet',
         chainId: CHAIN_IDS.IP,
         urls: {
-          apiURL: 'https://www.storyscan.io/api',
-          browserURL: 'https://explorer.story.foundation/'
+          apiURL: 'https://datanetscan.io/api',
+          browserURL: 'https://datanetscan.io/'
         }
       },
       {
