@@ -45,7 +45,7 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
 
   let walletImplementationContractName = 'WalletSimple';
   let walletFactoryContractName = 'WalletFactory';
-  let forwarderContractName = 'Forwarder';
+  let forwarderContractName = 'ForwarderV4';
   let forwarderFactoryContractName = 'ForwarderFactoryV4';
   let contractPath = `contracts/${walletImplementationContractName}.sol:${walletImplementationContractName}`;
 
@@ -411,6 +411,11 @@ export async function getChainConfig(chainId: number): Promise<ChainConfig> {
       forwarderContractName = 'ForwarderV4';
       forwarderFactoryContractName = 'ForwarderFactoryV4';
       break;
+
+    default:
+      throw new Error(
+        `No chain configuration for chainId ${chainId}; add an explicit CHAIN_IDS case to getChainConfig before deploying`
+      );
   }
 
   if (chainId === CHAIN_IDS.HPP) {
