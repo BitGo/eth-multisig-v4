@@ -163,6 +163,7 @@ export async function deployIfNeededAtNonce(
   if (recordedAddress) {
     logger.info(`📁 Found ${contractName} in output.json: ${recordedAddress}`);
     if (await isContractDeployed(recordedAddress)) {
+      await assertBytecodeMatchesArtifact(recordedAddress, contractName);
       logger.success(
         `${contractName} already deployed on-chain at ${recordedAddress}. Skipping deployment.`
       );
@@ -176,6 +177,7 @@ export async function deployIfNeededAtNonce(
 
   // 2. Check if already deployed at predicted address
   if (await isContractDeployed(predictedAddress)) {
+    await assertBytecodeMatchesArtifact(predictedAddress, contractName);
     logger.success(
       `${contractName} already deployed on-chain at predicted address: ${predictedAddress}. Skipping deployment.`
     );
@@ -187,10 +189,9 @@ export async function deployIfNeededAtNonce(
     deployerAddress
   );
   if (currentNonce > expectedNonce) {
-    logger.warn(
-      `⏩ Skipping deployment of ${contractName}. Current nonce ${currentNonce} is already past expected ${expectedNonce}. Will assume contract exists at ${predictedAddress}`
-    );
-    return predictedAddress;
+    const errorMsg = `Cannot deploy ${contractName}: current nonce ${currentNonce} has advanced past expected ${expectedNonce} and no code was found at predicted address ${predictedAddress}. Refusing to adopt an unverified address.`;
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
   }
 
   // 4. If currentNonce doesn't match expectedNonce exactly, throw
@@ -209,12 +210,63 @@ export async function deployIfNeededAtNonce(
 
   // 6. Deploy
   logger.info(`🚀 Deploying ${contractName} at nonce ${expectedNonce}...`);
-  return await deployFn();
+  const deployedAddress = await deployFn();
+  await assertBytecodeMatchesArtifact(deployedAddress, contractName);
+  return deployedAddress;
 }
 
 export async function isContractDeployed(address: string) {
   const code = await ethers.provider.getCode(address);
   return code && code !== '0x';
+}
+
+/**
+ * Strips the trailing solc CBOR metadata block from hex bytecode. The last
+ * two bytes hold the metadata length, so the tail is deterministic; builds
+ * that differ only in the metadata fingerprint (source hash, settings) then
+ * compare equal while any change to the code body still fails the check.
+ */
+export function stripMetadata(code: string): string {
+  if (code.length < 4) {
+    return code;
+  }
+  const metaBytes = parseInt(code.slice(-4), 16);
+  if (metaBytes * 2 + 4 > code.length) {
+    return code;
+  }
+  return '0x' + code.slice(2, code.length - 4 - metaBytes * 2);
+}
+
+/**
+ * Verifies that the on-chain bytecode at `address` matches the
+ * deployedBytecode from the Hardhat artifact for `contractName`. Keccak256
+ * is compared (metadata stripped on both sides) to keep the check O(1) over
+ * the bytecode length and to give a stable, log-friendly fingerprint.
+ *
+ * This is an intentional fail-closed design — see INFOSEC-617.
+ */
+export async function assertBytecodeMatchesArtifact(
+  address: string,
+  contractName: string
+): Promise<void> {
+  const onChainCode = await ethers.provider.getCode(address);
+  if (!onChainCode || onChainCode === '0x') {
+    throw new Error(
+      `${contractName} at ${address} has no on-chain code; refusing to adopt`
+    );
+  }
+  const artifact = await hre.artifacts.readArtifact(contractName);
+  const onChainHash = ethers.keccak256(stripMetadata(onChainCode));
+  const artifactHash = ethers.keccak256(
+    stripMetadata(artifact.deployedBytecode)
+  );
+  if (onChainHash !== artifactHash) {
+    throw new Error(
+      `Bytecode mismatch for ${contractName} at ${address}: ` +
+        `on-chain hash ${onChainHash} != artifact hash ${artifactHash}. ` +
+        `Refusing to adopt an address whose code is not the expected contract.`
+    );
+  }
 }
 
 export function loadOutput(): DeploymentAddresses {
