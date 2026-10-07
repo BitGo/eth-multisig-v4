@@ -144,7 +144,15 @@ jobs:
             --arg v4_backup "$PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP" \
             --arg batcher "$PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT" \
             --arg hype_evm "$HYPE_EVM_PRIVATE_KEY" \
-            '{data: {mainnet: $mainnet, testnet: $testnet, v1_wallet: $v1_wallet, v4: $v4, v4_backup: $v4_backup, batcher: $batcher, hype_evm: $hype_evm}}' \
+            '{data: {
+              MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: $mainnet,
+              TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: $testnet,
+              PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT: $v1_wallet,
+              PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT: $v4,
+              PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP: $v4_backup,
+              PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: $batcher,
+              HYPE_EVM_PRIVATE_KEY: $hype_evm
+            }}' \
           | curl --fail --silent --show-error \
               --header "X-Vault-Token: ${VAULT_TOKEN}" \
               --request POST \
