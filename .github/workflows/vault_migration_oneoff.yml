@@ -3,18 +3,34 @@
 # instead of this repo's GitHub Actions secrets. See INF-4222.
 #
 # This workflow should be deleted, and the matching Vault grant in
-# BitGo/infra revoked, in the same day the run below succeeds. There is
-# no ongoing reason for this repo to hold any Vault access.
+# BitGo/infra revoked, in the same day the real (non-dry-run) run below
+# succeeds. There is no ongoing reason for this repo to hold any Vault
+# access.
 #
 # Manual trigger only. The "vault-migration-oneoff" GitHub environment
 # requires approval from ecosystem-directors and git-admins before this
 # can run, and Vault's own JWT auth role additionally requires the OIDC
 # token to carry that exact environment claim, so the review gate is
 # enforced on both sides, not just by GitHub's UI.
+#
+# dry_run (default true) writes one low-sensitivity field (the ARCUSDC
+# explorer API key) to the same Vault path instead of the 7 real deployer
+# keys, so the whole chain -- environment approval, OIDC exchange, Vault
+# write -- can be rehearsed with zero exposure of production key
+# material. KV v2 writes replace the entire document, so the real run
+# that follows simply supersedes the dry-run value with a new version.
+# Dry-run steps never reference the 7 real secrets, so they never enter
+# job memory during a rehearsal. Must be set to false explicitly to
+# perform the real migration.
 name: One-time Vault migration (deployer keys)
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Write a dummy field (ARCUSDC explorer API key) instead of the real 7 deployer keys"
+        type: boolean
+        default: true
 
 permissions:
   id-token: write
@@ -25,7 +41,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: vault-migration-oneoff
     steps:
+      - name: "[dry run] Validate dummy secret is present"
+        if: inputs.dry_run
+        env:
+          ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$ARCUSDC_EXPLORER_API_KEY" ]; then
+            echo "::error ::ARCUSDC_EXPLORER_API_KEY is empty, aborting before requesting any Vault token"
+            exit 1
+          fi
+          echo "Dummy secret present. This is a dry run -- no deployer keys will be touched."
+
       - name: Validate all 7 secrets are present
+        if: "!inputs.dry_run"
         env:
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
           TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
@@ -61,7 +90,34 @@ jobs:
           jwtGithubAudience: https://github.com/BitGo
           exportToken: true
 
+      - name: "[dry run] Write dummy field to Vault"
+        if: inputs.dry_run
+        env:
+          VAULT_ADDR: https://vault.bitgo-int.com
+          VAULT_TOKEN: ${{ steps.vault-auth.outputs.token }}
+          ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          # Dummy value only -- never one of the 7 real deployer keys.
+          # This write is superseded as soon as the real run below writes
+          # all 7 fields, since Vault KV v2 writes replace the whole
+          # document rather than merging into it.
+          jq -n \
+            --arg smoke_test "$ARCUSDC_EXPLORER_API_KEY" \
+            '{data: {smoke_test: $smoke_test}}' \
+          | curl --fail --silent --show-error \
+              --header "X-Vault-Token: ${VAULT_TOKEN}" \
+              --request POST \
+              --data @- \
+              "${VAULT_ADDR}/v1/github/secret/data/eth-multisig-v4-private/deployer-key" \
+          | jq '{version: .data.version, created_time: .data.created_time}'
+
+          echo "Dry run: wrote a dummy field to eth-multisig-v4-private/deployer-key."
+          echo "Re-run with dry_run=false to write the real 7 deployer keys."
+
       - name: Write deployer keys to Vault
+        if: "!inputs.dry_run"
         env:
           VAULT_ADDR: https://vault.bitgo-int.com
           VAULT_TOKEN: ${{ steps.vault-auth.outputs.token }}
