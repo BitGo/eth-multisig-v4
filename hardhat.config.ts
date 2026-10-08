@@ -42,7 +42,6 @@ const {
   XDC_EXPLORER_API_KEY,
   WEMIX_EXPLORER_API_KEY,
   BERA_RPC_URL,
-  HOODETH_RPC_URL,
   MONAD_EXPLORER_API_KEY,
   SOMNIA_EXPLORER_API_KEY,
   SONEIUM_EXPLORER_API_KEY,
@@ -948,7 +947,7 @@ const config: HardhatUserConfig = {
       ]
     },
     hoodeth: {
-      url: `${HOODETH_RPC_URL}`,
+      url: 'https://rpc.mainnet.chain.robinhood.com',
       chainId: CHAIN_IDS.HOODETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
@@ -2066,8 +2065,8 @@ const config: HardhatUserConfig = {
         network: 'hoodethMainnet',
         chainId: CHAIN_IDS.HOODETH,
         urls: {
-          apiURL: 'https://8crv4vmq6tiu1yqr.blockscout.com/api',
-          browserURL: 'https://8crv4vmq6tiu1yqr.blockscout.com'
+          apiURL: 'https://robinhoodchain.blockscout.com/api',
+          browserURL: 'https://robinhoodchain.blockscout.com'
         }
       },
       {
