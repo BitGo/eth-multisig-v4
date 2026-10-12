@@ -28,6 +28,23 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     steps:
+      - name: Enforce master branch or tag on master
+        if: github.ref != 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then
+            echo "::error::This workflow may only be run from the master branch or a tag whose commit is on master (current ref: $GITHUB_REF)."
+            exit 1
+          fi
+          if ! status=$(gh api "repos/$GITHUB_REPOSITORY/compare/master...$GITHUB_REF_NAME" --jq .status 2>/dev/null); then
+            echo "::error::Could not verify tag $GITHUB_REF_NAME against master via the GitHub API."
+            exit 1
+          fi
+          if [[ "$status" != "behind" && "$status" != "identical" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not point to a commit reachable from master (compare status: $status)."
+            exit 1
+          fi
       - name: Approval summary
         run: |
           cat <<EOF >> "$GITHUB_STEP_SUMMARY"
