@@ -2193,4 +2193,29 @@ export const sourcifyNetworks = {
   }
 };
 
-export default config;
+// INFOSEC-677: CI test jobs run with no secrets at all. For any remote
+// network whose signer keys are not fully configured, drop its account list
+// so hardhat's config validation still passes; tests run on the in-process
+// hardhat network and never use these signers. Deploy jobs always set every
+// key their target networks need, so their account lists are preserved
+// exactly. A network with missing keys gets no signers and cannot sign
+// anything.
+const isSignerKey = (account: string): boolean =>
+  /^(0x)?[0-9a-fA-F]{64}$/.test(account);
+
+const normalizeRemoteAccounts = (cfg: HardhatUserConfig): HardhatUserConfig => {
+  for (const network of Object.values(cfg.networks ?? {})) {
+    if (network === undefined || !('accounts' in network)) continue;
+    const accounts = network.accounts;
+    if (!Array.isArray(accounts)) continue;
+    // The in-process hardhat network uses {privateKey, balance} entries;
+    // leave those untouched.
+    if (!accounts.every((a) => typeof a === 'string')) continue;
+    if (!accounts.every((a) => isSignerKey(a as string))) {
+      network.accounts = [];
+    }
+  }
+  return cfg;
+};
+
+export default normalizeRemoteAccounts(config);
