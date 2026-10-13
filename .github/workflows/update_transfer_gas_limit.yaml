@@ -24,6 +24,9 @@ on:
         default: ''
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   preview:
     runs-on: ubuntu-latest
@@ -51,6 +54,8 @@ jobs:
     environment: "${{ inputs.environment }}"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
