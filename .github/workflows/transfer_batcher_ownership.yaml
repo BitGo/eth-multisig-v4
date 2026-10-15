@@ -24,21 +24,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Approval summary
+        # Inputs are passed via step env, never interpolated into the shell
+        # source (command injection via workflow_dispatch inputs).
         run: |
-          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
-          ### Transfer Batcher Ownership — Approval Summary
-
-          - Environment: ${{ inputs.environment }}
-          - Network: \`${{ inputs.network }}\`
-          - Batcher contract: \`${{ inputs.batcher_address }}\`
-
-          Actions to be performed after approval:
-          - Run: npm run transfer-batcher-ownership -- ${{ inputs.network }}
-          - Initiate the ownership transfer on the Batcher contract (step 1 of two-step Ownable2Step)
-          - The new owner accepts separately on-chain (acceptOwnership); no new-owner key is used here
-
-          > Approve only if the batcher contract above is the intended target. The new owner address and keys are intentionally not shown.
-          EOF
+          printf '%s\n' \
+            '### Transfer Batcher Ownership — Approval Summary' \
+            '' \
+            "- Environment: $ENVIRONMENT" \
+            "- Network: $NETWORK" \
+            "- Batcher contract: $BATCHER_ADDRESS" \
+            '' \
+            'Actions to be performed after approval:' \
+            '- Run: npm run transfer-batcher-ownership -- "$NETWORK"' \
+            '- Initiate the ownership transfer on the Batcher contract (step 1 of two-step Ownable2Step)' \
+            '- The new owner accepts separately on-chain (acceptOwnership); no new-owner key is used here' \
+            '' \
+            '> Approve only if the batcher contract above is the intended target. The new owner address and keys are intentionally not shown.' \
+            >> "$GITHUB_STEP_SUMMARY"
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          NETWORK: ${{ inputs.network }}
+          BATCHER_ADDRESS: ${{ inputs.batcher_address }}
   run-transfer:
     needs: preview
     runs-on: ubuntu-latest
@@ -52,15 +58,19 @@ jobs:
           cache: 'npm'
       - run: npm install
       - name: Run ownership transfer script
-        run: |
-          export BATCHER_ADDRESS="${{ inputs.batcher_address }}"
-          export BATCHER_ENVIRONMENT="${{ inputs.environment }}"
-          npm run transfer-batcher-ownership -- ${{ inputs.network }}
+        # Inputs are passed via step env, never interpolated into the shell
+        # source (command injection via workflow_dispatch inputs).
+        run: npm run transfer-batcher-ownership -- "$NETWORK"
         env:
+          BATCHER_ADDRESS: ${{ inputs.batcher_address }}
+          BATCHER_ENVIRONMENT: ${{ inputs.environment }}
+          NETWORK: ${{ inputs.network }}
           # Only secrets this script needs. RPC keys below are exactly those
           # referenced by hardhat.config.ts network urls (tarbeth, topeth, opeth,
           # tzketh, bera, mon, plasma, tstt); all other networks use public RPC
           # urls. Update this list if a new network's url references an env var.
+          # (Inputs above are mapped via env too — never interpolated into
+          # the shell source.)
           BATCHER_CONTRACT_OWNER_TESTNET: ${{ secrets.BATCHER_CONTRACT_OWNER_TESTNET }}
           BATCHER_CONTRACT_OWNER_MAINNET: ${{ secrets.BATCHER_CONTRACT_OWNER_MAINNET }}
           PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT }}

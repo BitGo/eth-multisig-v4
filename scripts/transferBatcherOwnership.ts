@@ -4,11 +4,17 @@ import { logger } from '../deployUtils';
 
 const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
 
+// Script-authored error carrying a sanitized, log-safe message. Only these are
+// printed at the catch site; dependency errors (e.g. ethers mined-revert
+// messages embed contract/owner addresses and the tx hash) are replaced by a
+// fixed message.
+class ScriptError extends Error {}
+
 async function main() {
   // --- 1. Env parsing + validation (fail fast; never embed sensitive values in errors) ---
   const batcherAddress = (process.env.BATCHER_ADDRESS || '').trim();
   if (!ADDRESS_REGEX.test(batcherAddress)) {
-    throw new Error(
+    throw new ScriptError(
       'BATCHER_ADDRESS env var is required and must be a valid 0x-prefixed address'
     );
   }
@@ -19,7 +25,7 @@ async function main() {
     .trim()
     .toLowerCase();
   if (environment !== 'testnet' && environment !== 'mainnet') {
-    throw new Error(
+    throw new ScriptError(
       'BATCHER_ENVIRONMENT env var is required and must be "testnet" or "mainnet"'
     );
   }
@@ -31,7 +37,7 @@ async function main() {
       : process.env.BATCHER_CONTRACT_OWNER_MAINNET) || ''
   ).trim();
   if (!ADDRESS_REGEX.test(newOwnerRaw)) {
-    throw new Error(
+    throw new ScriptError(
       `${ownerSecretName} secret is required and must be a valid 0x-prefixed address`
     );
   }
@@ -39,12 +45,12 @@ async function main() {
   try {
     newOwner = ethers.getAddress(newOwnerRaw);
   } catch {
-    throw new Error(
+    throw new ScriptError(
       `${ownerSecretName} is not a valid eth address (bad checksum)`
     );
   }
   if (newOwner === ethers.ZeroAddress) {
-    throw new Error(`${ownerSecretName} must not be the zero address`);
+    throw new ScriptError(`${ownerSecretName} must not be the zero address`);
   }
 
   // --- 2. Signer ---
@@ -58,7 +64,7 @@ async function main() {
     ? ownerKeyRaw
     : `0x${ownerKeyRaw}`;
   if (!/^0x[0-9a-fA-F]{64}$/.test(ownerKey)) {
-    throw new Error(
+    throw new ScriptError(
       'PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT secret is required and must be a valid secp256k1 key'
     );
   }
@@ -72,7 +78,7 @@ async function main() {
   // --- 3. On-chain checks ---
   const code = await ethers.provider.getCode(batcherAddress);
   if (!code || code === '0x') {
-    throw new Error(
+    throw new ScriptError(
       'No contract code at the given BATCHER_ADDRESS on this network. Check the address and network.'
     );
   }
@@ -86,7 +92,9 @@ async function main() {
   // Verify current ownership (Ownable2Step)
   const owner: string = await batcher.owner();
   if (owner.toLowerCase() !== (await ownerSigner.getAddress()).toLowerCase()) {
-    throw new Error('Signer is not the current owner of the Batcher contract');
+    throw new ScriptError(
+      'Signer is not the current owner of the Batcher contract'
+    );
   }
 
   logger.info(`Network chainId: ${chainId}`);
@@ -106,7 +114,9 @@ async function main() {
   await tx.wait();
   const pendingOwner: string = await batcher.pendingOwner();
   if (pendingOwner.toLowerCase() !== newOwner.toLowerCase()) {
-    throw new Error('transferOwnership did not set the expected pending owner');
+    throw new ScriptError(
+      'transferOwnership did not set the expected pending owner'
+    );
   }
   logger.info('Ownership transfer initiated (tx mined)');
 
@@ -116,6 +126,10 @@ async function main() {
 }
 
 main().catch((err) => {
-  logger.error(`Failed: ${err.message}`);
+  if (err instanceof ScriptError) {
+    logger.error(`Failed: ${err.message}`);
+  } else {
+    logger.error('Failed: unexpected error (details suppressed)');
+  }
   process.exit(1);
 });
