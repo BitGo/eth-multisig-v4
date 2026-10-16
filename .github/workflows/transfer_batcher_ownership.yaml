@@ -1,0 +1,84 @@
+name: Transfer Batcher Contract Ownership
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - testnet
+          - mainnet
+      network:
+        description: 'Hardhat network name from hardhat.config.ts (e.g., tstt, stt)'
+        required: true
+        type: string
+      batcher_address:
+        description: 'Batcher contract address (required)'
+        required: true
+        default: ''
+        type: string
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approval summary
+        # Inputs are passed via step env, never interpolated into the shell
+        # source (command injection via workflow_dispatch inputs).
+        run: |
+          printf '%s\n' \
+            '### Transfer Batcher Ownership — Approval Summary' \
+            '' \
+            "- Environment: $ENVIRONMENT" \
+            "- Network: $NETWORK" \
+            "- Batcher contract: $BATCHER_ADDRESS" \
+            '' \
+            'Actions to be performed after approval:' \
+            '- Run: npm run transfer-batcher-ownership -- "$NETWORK"' \
+            '- Initiate the ownership transfer on the Batcher contract (step 1 of two-step Ownable2Step)' \
+            '- The new owner accepts separately on-chain (acceptOwnership); no new-owner key is used here' \
+            '' \
+            '> Approve only if the batcher contract above is the intended target. The new owner address and keys are intentionally not shown.' \
+            >> "$GITHUB_STEP_SUMMARY"
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          NETWORK: ${{ inputs.network }}
+          BATCHER_ADDRESS: ${{ inputs.batcher_address }}
+  run-transfer:
+    needs: preview
+    runs-on: ubuntu-latest
+    environment: '${{ inputs.environment }}'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - run: npm install
+      - name: Run ownership transfer script
+        # Inputs are passed via step env, never interpolated into the shell
+        # source (command injection via workflow_dispatch inputs).
+        run: npm run transfer-batcher-ownership -- "$NETWORK"
+        env:
+          BATCHER_ADDRESS: ${{ inputs.batcher_address }}
+          BATCHER_ENVIRONMENT: ${{ inputs.environment }}
+          NETWORK: ${{ inputs.network }}
+          # Only secrets this script needs. RPC keys below are exactly those
+          # referenced by hardhat.config.ts network urls (tarbeth, topeth, opeth,
+          # tzketh, bera, mon, plasma, tstt); all other networks use public RPC
+          # urls. Update this list if a new network's url references an env var.
+          # (Inputs above are mapped via env too — never interpolated into
+          # the shell source.)
+          BATCHER_CONTRACT_OWNER_TESTNET: ${{ secrets.BATCHER_CONTRACT_OWNER_TESTNET }}
+          BATCHER_CONTRACT_OWNER_MAINNET: ${{ secrets.BATCHER_CONTRACT_OWNER_MAINNET }}
+          PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT }}
+          QUICKNODE_ARBITRUM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ARBITRUM_SEPOLIA_API_KEY }}
+          QUICKNODE_OPTIMISM_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_SEPOLIA_API_KEY }}
+          QUICKNODE_OPTIMISM_API_KEY: ${{ secrets.QUICKNODE_OPTIMISM_API_KEY }}
+          QUICKNODE_ZKSYNC_SEPOLIA_API_KEY: ${{ secrets.QUICKNODE_ZKSYNC_SEPOLIA_API_KEY }}
+          BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
+          MONAD_MAINNET_API_KEY: ${{ secrets.MONAD_MAINNET_API_KEY }}
+          QUICKNODE_PLASMA_API_KEY: ${{ secrets.QUICKNODE_PLASMA_API_KEY }}
+          SOMNIA_TESTNET_API_KEY: ${{ secrets.SOMNIA_TESTNET_API_KEY }}

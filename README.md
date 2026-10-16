@@ -170,6 +170,21 @@ Behavior:
 - The script uses the first configured signer on that network; make sure that signer is the on-chain owner or the run will fail.
      
 
+### GitHub Actions: transfer_batcher_ownership
+
+Transfer ownership of a deployed Batcher (initiates the two-step `Ownable2Step` transfer) via workflow dispatch:
+
+1. In GitHub, run the workflow: Actions > "Transfer Batcher Contract Ownership" > Run workflow
+   - Inputs (required):
+     - `environment`: `testnet` or `mainnet`
+     - `network`: Hardhat network name from `hardhat.config.ts` (e.g., `tstt`, `stt`)
+     - `batcher_address`: the deployed Batcher address
+
+Behavior:
+- Requires, in the target environment, the GitHub secrets `BATCHER_CONTRACT_OWNER_TESTNET` (testnet new owner) and `BATCHER_CONTRACT_OWNER_MAINNET` (mainnet new owner), plus `PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT` (current owner / Batcher deployer key). The script uses the owner secret matching the workflow's `environment` input, validates the address (rejecting the zero address) and key, loads the owner signer directly from the key (no signer-index dependency), verifies it is the on-chain owner, and calls `transferOwnership`, verifying `pendingOwner` on-chain. No new-owner private key is used; the new owner completes the transfer by calling `acceptOwnership` separately.
+- The script never logs addresses, keys, or tx hashes. The workflow's approval summary shows environment, network, and the batcher contract address (public on-chain data); the new owner address and keys are never shown.
+
+
 
 ## Installation
 
