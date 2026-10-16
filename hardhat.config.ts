@@ -16,14 +16,7 @@ const {
   PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP,
   PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT,
   PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT,
-  QUICKNODE_ARBITRUM_SEPOLIA_API_KEY,
-  QUICKNODE_OPTIMISM_SEPOLIA_API_KEY,
-  QUICKNODE_PLASMA_API_KEY,
-  SOMNIA_TESTNET_API_KEY,
-  MONAD_MAINNET_API_KEY,
   QUICKNODE_ARBITRUM_ONE_API_KEY,
-  QUICKNODE_OPTIMISM_API_KEY,
-  QUICKNODE_ZKSYNC_SEPOLIA_API_KEY,
   ETHERSCAN_API_KEY,
   ALCHEMY_POLYGON_API_KEY,
   POLYGONSCAN_API_KEY,
@@ -41,7 +34,6 @@ const {
   SONGBIRD_EXPLORER_API_KEY,
   XDC_EXPLORER_API_KEY,
   WEMIX_EXPLORER_API_KEY,
-  BERA_RPC_URL,
   MONAD_EXPLORER_API_KEY,
   SOMNIA_EXPLORER_API_KEY,
   SONEIUM_EXPLORER_API_KEY,
@@ -103,6 +95,7 @@ const config: HardhatUserConfig = {
     },
     eth: {
       url: `https://ethereum-rpc.publicnode.com`,
+      chainId: CHAIN_IDS.ETH_MAINNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -111,6 +104,7 @@ const config: HardhatUserConfig = {
     },
     hteth: {
       url: `https://ethereum-hoodi-rpc.publicnode.com`,
+      chainId: CHAIN_IDS.HOODI,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -119,6 +113,7 @@ const config: HardhatUserConfig = {
     },
     sepeth: {
       url: `https://ethereum-sepolia-rpc.publicnode.com`,
+      chainId: CHAIN_IDS.SEPETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -127,6 +122,7 @@ const config: HardhatUserConfig = {
     },
     matic: {
       url: `https://polygon-rpc.com/`,
+      chainId: CHAIN_IDS.POLYGON_MAINNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -135,7 +131,8 @@ const config: HardhatUserConfig = {
     },
     tmatic: {
       // https://polygon-amoy.g.alchemy.com
-      url: `https://polygon-amoy-bor-rpc.publicnode.com`,
+      url: `https://poly-amoy-testnet.api.pocket.network`,
+      chainId: CHAIN_IDS.POLYGON_AMOY,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -144,6 +141,7 @@ const config: HardhatUserConfig = {
     },
     bsc: {
       url: `https://bsc-dataseed1.binance.org/`,
+      chainId: CHAIN_IDS.BSC_MAINNET,
       accounts: [
         `${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -152,6 +150,7 @@ const config: HardhatUserConfig = {
     },
     tbsc: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
+      chainId: CHAIN_IDS.BSC_TESTNET,
       accounts: [
         `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -160,6 +159,7 @@ const config: HardhatUserConfig = {
     },
     topBNB: {
       url: `https://opbnb-testnet-rpc.bnbchain.org`,
+      chainId: CHAIN_IDS.opBNB_TESTNET,
       accounts: [
         `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -168,6 +168,7 @@ const config: HardhatUserConfig = {
     },
     opBNB: {
       url: `https://opbnb-mainnet-rpc.bnbchain.org`,
+      chainId: CHAIN_IDS.opBNB,
       accounts: [
         `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
@@ -175,7 +176,8 @@ const config: HardhatUserConfig = {
       ]
     },
     tarbeth: {
-      url: `${QUICKNODE_ARBITRUM_SEPOLIA_API_KEY}`,
+      url: `https://sepolia-rollup.arbitrum.io/rpc`,
+      chainId: CHAIN_IDS.ARBITRUM_SEPOLIA,
       accounts: [
         `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -184,6 +186,7 @@ const config: HardhatUserConfig = {
     },
     arbeth: {
       url: `https://arb1.arbitrum.io/rpc`,
+      chainId: CHAIN_IDS.ARBITRUM_ONE,
       accounts: [
         `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
@@ -191,7 +194,8 @@ const config: HardhatUserConfig = {
       ]
     },
     topeth: {
-      url: `${QUICKNODE_OPTIMISM_SEPOLIA_API_KEY}`,
+      url: `https://sepolia.optimism.io`,
+      chainId: CHAIN_IDS.OPTIMISM_SEPOLIA,
       accounts: [
         `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
@@ -199,7 +203,8 @@ const config: HardhatUserConfig = {
       ]
     },
     opeth: {
-      url: `${QUICKNODE_OPTIMISM_API_KEY}`,
+      url: `https://mainnet.optimism.io`,
+      chainId: CHAIN_IDS.OPTIMISM,
       accounts: [
         `${PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT}`,
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP}`,
@@ -207,11 +212,13 @@ const config: HardhatUserConfig = {
       ]
     },
     tzketh: {
-      url: `${QUICKNODE_ZKSYNC_SEPOLIA_API_KEY}`,
+      url: `https://sepolia.era.zksync.dev`,
+      chainId: CHAIN_IDS.ZKSYNC_SEPOLIA,
       accounts: [`${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`]
     },
     tbaseeth: {
       url: 'https://sepolia.base.org',
+      chainId: CHAIN_IDS.BASE_SEPOLIA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -220,6 +227,7 @@ const config: HardhatUserConfig = {
     },
     baseeth: {
       url: 'https://mainnet.base.org/',
+      chainId: CHAIN_IDS.BASE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -228,6 +236,7 @@ const config: HardhatUserConfig = {
     },
     tbera: {
       url: `https://bepolia.rpc.berachain.com/`,
+      chainId: CHAIN_IDS.BERA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -235,7 +244,8 @@ const config: HardhatUserConfig = {
       ]
     },
     bera: {
-      url: `${BERA_RPC_URL}`,
+      url: `https://rpc.berachain.com`,
+      chainId: CHAIN_IDS.BERA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -244,6 +254,7 @@ const config: HardhatUserConfig = {
     },
     toas: {
       url: `https://rpc.testnet.oasys.games`,
+      chainId: CHAIN_IDS.OAS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -252,6 +263,7 @@ const config: HardhatUserConfig = {
     },
     oas: {
       url: `https://rpc.mainnet.oasys.games`,
+      chainId: CHAIN_IDS.OAS,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -260,6 +272,7 @@ const config: HardhatUserConfig = {
     },
     tcoredao: {
       url: `https://rpc.test2.btcs.network`,
+      chainId: CHAIN_IDS.CORE_DAO_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -268,6 +281,7 @@ const config: HardhatUserConfig = {
     },
     coredao: {
       url: `https://rpc.coredao.org`,
+      chainId: CHAIN_IDS.CORE_DAO,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -275,7 +289,8 @@ const config: HardhatUserConfig = {
       ]
     },
     tworld: {
-      url: `https://worldchain-sepolia.gateway.tenderly.co`,
+      url: `https://worldchain-sepolia.g.alchemy.com/public`,
+      chainId: CHAIN_IDS.WORLD_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -284,6 +299,7 @@ const config: HardhatUserConfig = {
     },
     world: {
       url: `https://worldchain-mainnet.g.alchemy.com/public`,
+      chainId: CHAIN_IDS.WORLD,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -292,6 +308,7 @@ const config: HardhatUserConfig = {
     },
     tsoneium: {
       url: `https://rpc.minato.soneium.org/`,
+      chainId: CHAIN_IDS.SONEIUM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -300,6 +317,7 @@ const config: HardhatUserConfig = {
     },
     soneium: {
       url: `https://rpc.soneium.org/`,
+      chainId: CHAIN_IDS.SONEIUM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -307,7 +325,8 @@ const config: HardhatUserConfig = {
       ]
     },
     tstt: {
-      url: SOMNIA_TESTNET_API_KEY || 'https://dream-rpc.somnia.network',
+      url: `https://dream-rpc.somnia.network`,
+      chainId: CHAIN_IDS.SOMNIA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -316,6 +335,7 @@ const config: HardhatUserConfig = {
     },
     stt: {
       url: `https://api.infra.mainnet.somnia.network`,
+      chainId: CHAIN_IDS.SOMNIA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -324,6 +344,7 @@ const config: HardhatUserConfig = {
     },
     tmon: {
       url: `https://testnet-rpc.monad.xyz/`,
+      chainId: CHAIN_IDS.MONAD_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -331,7 +352,8 @@ const config: HardhatUserConfig = {
       ]
     },
     mon: {
-      url: `${MONAD_MAINNET_API_KEY}`,
+      url: `https://rpc.monad.xyz`,
+      chainId: CHAIN_IDS.MONAD,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -340,6 +362,7 @@ const config: HardhatUserConfig = {
     },
     tflr: {
       url: `https://coston2-api.flare.network/ext/C/rpc`,
+      chainId: CHAIN_IDS.FLARE_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -348,6 +371,7 @@ const config: HardhatUserConfig = {
     },
     flr: {
       url: `https://flare-api.flare.network/ext/C/rpc`,
+      chainId: CHAIN_IDS.FLARE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -356,6 +380,7 @@ const config: HardhatUserConfig = {
     },
     tsgb: {
       url: `https://coston-api.flare.network/ext/C/rpc`,
+      chainId: CHAIN_IDS.SONGBIRD_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -364,6 +389,7 @@ const config: HardhatUserConfig = {
     },
     sgb: {
       url: `https://songbird-api.flare.network/ext/C/rpc`,
+      chainId: CHAIN_IDS.SONGBIRD,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -372,6 +398,7 @@ const config: HardhatUserConfig = {
     },
     tavaxc: {
       url: 'https://api.avax-test.network/ext/C/rpc',
+      chainId: CHAIN_IDS.AVALANCHE_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -380,6 +407,7 @@ const config: HardhatUserConfig = {
     },
     avaxc: {
       url: 'https://api.avax.network/ext/bc/C/rpc',
+      chainId: CHAIN_IDS.AVALANCHE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -388,6 +416,7 @@ const config: HardhatUserConfig = {
     },
     txdc: {
       url: `https://rpc.apothem.network`,
+      chainId: CHAIN_IDS.XDC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -396,6 +425,7 @@ const config: HardhatUserConfig = {
     },
     xdc: {
       url: `https://erpc.xinfin.network`,
+      chainId: CHAIN_IDS.XDC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -404,6 +434,7 @@ const config: HardhatUserConfig = {
     },
     twemix: {
       url: `https://api.test.wemix.com`,
+      chainId: CHAIN_IDS.WEMIX_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -412,6 +443,7 @@ const config: HardhatUserConfig = {
     },
     wemix: {
       url: `https://api.wemix.com`,
+      chainId: CHAIN_IDS.WEMIX,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -420,6 +452,7 @@ const config: HardhatUserConfig = {
     },
     celo: {
       url: `https://forno.celo.org`,
+      chainId: CHAIN_IDS.CELO,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -427,7 +460,8 @@ const config: HardhatUserConfig = {
       ]
     },
     tcelo: {
-      url: `https://sepolia.celoscan.io`,
+      url: `https://forno.celo-sepolia.celo-testnet.org`,
+      chainId: CHAIN_IDS.CELO_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -436,6 +470,7 @@ const config: HardhatUserConfig = {
     },
     etc: {
       url: `https://etc.etcdesktop.com`,
+      chainId: CHAIN_IDS.ETC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -444,6 +479,7 @@ const config: HardhatUserConfig = {
     },
     tetc: {
       url: `https://rpc.mordor.etccooperative.org`,
+      chainId: CHAIN_IDS.ETC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -452,6 +488,7 @@ const config: HardhatUserConfig = {
     },
     tctc: {
       url: `https://rpc.cc3-testnet.creditcoin.network`,
+      chainId: CHAIN_IDS.CREDITCOIN_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -460,6 +497,7 @@ const config: HardhatUserConfig = {
     },
     ctc: {
       url: `https://mainnet3.creditcoin.network`,
+      chainId: CHAIN_IDS.CREDITCOIN,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -468,6 +506,7 @@ const config: HardhatUserConfig = {
     },
     tapechain: {
       url: `https://rpc.curtis.apechain.com`,
+      chainId: CHAIN_IDS.APECHAIN_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -476,6 +515,7 @@ const config: HardhatUserConfig = {
     },
     apechain: {
       url: `https://apechain.drpc.org`,
+      chainId: CHAIN_IDS.APECHAIN,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -484,6 +524,7 @@ const config: HardhatUserConfig = {
     },
     tphrs: {
       url: `https://atlantic.dplabs-internal.com`,
+      chainId: CHAIN_IDS.PHAROS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -491,7 +532,8 @@ const config: HardhatUserConfig = {
       ]
     },
     phrs: {
-      url: `https://testnet.dplabs-internal.com`, // TODO: WIN-5781: change with mainnet url when its available
+      url: `https://rpc.pharos.xyz`,
+      chainId: CHAIN_IDS.PHAROS,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -500,6 +542,7 @@ const config: HardhatUserConfig = {
     },
     thypeevm: {
       url: `https://rpc.hyperliquid-testnet.xyz/evm`,
+      chainId: CHAIN_IDS.HYPEEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -508,6 +551,7 @@ const config: HardhatUserConfig = {
     },
     hypeevm: {
       url: `https://rpc.hyperliquid.xyz/evm`,
+      chainId: CHAIN_IDS.HYPEEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -516,6 +560,7 @@ const config: HardhatUserConfig = {
     },
     ip: {
       url: `https://mainnet.storyrpc.io/`,
+      chainId: CHAIN_IDS.IP,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -524,6 +569,7 @@ const config: HardhatUserConfig = {
     },
     tip: {
       url: `https://aeneid.storyrpc.io/`,
+      chainId: CHAIN_IDS.IP_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -532,6 +578,7 @@ const config: HardhatUserConfig = {
     },
     tsonic: {
       url: `https://rpc.testnet.soniclabs.com/`,
+      chainId: CHAIN_IDS.SONIC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -540,6 +587,7 @@ const config: HardhatUserConfig = {
     },
     sonic: {
       url: `https://rpc.soniclabs.com`,
+      chainId: CHAIN_IDS.SONIC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -548,6 +596,7 @@ const config: HardhatUserConfig = {
     },
     tseievm: {
       url: `https://evm-rpc-testnet.sei-apis.com`,
+      chainId: CHAIN_IDS.SEIEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -556,6 +605,7 @@ const config: HardhatUserConfig = {
     },
     seievm: {
       url: `https://evm-rpc.sei-apis.com`,
+      chainId: CHAIN_IDS.SEIEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -564,6 +614,7 @@ const config: HardhatUserConfig = {
     },
     tkaia: {
       url: `https://public-en-kairos.node.kaia.io`,
+      chainId: CHAIN_IDS.KAIA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -572,6 +623,7 @@ const config: HardhatUserConfig = {
     },
     kaia: {
       url: `https://public-en.node.kaia.io`,
+      chainId: CHAIN_IDS.KAIA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -580,6 +632,7 @@ const config: HardhatUserConfig = {
     },
     lineaeth: {
       url: `https://rpc.linea.build/`,
+      chainId: CHAIN_IDS.LINEAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -588,6 +641,7 @@ const config: HardhatUserConfig = {
     },
     tlineaeth: {
       url: `https://rpc.sepolia.linea.build/`,
+      chainId: CHAIN_IDS.LINEAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -596,6 +650,7 @@ const config: HardhatUserConfig = {
     },
     tog: {
       url: `https://evmrpc-testnet.0g.ai`,
+      chainId: CHAIN_IDS.OG_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -604,6 +659,7 @@ const config: HardhatUserConfig = {
     },
     og: {
       url: `https://evmrpc.0g.ai/`,
+      chainId: CHAIN_IDS.OG,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -612,6 +668,7 @@ const config: HardhatUserConfig = {
     },
     tirys: {
       url: `http://testnet-rpc.irys.xyz/v1/execution-rpc`,
+      chainId: CHAIN_IDS.IRYS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -620,6 +677,7 @@ const config: HardhatUserConfig = {
     },
     irys: {
       url: `https://mainnet-beta-rpc.irys.xyz/v1/execution-rpc`,
+      chainId: CHAIN_IDS.IRYS,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -627,7 +685,8 @@ const config: HardhatUserConfig = {
       ]
     },
     plasma: {
-      url: `${QUICKNODE_PLASMA_API_KEY}`,
+      url: `https://rpc.plasma.to`,
+      chainId: CHAIN_IDS.PLASMA_MAINNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -636,6 +695,7 @@ const config: HardhatUserConfig = {
     },
     tplasma: {
       url: `https://testnet-rpc.plasma.to`,
+      chainId: CHAIN_IDS.PLASMA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -644,6 +704,7 @@ const config: HardhatUserConfig = {
     },
     kavaevm: {
       url: `https://kava-evm.publicnode.com`,
+      chainId: CHAIN_IDS.KAVAEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -652,6 +713,7 @@ const config: HardhatUserConfig = {
     },
     tkavaevm: {
       url: `https://evm.testnet.kava.io`,
+      chainId: CHAIN_IDS.KAVAEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -660,6 +722,7 @@ const config: HardhatUserConfig = {
     },
     xtzevm: {
       url: `https://node.mainnet.etherlink.com`,
+      chainId: CHAIN_IDS.XTZEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -668,6 +731,7 @@ const config: HardhatUserConfig = {
     },
     txtzevm: {
       url: `https://node.shadownet.etherlink.com`,
+      chainId: CHAIN_IDS.XTZEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -676,6 +740,7 @@ const config: HardhatUserConfig = {
     },
     plume: {
       url: `https://rpc.plume.org/`,
+      chainId: CHAIN_IDS.PLUME,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -684,6 +749,7 @@ const config: HardhatUserConfig = {
     },
     tplume: {
       url: `https://testnet-rpc.plume.org/`,
+      chainId: CHAIN_IDS.PLUME_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -692,6 +758,7 @@ const config: HardhatUserConfig = {
     },
     flow: {
       url: `https://mainnet.evm.nodes.onflow.org/`,
+      chainId: CHAIN_IDS.FLOW,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -700,6 +767,7 @@ const config: HardhatUserConfig = {
     },
     tflow: {
       url: `https://testnet.evm.nodes.onflow.org/`,
+      chainId: CHAIN_IDS.FLOW_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -708,6 +776,7 @@ const config: HardhatUserConfig = {
     },
     tmegaeth: {
       url: 'https://carrot.megaeth.com/rpc',
+      chainId: CHAIN_IDS.MEGAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -716,6 +785,7 @@ const config: HardhatUserConfig = {
     },
     megaeth: {
       url: 'https://mainnet.megaeth.com/rpc',
+      chainId: CHAIN_IDS.MEGAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -728,6 +798,7 @@ const config: HardhatUserConfig = {
       // deploy scripts. Thirdweb's Hedera gateway handles this correctly.
       // Keep Hashio/HashScan for contract verification only.
       url: 'https://296.rpc.thirdweb.com',
+      chainId: CHAIN_IDS.HBAREVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -740,6 +811,7 @@ const config: HardhatUserConfig = {
       // deploy scripts. Thirdweb's Hedera gateway handles this correctly.
       // Keep Hashio/HashScan for contract verification only.
       url: 'https://295.rpc.thirdweb.com',
+      chainId: CHAIN_IDS.HBAREVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -748,6 +820,7 @@ const config: HardhatUserConfig = {
     },
     tfluenteth: {
       url: 'https://rpc.testnet.fluent.xyz/', // TODO: Replace with actual RPC URL from Fluent docs
+      chainId: CHAIN_IDS.FLUENTETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -756,6 +829,7 @@ const config: HardhatUserConfig = {
     },
     fluenteth: {
       url: 'https://rpc.fluent.xyz/',
+      chainId: CHAIN_IDS.FLUENTETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -764,6 +838,7 @@ const config: HardhatUserConfig = {
     },
     tmantle: {
       url: 'https://rpc.sepolia.mantle.xyz/',
+      chainId: CHAIN_IDS.MANTLE_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -772,6 +847,7 @@ const config: HardhatUserConfig = {
     },
     mantle: {
       url: 'https://rpc.mantle.xyz/',
+      chainId: CHAIN_IDS.MANTLE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -788,6 +864,7 @@ const config: HardhatUserConfig = {
     },
     tdogeos: {
       url: 'https://rpc.testnet.dogeos.com',
+      chainId: CHAIN_IDS.DOGEOS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -796,6 +873,7 @@ const config: HardhatUserConfig = {
     },
     jovayeth: {
       url: `https://rpc.jovay.io`,
+      chainId: CHAIN_IDS.JOVAYETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -804,6 +882,7 @@ const config: HardhatUserConfig = {
     },
     tjovayeth: {
       url: `https://api.zan.top/public/jovay-testnet`,
+      chainId: CHAIN_IDS.JOVAYETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -812,6 +891,7 @@ const config: HardhatUserConfig = {
     },
     okb: {
       url: `https://rpc.xlayer.tech`,
+      chainId: CHAIN_IDS.OKB,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -820,6 +900,7 @@ const config: HardhatUserConfig = {
     },
     tokb: {
       url: `https://testrpc.xlayer.tech/terigon`,
+      chainId: CHAIN_IDS.OKB_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -828,6 +909,7 @@ const config: HardhatUserConfig = {
     },
     ftm: {
       url: `https://rpcapi.fantom.network`,
+      chainId: CHAIN_IDS.ftm,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -836,6 +918,7 @@ const config: HardhatUserConfig = {
     },
     tzksyncera: {
       url: `https://sepolia.era.zksync.dev`,
+      chainId: CHAIN_IDS.ZKSYNCERA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -844,6 +927,7 @@ const config: HardhatUserConfig = {
     },
     zksyncera: {
       url: `https://mainnet.era.zksync.io`,
+      chainId: CHAIN_IDS.ZKSYNCERA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -852,6 +936,7 @@ const config: HardhatUserConfig = {
     },
     usdt0: {
       url: `https://rpc.stable.xyz/`,
+      chainId: CHAIN_IDS.USDT0,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -860,6 +945,7 @@ const config: HardhatUserConfig = {
     },
     tusdt0: {
       url: `https://rpc.testnet.stable.xyz/`,
+      chainId: CHAIN_IDS.USDT0_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -868,6 +954,7 @@ const config: HardhatUserConfig = {
     },
     tarcusdc: {
       url: 'https://rpc.testnet.arc.network',
+      chainId: CHAIN_IDS.ARCUSDC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -876,6 +963,7 @@ const config: HardhatUserConfig = {
     },
     arcusdc: {
       url: 'https://rpc.blockdaemon.mainnet.arc.io',
+      chainId: CHAIN_IDS.ARCUSDC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -884,6 +972,7 @@ const config: HardhatUserConfig = {
     },
     morpheth: {
       url: 'https://rpc-quicknode.morphl2.io/',
+      chainId: CHAIN_IDS.MORPHETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -892,6 +981,7 @@ const config: HardhatUserConfig = {
     },
     tmorpheth: {
       url: 'https://rpc-hoodi.morphl2.io',
+      chainId: CHAIN_IDS.MORPHETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -899,7 +989,8 @@ const config: HardhatUserConfig = {
       ]
     },
     chiliz: {
-      url: 'https://rpc.ankr.com/chiliz',
+      url: 'https://rpc.chiliz.com',
+      chainId: CHAIN_IDS.CHILIZ,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -908,6 +999,7 @@ const config: HardhatUserConfig = {
     },
     tchiliz: {
       url: 'https://spicy-rpc.chiliz.com',
+      chainId: CHAIN_IDS.CHILIZ_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -916,6 +1008,7 @@ const config: HardhatUserConfig = {
     },
     unichain: {
       url: 'https://mainnet.unichain.org',
+      chainId: CHAIN_IDS.UNICHAIN,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -924,6 +1017,7 @@ const config: HardhatUserConfig = {
     },
     tunichain: {
       url: 'https://sepolia.unichain.org',
+      chainId: CHAIN_IDS.UNICHAIN_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -932,6 +1026,7 @@ const config: HardhatUserConfig = {
     },
     hpp: {
       url: 'https://mainnet.hpp.io',
+      chainId: CHAIN_IDS.HPP,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -940,6 +1035,7 @@ const config: HardhatUserConfig = {
     },
     thpp: {
       url: 'https://sepolia.hpp.io',
+      chainId: CHAIN_IDS.HPP_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -957,6 +1053,7 @@ const config: HardhatUserConfig = {
     },
     thoodeth: {
       url: 'https://rpc.testnet.chain.robinhood.com',
+      chainId: CHAIN_IDS.HOODETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -965,6 +1062,7 @@ const config: HardhatUserConfig = {
     },
     inketh: {
       url: 'https://rpc-gel.inkonchain.com',
+      chainId: CHAIN_IDS.INKETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -973,6 +1071,7 @@ const config: HardhatUserConfig = {
     },
     tinketh: {
       url: 'https://rpc-qnd-sepolia.inkonchain.com',
+      chainId: CHAIN_IDS.INKETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -981,6 +1080,7 @@ const config: HardhatUserConfig = {
     },
     h: {
       url: 'https://humanity-mainnet.g.alchemy.com/public',
+      chainId: CHAIN_IDS.H,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -989,6 +1089,7 @@ const config: HardhatUserConfig = {
     },
     th: {
       url: 'https://humanity-testnet.g.alchemy.com/public',
+      chainId: CHAIN_IDS.H_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -997,6 +1098,7 @@ const config: HardhatUserConfig = {
     },
     hemieth: {
       url: `https://rpc.hemi.network/rpc`,
+      chainId: CHAIN_IDS.HEMIETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1005,6 +1107,7 @@ const config: HardhatUserConfig = {
     },
     themieth: {
       url: `https://testnet.rpc.hemi.network/rpc`,
+      chainId: CHAIN_IDS.HEMIETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1013,6 +1116,7 @@ const config: HardhatUserConfig = {
     },
     abstracteth: {
       url: `https://api.mainnet.abs.xyz`,
+      chainId: CHAIN_IDS.ABSTRACTETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1021,6 +1125,7 @@ const config: HardhatUserConfig = {
     },
     tabstracteth: {
       url: `https://api.testnet.abs.xyz`,
+      chainId: CHAIN_IDS.ABSTRACTETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1029,6 +1134,7 @@ const config: HardhatUserConfig = {
     },
     katanaeth: {
       url: 'https://rpc.katanarpc.com',
+      chainId: CHAIN_IDS.KATANAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1037,6 +1143,7 @@ const config: HardhatUserConfig = {
     },
     tkatanaeth: {
       url: 'https://rpc-bokuto.katanarpc.com',
+      chainId: CHAIN_IDS.KATANAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1045,6 +1152,7 @@ const config: HardhatUserConfig = {
     },
     tbobaeth: {
       url: 'https://sepolia.boba.network',
+      chainId: CHAIN_IDS.BOBAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1052,7 +1160,8 @@ const config: HardhatUserConfig = {
       ]
     },
     bobaeth: {
-      url: 'https://boba-ethereum.gateway.tenderly.co',
+      url: 'https://mainnet.boba.network',
+      chainId: CHAIN_IDS.BOBAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
         `${PLACEHOLDER_KEY}`,
@@ -1333,7 +1442,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'bepoliaBera',
-        chainId: CHAIN_IDS.BERA,
+        chainId: CHAIN_IDS.BERA_TESTNET,
         urls: {
           apiURL:
             'https://api.routescan.io/v2/network/testnet/evm/80069/etherscan/api',
@@ -1342,7 +1451,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: 'bera',
-        chainId: CHAIN_IDS.BERA_TESTNET,
+        chainId: CHAIN_IDS.BERA,
         urls: {
           apiURL:
             'https://api.routescan.io/v2/network/mainnet/evm/80094/etherscan/api',
