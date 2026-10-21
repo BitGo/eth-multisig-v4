@@ -13,14 +13,14 @@
 # token to carry that exact environment claim, so the review gate is
 # enforced on both sides, not just by GitHub's UI.
 #
-# dry_run (default true) writes one low-sensitivity field (the ARCUSDC
-# explorer API key) to the same Vault path instead of the 7 real deployer
+# dry_run (default true) writes one low-sensitivity field (the ZKSYNC
+# explorer API key) to the same Vault path instead of the real deployer
 # keys, so the whole chain -- environment approval, OIDC exchange, Vault
 # write -- can be rehearsed with zero exposure of production key
 # material. KV v2 writes replace the entire document, so the real run
 # that follows simply supersedes the dry-run value with a new version.
-# Dry-run steps never reference the 7 real secrets, so they never enter
-# job memory during a rehearsal. Must be set to false explicitly to
+# Dry-run steps never reference the real deployer secrets, so they never
+# enter job memory during a rehearsal. Must be set to false explicitly to
 # perform the real migration.
 name: One-time Vault migration (deployer keys)
 
@@ -28,7 +28,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Write a dummy field (ARCUSDC explorer API key) instead of the real 7 deployer keys"
+        description: "Write a dummy field (ZKSYNC_EXPLORER_API_KEY) instead of the real deployer keys"
         type: boolean
         default: true
 
@@ -38,22 +38,23 @@ permissions:
 
 jobs:
   migrate-deployer-keys-to-vault:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: vault-migration-oneoff
     steps:
       - name: "[dry run] Validate dummy secret is present"
         if: inputs.dry_run
         env:
-          ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
+          ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
         run: |
           set -euo pipefail
-          if [ -z "$ARCUSDC_EXPLORER_API_KEY" ]; then
-            echo "::error ::ARCUSDC_EXPLORER_API_KEY is empty, aborting before requesting any Vault token"
+          if [ -z "$ZKSYNC_EXPLORER_API_KEY" ]; then
+            echo "::error ::ZKSYNC_EXPLORER_API_KEY is empty, aborting before requesting any Vault token"
             exit 1
           fi
           echo "Dummy secret present. This is a dry run -- no deployer keys will be touched."
 
-      - name: Validate all 7 secrets are present
+      - name: Validate deployer secrets are present
         if: "!inputs.dry_run"
         env:
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
@@ -70,57 +71,65 @@ jobs:
                       PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT \
                       PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT \
                       PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP \
-                      PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT \
-                      HYPE_EVM_PRIVATE_KEY; do
+                      PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT; do
             if [ -z "${!name}" ]; then
               echo "::error ::$name is empty, aborting before requesting any Vault token"
               exit 1
             fi
           done
-          echo "All 7 secrets present."
+          if [ -z "${HYPE_EVM_PRIVATE_KEY:-}" ]; then
+            echo "::warning ::HYPE_EVM_PRIVATE_KEY is not set in GitHub Actions secrets; writing empty string for HYPE_EVM_PRIVATE_KEY"
+          fi
+          echo "All 6 required deployer secrets present."
 
       - name: Authenticate to Vault
         id: vault-auth
-        uses: hashicorp/vault-action@4c06c5ccf5c0761b6029f56cfb1dcf5565918a3b # v3.4.0
+        uses: hashicorp/vault-action@892a26828f195e65540a40b4768ae4571f51ebfc # v4.0.0
         with:
           url: https://vault.bitgo-int.com
+          extraHeaders: |
+            CF-Access-Client-Id: ${{ vars.VAULT_CF_ACCESS_CLIENT_ID }}
+            CF-Access-Client-Secret: ${{ secrets.VAULT_CF_ACCESS_CLIENT_SECRET }}
           path: github/jwt
           method: jwt
           role: eth-multisig-v4-vault-migration
-          jwtGithubAudience: https://github.com/BitGo
-          exportToken: true
+          exportToken: false
+          exportEnv: false
 
       - name: "[dry run] Write dummy field to Vault"
         if: inputs.dry_run
         env:
           VAULT_ADDR: https://vault.bitgo-int.com
           VAULT_TOKEN: ${{ steps.vault-auth.outputs.token }}
-          ARCUSDC_EXPLORER_API_KEY: ${{ secrets.ARCUSDC_EXPLORER_API_KEY }}
+          VAULT_CF_ACCESS_CLIENT_ID: ${{ vars.VAULT_CF_ACCESS_CLIENT_ID }}
+          VAULT_CF_ACCESS_CLIENT_SECRET: ${{ secrets.VAULT_CF_ACCESS_CLIENT_SECRET }}
+          ZKSYNC_EXPLORER_API_KEY: ${{ secrets.ZKSYNC_EXPLORER_API_KEY }}
         run: |
           set -euo pipefail
 
-          # Dummy value only -- never one of the 7 real deployer keys.
+          # Dummy value only -- never one of the real deployer keys.
           # This write is superseded as soon as the real run below writes
           # all 7 fields, since Vault KV v2 writes replace the whole
           # document rather than merging into it.
-          jq -n \
-            --arg smoke_test "$ARCUSDC_EXPLORER_API_KEY" \
-            '{data: {smoke_test: $smoke_test}}' \
+          jq -n '{data: {smoke_test: env.ZKSYNC_EXPLORER_API_KEY}}' \
           | curl --fail --silent --show-error \
-              --header "X-Vault-Token: ${VAULT_TOKEN}" \
+              --header @<(printf 'X-Vault-Token: %s\nCF-Access-Client-Id: %s\nCF-Access-Client-Secret: %s\nContent-Type: application/json\n' \
+                "${VAULT_TOKEN}" "${VAULT_CF_ACCESS_CLIENT_ID}" "${VAULT_CF_ACCESS_CLIENT_SECRET}") \
               --request POST \
               --data @- \
-              "${VAULT_ADDR}/v1/github/secret/data/eth-multisig-v4-private/deployer-key" \
+              "${VAULT_ADDR}/v1/github/secret/data/protected/eth-multisig-v4-private/deployer-key" \
           | jq '{version: .data.version, created_time: .data.created_time}'
 
-          echo "Dry run: wrote a dummy field to eth-multisig-v4-private/deployer-key."
-          echo "Re-run with dry_run=false to write the real 7 deployer keys."
+          echo "Dry run: wrote a dummy field to protected/eth-multisig-v4-private/deployer-key."
+          echo "Re-run with dry_run=false to write the real deployer keys."
 
       - name: Write deployer keys to Vault
         if: "!inputs.dry_run"
         env:
           VAULT_ADDR: https://vault.bitgo-int.com
           VAULT_TOKEN: ${{ steps.vault-auth.outputs.token }}
+          VAULT_CF_ACCESS_CLIENT_ID: ${{ vars.VAULT_CF_ACCESS_CLIENT_ID }}
+          VAULT_CF_ACCESS_CLIENT_SECRET: ${{ secrets.VAULT_CF_ACCESS_CLIENT_SECRET }}
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
           TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
           PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT }}
@@ -131,33 +140,29 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Secrets are only ever referenced via env vars here, never as
-          # CLI arguments or echoed to the log, and the response is piped
-          # straight into a filter that keeps version metadata only. Vault
-          # KV v2's write response never echoes back submitted data, so
-          # there is nothing to redact even if this were printed in full.
-          jq -n \
-            --arg mainnet "$MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT" \
-            --arg testnet "$TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT" \
-            --arg v1_wallet "$PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT" \
-            --arg v4 "$PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT" \
-            --arg v4_backup "$PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP" \
-            --arg batcher "$PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT" \
-            --arg hype_evm "$HYPE_EVM_PRIVATE_KEY" \
-            '{data: {
-              MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: $mainnet,
-              TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: $testnet,
-              PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT: $v1_wallet,
-              PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT: $v4,
-              PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP: $v4_backup,
-              PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: $batcher,
-              HYPE_EVM_PRIVATE_KEY: $hype_evm
-            }}' \
+          # Secrets are read by jq directly from its process environment via
+          # env.*, never expanded into CLI arguments or echoed to the log,
+          # and the response is piped straight into a filter that keeps
+          # version metadata only. Vault KV v2's write response never echoes
+          # back submitted data, so there is nothing to redact even if this
+          # were printed in full.
+          jq -n '{
+            data: {
+              MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: env.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
+              TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: env.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT,
+              PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT: env.PRIVATE_KEY_FOR_V1_WALLET_CONTRACT_DEPLOYMENT,
+              PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT: env.PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT,
+              PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP: env.PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT_BACKUP,
+              PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT: env.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT,
+              HYPE_EVM_PRIVATE_KEY: (env.HYPE_EVM_PRIVATE_KEY // "")
+            }
+          }' \
           | curl --fail --silent --show-error \
-              --header "X-Vault-Token: ${VAULT_TOKEN}" \
+              --header @<(printf 'X-Vault-Token: %s\nCF-Access-Client-Id: %s\nCF-Access-Client-Secret: %s\nContent-Type: application/json\n' \
+                "${VAULT_TOKEN}" "${VAULT_CF_ACCESS_CLIENT_ID}" "${VAULT_CF_ACCESS_CLIENT_SECRET}") \
               --request POST \
               --data @- \
-              "${VAULT_ADDR}/v1/github/secret/data/eth-multisig-v4-private/deployer-key" \
+              "${VAULT_ADDR}/v1/github/secret/data/protected/eth-multisig-v4-private/deployer-key" \
           | jq '{version: .data.version, created_time: .data.created_time}'
 
-          echo "Wrote eth-multisig-v4-private/deployer-key. Version shown above, not the key material."
+          echo "Wrote protected/eth-multisig-v4-private/deployer-key. Version shown above, not the key material."
