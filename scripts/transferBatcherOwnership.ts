@@ -1,6 +1,7 @@
+import { ContractTransactionResponse } from 'ethers';
 import { ethers } from 'hardhat';
-import { getChainConfig } from './chainConfig';
-import { logger } from '../deployUtils';
+import { resolveGasOverrides } from '../config/batcherDeployGasConfig';
+import { applyBalanceSafetyBuffer, logger } from '../deployUtils';
 
 const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
 
@@ -29,6 +30,18 @@ async function main() {
       'BATCHER_ENVIRONMENT env var is required and must be "testnet" or "mainnet"'
     );
   }
+
+  // Environment/network consistency (repo convention: NETWORK names starting
+  // with 't' are testnets — same rule as deploy_batcher_contract.yml). A
+  // testnet network combined with the mainnet environment would transfer
+  // ownership to the wrong (mainnet) owner secret.
+  const networkName = (process.env.NETWORK || '').trim();
+  if (networkName.startsWith('t') && environment === 'mainnet') {
+    throw new ScriptError(
+      `NETWORK '${networkName}' is a testnet network but BATCHER_ENVIRONMENT is 'mainnet'; refusing to use the mainnet owner secret`
+    );
+  }
+
   const ownerSecretName = `BATCHER_CONTRACT_OWNER_${environment.toUpperCase()}`;
 
   const newOwnerRaw = (
@@ -69,11 +82,10 @@ async function main() {
     );
   }
   const ownerSigner = new ethers.Wallet(ownerKey, ethers.provider);
+  const ownerAddress = await ownerSigner.getAddress();
 
-  // Network and gas overrides
+  // Network
   const { chainId } = await ethers.provider.getNetwork();
-  const chainConfig = await getChainConfig(Number(chainId));
-  const gasOverrides = chainConfig?.gasParams ?? {};
 
   // --- 3. On-chain checks ---
   const code = await ethers.provider.getCode(batcherAddress);
@@ -90,8 +102,15 @@ async function main() {
   );
 
   // Verify current ownership (Ownable2Step)
-  const owner: string = await batcher.owner();
-  if (owner.toLowerCase() !== (await ownerSigner.getAddress()).toLowerCase()) {
+  let owner: string;
+  try {
+    owner = await batcher.owner();
+  } catch {
+    throw new ScriptError(
+      'Contract at BATCHER_ADDRESS does not respond to owner(); verify the address is a deployed contract on this network'
+    );
+  }
+  if (owner.toLowerCase() !== ownerAddress.toLowerCase()) {
     throw new ScriptError(
       'Signer is not the current owner of the Batcher contract'
     );
@@ -102,16 +121,115 @@ async function main() {
   // Idempotency awareness: a transfer to the new owner may already be pending
   // from a previous run. Re-sending is harmless — transferOwnership replaces
   // the pending transfer — but warn so the operator knows.
-  const currentPendingOwner: string = await batcher.pendingOwner();
+  let currentPendingOwner: string;
+  try {
+    currentPendingOwner = await batcher.pendingOwner();
+  } catch {
+    throw new ScriptError(
+      'Contract at BATCHER_ADDRESS does not implement Ownable2Step (pendingOwner); this script requires an Ownable2Step Batcher'
+    );
+  }
   if (currentPendingOwner.toLowerCase() === newOwner.toLowerCase()) {
     logger.warn(
       'A pending ownership transfer to the new owner is already active; re-sending transferOwnership (replaces it)'
     );
   }
 
-  // --- 4. Initiate ownership transfer (step 1 of Ownable2Step) ---
-  const tx = await batcher.transferOwnership(newOwner, { ...gasOverrides });
-  await tx.wait();
+  // --- 4. Gas resolution (per-chain strategies from batcherDeployGasConfig) ---
+  // Reuse the deployment gas config: per-chain fee-model quirks (eip1559-fees /
+  // manual-gas / forceLegacy / block-gas caps / min priority fee) are already
+  // encoded there. This deliberately does NOT reuse the deployment gasParams,
+  // whose deployment-scale gasLimit caused the original failure (5M gasLimit
+  // multiplied by maxFeePerGas exceeded the signer's balance and the node
+  // rejected the transaction).
+  const feeData = await ethers.provider.getFeeData();
+  const transferCalldata = batcher.interface.encodeFunctionData(
+    'transferOwnership',
+    [newOwner]
+  );
+  const gasOverrides = await resolveGasOverrides(
+    Number(chainId),
+    feeData,
+    ownerSigner,
+    { to: batcherAddress, data: transferCalldata },
+    ownerAddress
+  );
+  if (gasOverrides) {
+    logger.info(
+      'Gas strategy overrides applied (strategy resolved by chain config)'
+    );
+  } else {
+    logger.info('Gas overrides: none (Hardhat auto-detection)');
+  }
+
+  // --- 5. Pre-flight gas estimate + balance check (fail fast, sanitized) ---
+  // Plain estimate without fee params — accepted by all nodes regardless of
+  // fee model (same technique as the manual-gas strategy in
+  // batcherDeployGasConfig.ts).
+  let estimatedGas: bigint;
+  try {
+    estimatedGas = await ownerSigner.estimateGas({
+      from: ownerAddress,
+      to: batcherAddress,
+      data: transferCalldata
+    });
+  } catch {
+    throw new ScriptError(
+      'Gas estimation failed: transferOwnership would revert on-chain. Verify the signer is the current owner and the target is a Batcher'
+    );
+  }
+
+  // Worst-case up-front requirement the node enforces: gasLimit * fee cap.
+  const effectiveGasPrice =
+    gasOverrides?.gasPrice ??
+    gasOverrides?.maxFeePerGas ??
+    feeData.maxFeePerGas ?? // when overrides are undefined ethers fills maxFeePerGas itself
+    feeData.gasPrice ??
+    1_000_000_000n;
+  const gasLimitForCost =
+    gasOverrides?.gasLimit != null
+      ? BigInt(gasOverrides.gasLimit)
+      : estimatedGas;
+  // 1.5x buffer
+  const requiredCost = applyBalanceSafetyBuffer(
+    gasLimitForCost * effectiveGasPrice
+  );
+  const signerBalance = await ethers.provider.getBalance(ownerAddress);
+  if (signerBalance < requiredCost) {
+    throw new ScriptError(
+      `Insufficient signer balance for gas: required ~${ethers.formatEther(
+        requiredCost
+      )} (incl. 1.5x buffer), have ${ethers.formatEther(
+        signerBalance
+      )}. Fund the signer account and re-run`
+    );
+  }
+  logger.info('Signer balance is sufficient for the transfer (1.5x buffered)');
+
+  // --- 6. Initiate ownership transfer (step 1 of Ownable2Step) ---
+  let tx: ContractTransactionResponse;
+  try {
+    tx = await batcher.transferOwnership(newOwner, gasOverrides ?? {});
+  } catch (err) {
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      err.code === 'INSUFFICIENT_FUNDS'
+    ) {
+      throw new ScriptError(
+        'Signer balance is insufficient for gas (node rejected the transaction); fund the signer account and re-run'
+      );
+    }
+    throw err;
+  }
+  try {
+    await tx.wait();
+  } catch {
+    throw new ScriptError(
+      'The transferOwnership transaction failed to mine (reverted or dropped). Check the latest outgoing transactions of the signer address in the block explorer before re-running'
+    );
+  }
   const pendingOwner: string = await batcher.pendingOwner();
   if (pendingOwner.toLowerCase() !== newOwner.toLowerCase()) {
     throw new ScriptError(
