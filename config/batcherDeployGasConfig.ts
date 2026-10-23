@@ -1,4 +1,4 @@
-import { FeeData } from 'ethers';
+import { FeeData, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import { CHAIN_IDS } from './chainIds';
 
@@ -89,19 +89,21 @@ export function getChainGasConfig(chainId: number): ChainGasConfig {
 }
 
 /**
- * Resolves the final TxOverrides for Batcher.deploy() based on the chain's gas strategy.
+ * Resolves the final TxOverrides for a Batcher transaction (deploy or contract
+ * call) based on the chain's gas strategy.
  *
  * @param chainId    - Current network chain ID
  * @param feeData    - Result of provider.getFeeData()
- * @param deployer   - The signer that will send the deploy tx
- * @param deployTxReq - The unsigned deploy transaction (from ContractFactory.getDeployTransaction)
- * @param fromAddress - The deployer's address string
+ * @param deployer   - The signer that will send the transaction
+ * @param deployTxReq - The unsigned transaction ({ data } for deploys;
+ *   { data, to } for contract calls)
+ * @param fromAddress - The signer's address string
  */
 export async function resolveGasOverrides(
   chainId: number,
   feeData: FeeData,
-  deployer: Awaited<ReturnType<typeof ethers.getSigner>>,
-  deployTxReq: { data?: string | null },
+  deployer: Signer,
+  deployTxReq: { data?: string | null; to?: string },
   fromAddress: string
 ): Promise<TxOverrides | undefined> {
   const config = getChainGasConfig(chainId);
