@@ -10,8 +10,9 @@ on:
           - testnet
           - mainnet
       network:
-        description: 'Hardhat network name from hardhat.config.ts (e.g., tstt, stt)'
-        required: true
+        description: 'Optional: run only this network (must be a supported chain for the environment). Leave empty to run all supported chains for the environment.'
+        required: false
+        default: ''
         type: string
       batcher_address:
         description: 'Batcher contract address (required)'
@@ -30,12 +31,11 @@ jobs:
           printf '%s\n' \
             '### Transfer Batcher Ownership — Approval Summary' \
             '' \
-            "- Environment: $ENVIRONMENT" \
-            "- Network: $NETWORK" \
-            "- Batcher contract: $BATCHER_ADDRESS" \
+            "- Network filter: ${NETWORK:-all supported chains for the environment}" \
+            "- Batcher contract (applied on every chain): $BATCHER_ADDRESS" \
             '' \
             'Actions to be performed after approval:' \
-            '- Run: npm run transfer-batcher-ownership -- "$NETWORK"' \
+            '- Run: npm run transfer-batcher-ownership (sweeps all supported chains for the environment, or only the network filter when set)' \
             '- Initiate the ownership transfer on the Batcher contract (step 1 of two-step Ownable2Step)' \
             '- The new owner accepts separately on-chain (acceptOwnership); no new-owner key is used here' \
             '' \
@@ -60,7 +60,7 @@ jobs:
       - name: Run ownership transfer script
         # Inputs are passed via step env, never interpolated into the shell
         # source (command injection via workflow_dispatch inputs).
-        run: npm run transfer-batcher-ownership -- "$NETWORK"
+        run: npm run transfer-batcher-ownership
         env:
           BATCHER_ADDRESS: ${{ inputs.batcher_address }}
           BATCHER_ENVIRONMENT: ${{ inputs.environment }}
