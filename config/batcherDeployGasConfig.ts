@@ -1,5 +1,4 @@
 import { FeeData, Signer } from 'ethers';
-import { ethers } from 'hardhat';
 import { CHAIN_IDS } from './chainIds';
 
 /** Transaction override fields accepted by ethers v6 ContractFactory.deploy(). */
@@ -155,8 +154,10 @@ export async function resolveGasOverrides(
   const estWithBuffer = (est * (100n + gasBufferPct)) / 100n;
   let chosenGasLimit = Number(estWithBuffer);
 
-  if (config.capToBlockGasLimit) {
-    const latestBlock = await ethers.provider.getBlock('latest');
+  if (config.capToBlockGasLimit && deployer.provider) {
+    // Use the SIGNER's provider (not the global hardhat provider): the caller may be
+    // connected to a different chain than the hardhat-selected network.
+    const latestBlock = await deployer.provider.getBlock('latest');
     if (latestBlock?.gasLimit) {
       const blockLimit = Number(latestBlock.gasLimit);
       chosenGasLimit = Math.min(chosenGasLimit, Math.floor(blockLimit * 0.95));
