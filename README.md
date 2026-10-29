@@ -5,7 +5,7 @@
 Multi-sig contract suitable for use as a 2-of-3 multisig wallet.
 
 The core functionality of the wallet is implemented in the [WalletSimple](contracts/WalletSimple.sol) contract. It is initialized with 3 signer addresses, two of which must participate in order to execute a transaction from the wallet.
-Auxillary contracts called [Forwarders](contracts/Forwarder.sol) can be deployed with a WalletSimple contract initialized as its "parent". Any funds that the forwarder receives will be sent on back to the parent wallet. This enables omnibus-style wallets to create many addresses that are all controlled by the same wallet.
+Auxiliary contracts called [Forwarders](contracts/Forwarder.sol) can be deployed with a WalletSimple contract initialized as its "parent". Any funds that the forwarder receives will be sent on back to the parent wallet. This enables omnibus-style wallets to create many addresses that are all controlled by the same wallet.
 
 New forwarder contracts (contracts/ForwarderV4.sol) can be deployed and initialized with a parent address and fee address. Parent address will be the single sig base address of the wallet. Fee address will be the gas tank address of the wallet. Both parent address and fee address will be allowed to invoke methods of the contract, but any funds that the forwarder receives will be sent on back to the parent address. This enables omnibus-style wallets to create many addresses that are all controlled by the same wallet.
 
