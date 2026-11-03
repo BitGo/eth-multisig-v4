@@ -121,7 +121,7 @@ const config: HardhatUserConfig = {
       ]
     },
     matic: {
-      url: `https://polygon-rpc.com/`,
+      url: `https://polygon-bor-rpc.publicnode.com`,
       chainId: CHAIN_IDS.POLYGON_MAINNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
