@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import fs from 'fs';
 import sinon from 'sinon';
-import { ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { getCreateAddress, BaseContract } from 'ethers';
 import {
   loadOutput,
@@ -94,27 +94,90 @@ describe('deployUtils (using Hardhat)', function () {
     expect(deployedAddress).to.equal(contractAddress);
   });
 
-  it('skips deployment if nonce is higher', async () => {
+  it('rejects when nonce has advanced past expected and no code at predicted address (INFOSEC-617)', async () => {
     const currentNonce = await ethers.provider.getTransactionCount(
       deployerAddress
     );
-    const expectedNonce = currentNonce - 1; // to simulate nonce already past
+    const expectedNonce = currentNonce - 1; // simulate nonce already past
+    sandbox.stub(ethers.provider, 'getCode').resolves('0x');
+    const deployFnLocal = sinon.fake.resolves('0xdummy');
+
+    let caught: Error | null = null;
+    try {
+      await deployIfNeededAtNonce(
+        undefined,
+        expectedNonce,
+        deployerAddress,
+        'WalletSimple',
+        deployFnLocal
+      );
+    } catch (e) {
+      caught = e as Error;
+    }
+
+    expect(caught, 'expected deployIfNeededAtNonce to throw').to.not.be.null;
+    expect(caught!.message).to.match(
+      /has advanced past expected.*no code was found at predicted address/
+    );
+    expect(deployFnLocal.called).to.be.false;
+  });
+
+  it('rejects when code at predicted address does not match the artifact (INFOSEC-617)', async () => {
+    const currentNonce = await ethers.provider.getTransactionCount(
+      deployerAddress
+    );
+    const onChainCode = '0x60016000526001601ff3';
+    const artifactBytecode = '0x60006000526000601ff3';
+    sandbox.stub(ethers.provider, 'getCode').resolves(onChainCode);
+    sandbox
+      .stub(hre.artifacts, 'readArtifact')
+      .resolves({ deployedBytecode: artifactBytecode } as never);
+
+    const deployFnLocal = sinon.fake.resolves('0xdummy');
+    let caught: Error | null = null;
+    try {
+      await deployIfNeededAtNonce(
+        undefined,
+        currentNonce,
+        deployerAddress,
+        'WalletSimple',
+        deployFnLocal
+      );
+    } catch (e) {
+      caught = e as Error;
+    }
+
+    expect(caught, 'expected deployIfNeededAtNonce to throw').to.not.be.null;
+    expect(caught!.message).to.match(/Bytecode mismatch/);
+    expect(deployFnLocal.called).to.be.false;
+  });
+
+  it('returns predicted address without deploying when on-chain code matches the artifact (INFOSEC-617)', async () => {
+    const currentNonce = await ethers.provider.getTransactionCount(
+      deployerAddress
+    );
+    const sharedBytecode = '0x60016000526001601ff3';
+    sandbox.stub(ethers.provider, 'getCode').resolves(sharedBytecode);
+    sandbox
+      .stub(hre.artifacts, 'readArtifact')
+      .resolves({ deployedBytecode: sharedBytecode } as never);
+
+    const deployFnLocal = sinon.fake.resolves('0xdummy');
+    const predicted = getCreateAddress({
+      from: deployerAddress,
+      nonce: currentNonce
+    });
 
     const result = await deployIfNeededAtNonce(
       undefined,
-      expectedNonce,
+      currentNonce,
       deployerAddress,
       'WalletSimple',
-      deployFn
+      deployFnLocal
     );
 
-    const predicted = getCreateAddress({
-      from: deployerAddress,
-      nonce: expectedNonce
-    });
-
     expect(result).to.equal(predicted);
-    expect(deployFn.called).to.be.false;
+    expect(deployFnLocal.called).to.be.false;
   });
 
   describe('waitAndVerify', function () {
