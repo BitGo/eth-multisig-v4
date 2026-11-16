@@ -4,5 +4,13 @@
     "github>BitGo/gha-renovate-bot//presets/default",
     "github>BitGo/gha-renovate-bot//presets/nodejs-security"
   ],
-  "baseBranches": ["master"]
+  "baseBranches": ["master"],
+  "packageRules": [
+    {
+      "description": "Re-enable low-risk npm updates that the nodejs-security preset disables",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "enabled": true
+    }
+  ]
 }

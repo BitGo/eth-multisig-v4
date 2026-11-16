@@ -9,11 +9,11 @@ coverage
 .node-xml*
 build
 coverage.json
-yarn-error.log
 .env
 output.json
 
 #Hardhat files
 artifacts
 cache
+typechain
 typechain-types
