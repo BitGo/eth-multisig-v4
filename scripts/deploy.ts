@@ -194,7 +194,7 @@ async function main() {
   );
 
   // Deploy Wallet Factory
-  await deployIfNeededAtNonce(
+  const walletFactoryAddress = await deployIfNeededAtNonce(
     output.walletFactory,
     NONCE.WALLET_FACTORY,
     deployerAddress,
@@ -220,6 +220,18 @@ async function main() {
     },
     gasOverrides
   );
+  const walletFactoryContract = await ethers.getContractAt(
+    chainConfig.walletFactoryContractName,
+    walletFactoryAddress
+  );
+  const walletFactoryImpl: string = await walletFactoryContract.getFunction(
+    'implementationAddress'
+  )();
+  if (walletFactoryImpl.toLowerCase() !== walletAddress.toLowerCase()) {
+    throw new Error(
+      `${chainConfig.walletFactoryContractName} at ${walletFactoryAddress} has implementationAddress=${walletFactoryImpl} but expected ${walletAddress}`
+    );
+  }
 
   // Deploy Forwarder
   const forwarderAddress = await deployIfNeededAtNonce(
@@ -245,7 +257,7 @@ async function main() {
   );
 
   // Deploy Forwarder Factory
-  await deployIfNeededAtNonce(
+  const forwarderFactoryAddress = await deployIfNeededAtNonce(
     output.forwarderFactory,
     NONCE.FORWARDER_FACTORY,
     deployerAddress,
@@ -274,6 +286,17 @@ async function main() {
     },
     gasOverrides
   );
+  const forwarderFactoryContract = await ethers.getContractAt(
+    chainConfig.forwarderFactoryContractName,
+    forwarderFactoryAddress
+  );
+  const forwarderFactoryImpl: string =
+    await forwarderFactoryContract.getFunction('implementationAddress')();
+  if (forwarderFactoryImpl.toLowerCase() !== forwarderAddress.toLowerCase()) {
+    throw new Error(
+      `${chainConfig.forwarderFactoryContractName} at ${forwarderFactoryAddress} has implementationAddress=${forwarderFactoryImpl} but expected ${forwarderAddress}`
+    );
+  }
 
   console.log(`🎉 All contracts deployed and verified!`);
 }
