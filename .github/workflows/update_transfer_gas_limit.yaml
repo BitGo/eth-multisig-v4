@@ -41,7 +41,7 @@ jobs:
           Actions to be performed after approval:
           - Run: npm run update-gas-limit -- ${{ inputs.network }}
           - Set transferGasLimit on the Batcher contract at the above address
-          - Use signer index 2 (same as deploy script)
+          - Use the PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT secret (Batcher owner key)
 
           > Approve only if the address and limit are correct.
           EOF

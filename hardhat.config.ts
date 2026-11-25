@@ -53,9 +53,6 @@ const {
   DOGEOS_EXPLORER_API_KEY
 } = process.env;
 
-const PLACEHOLDER_KEY: string =
-  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-
 const ETHERSCAN_V2_URL = 'https://api.etherscan.io/v2/api?chainid=';
 
 const config: HardhatUserConfig = {
@@ -98,7 +95,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ETH_MAINNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -107,7 +103,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HOODI,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -116,7 +111,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SEPETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -125,7 +119,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.POLYGON_MAINNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -135,7 +128,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.POLYGON_AMOY,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -144,7 +136,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BSC_MAINNET,
       accounts: [
         `${MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -153,7 +144,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BSC_TESTNET,
       accounts: [
         `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -162,7 +152,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.opBNB_TESTNET,
       accounts: [
         `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -180,7 +169,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ARBITRUM_SEPOLIA,
       accounts: [
         `${TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -221,7 +209,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BASE_SEPOLIA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -230,7 +217,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BASE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -239,7 +225,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BERA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -248,7 +233,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BERA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -257,7 +241,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.OAS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -266,7 +249,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.OAS,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -275,7 +257,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CORE_DAO_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -284,7 +265,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CORE_DAO,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -293,7 +273,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.WORLD_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -302,7 +281,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.WORLD,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -311,7 +289,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SONEIUM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -320,7 +297,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SONEIUM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -329,7 +305,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SOMNIA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -338,7 +313,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SOMNIA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -347,7 +321,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MONAD_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -356,7 +329,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MONAD,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -365,7 +337,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.FLARE_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -374,7 +345,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.FLARE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -383,7 +353,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SONGBIRD_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -392,7 +361,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SONGBIRD,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -401,7 +369,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.AVALANCHE_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -410,7 +377,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.AVALANCHE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -419,7 +385,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.XDC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -428,7 +393,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.XDC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -437,7 +401,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.WEMIX_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -446,7 +409,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.WEMIX,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -455,7 +417,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CELO,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -464,7 +425,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CELO_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -473,7 +433,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ETC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -482,7 +441,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ETC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -491,7 +449,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CREDITCOIN_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -500,7 +457,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CREDITCOIN,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -509,7 +465,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.APECHAIN_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -518,7 +473,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.APECHAIN,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -527,7 +481,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.PHAROS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -536,7 +489,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.PHAROS,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -545,7 +497,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HYPEEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -554,7 +505,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HYPEEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -563,7 +513,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.IP,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -572,7 +521,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.IP_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -581,7 +529,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SONIC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -590,7 +537,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SONIC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -599,7 +545,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SEIEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -608,7 +553,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.SEIEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -617,7 +561,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.KAIA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -626,7 +569,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.KAIA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -635,7 +577,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.LINEAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -644,7 +585,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.LINEAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -653,7 +593,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.OG_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -662,7 +601,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.OG,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -671,7 +609,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.IRYS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -680,7 +617,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.IRYS,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -689,7 +625,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.PLASMA_MAINNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -698,7 +633,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.PLASMA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -707,7 +641,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.KAVAEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -716,7 +649,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.KAVAEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -725,7 +657,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.XTZEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -734,7 +665,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.XTZEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -743,7 +673,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.PLUME,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -752,7 +681,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.PLUME_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -761,7 +689,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.FLOW,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -770,7 +697,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.FLOW_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -779,7 +705,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MEGAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -788,7 +713,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MEGAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -801,7 +725,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HBAREVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -814,7 +737,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HBAREVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -823,7 +745,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.FLUENTETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -832,7 +753,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.FLUENTETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -841,7 +761,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MANTLE_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -850,7 +769,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MANTLE,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -858,7 +776,6 @@ const config: HardhatUserConfig = {
       url: 'https://rpc.testnet.dogeos.com', //TODO: WIN-8075: Replace with mainnet RPC when available
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -867,7 +784,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.DOGEOS_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -876,7 +792,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.JOVAYETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -885,7 +800,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.JOVAYETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -894,7 +808,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.OKB,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -903,7 +816,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.OKB_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -912,7 +824,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ftm,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -921,7 +832,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ZKSYNCERA_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -930,7 +840,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ZKSYNCERA,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -939,7 +848,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.USDT0,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -948,7 +856,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.USDT0_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -957,7 +864,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ARCUSDC_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -966,7 +872,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ARCUSDC,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -975,7 +880,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MORPHETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -984,7 +888,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.MORPHETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -993,7 +896,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CHILIZ,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1002,7 +904,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.CHILIZ_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1011,7 +912,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.UNICHAIN,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1020,7 +920,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.UNICHAIN_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1029,7 +928,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HPP,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1038,7 +936,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HPP_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1047,7 +944,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HOODETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1056,7 +952,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HOODETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1065,7 +960,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.INKETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1074,7 +968,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.INKETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1083,7 +976,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.H,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1092,7 +984,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.H_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1101,7 +992,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HEMIETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1110,7 +1000,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.HEMIETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1119,7 +1008,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ABSTRACTETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1128,7 +1016,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.ABSTRACTETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1137,7 +1024,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.KATANAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1146,7 +1032,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.KATANAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1155,7 +1040,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BOBAETH_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1164,7 +1048,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.BOBAETH,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1173,7 +1056,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.GASEVM_TESTNET,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     },
@@ -1182,7 +1064,6 @@ const config: HardhatUserConfig = {
       chainId: CHAIN_IDS.GASEVM,
       accounts: [
         `${PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT}`,
-        `${PLACEHOLDER_KEY}`,
         `${PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT}`
       ]
     }
