@@ -29,22 +29,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Approval summary
+        # Inputs are passed via step env, never interpolated into the shell
+        # source (command injection via workflow_dispatch inputs).
         run: |
-          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
-          ### Update Batcher transferGasLimit — Approval Summary
-
-          - Environment: ${{ inputs.environment }}
-          - Network: ${{ inputs.network }}
-          - Batcher Address: \`${{ inputs.batcher_address }}\`
-          - New transferGasLimit: \`${{ inputs.gas_limit }}\`
-
-          Actions to be performed after approval:
-          - Run: npm run update-gas-limit -- ${{ inputs.network }}
-          - Set transferGasLimit on the Batcher contract at the above address
-          - Use the PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT secret (Batcher owner key)
-
-          > Approve only if the address and limit are correct.
-          EOF
+          printf '%s\n' \
+            '### Update Batcher transferGasLimit — Approval Summary' \
+            '' \
+            "- Environment: $ENVIRONMENT" \
+            "- Network: $NETWORK" \
+            "- Batcher Address: $BATCHER_ADDRESS" \
+            "- New transferGasLimit: $TRANSFER_GAS_LIMIT" \
+            '' \
+            'Actions to be performed after approval:' \
+            "- Run: npm run update-gas-limit -- $NETWORK" \
+            '- Set transferGasLimit on the Batcher contract at the above address' \
+            '- Use signer index 2 (same as deploy script)' \
+            '' \
+            '> Approve only if the address and limit are correct.' \
+            >> "$GITHUB_STEP_SUMMARY"
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          NETWORK: ${{ inputs.network }}
+          BATCHER_ADDRESS: ${{ inputs.batcher_address }}
+          TRANSFER_GAS_LIMIT: ${{ inputs.gas_limit }}
   run-update:
     needs: preview
     runs-on: ubuntu-latest
@@ -58,11 +65,13 @@ jobs:
           cache: 'npm'
       - run: npm ci --ignore-scripts
       - name: Run update script
-        run: |
-          export BATCHER_ADDRESS="${{ inputs.batcher_address }}"
-          export TRANSFER_GAS_LIMIT="${{ inputs.gas_limit }}"
-          npm run update-gas-limit -- ${{ inputs.network }}
+        # Inputs are passed via step env, never interpolated into the shell
+        # source (command injection via workflow_dispatch inputs).
+        run: npm run update-gas-limit -- "$NETWORK"
         env:
+          NETWORK: ${{ inputs.network }}
+          BATCHER_ADDRESS: ${{ inputs.batcher_address }}
+          TRANSFER_GAS_LIMIT: ${{ inputs.gas_limit }}
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
           TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.TESTNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
           PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT: ${{ secrets.PRIVATE_KEY_FOR_V4_CONTRACT_DEPLOYMENT }}
