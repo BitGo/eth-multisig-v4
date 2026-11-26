@@ -3,10 +3,22 @@ import { getChainConfig } from './chainConfig';
 import { logger } from '../deployUtils';
 
 async function main() {
-  // Use the third configured signer on the selected network (legacy default)
-  const signers = await ethers.getSigners();
-  const signer = signers[2];
-  const from = await signer.getAddress();
+  // Caller identity is fixed: the PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT
+  // secret (the Batcher deployer/owner key), loaded directly instead of via an
+  // ethers.getSigners() index lookup (same pattern as
+  // scripts/transferBatcherOwnership.ts). Accepts the key with or without the
+  // 0x prefix (hardhat config accepts both).
+  const keyRaw = (
+    process.env.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT || ''
+  ).trim();
+  const key = keyRaw.startsWith('0x') ? keyRaw : `0x${keyRaw}`;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(key)) {
+    throw new Error(
+      'PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT is required and must be a valid secp256k1 private key'
+    );
+  }
+  const signer = new ethers.Wallet(key, ethers.provider);
+  const from = signer.address;
 
   // Network and gas overrides
   const { chainId } = await ethers.provider.getNetwork();

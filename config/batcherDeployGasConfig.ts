@@ -7,6 +7,13 @@ export type TxOverrides = {
   maxFeePerGas?: bigint;
   maxPriorityFeePerGas?: bigint;
   gasPrice?: bigint;
+  /**
+   * Explicit transaction type. Required on chains that advertise EIP-1559 fee
+   * data but only mine legacy transactions: ethers' AbstractSigner turns an
+   * untyped gasPrice-only request into a type-2 transaction, which those
+   * chains drop. 0 = legacy.
+   */
+  type?: number;
 };
 
 /**
@@ -140,8 +147,13 @@ export async function resolveGasOverrides(
     const maxFee = base > priority * 2n ? base : priority * 2n;
     overrides = { maxFeePerGas: maxFee, maxPriorityFeePerGas: priority };
   } else {
+    // gasPrice-only request. Set type explicitly: on chains that advertise
+    // EIP-1559 fee data but only mine legacy txs (forceLegacy, e.g. Hemi),
+    // ethers' AbstractSigner turns an untyped gasPrice request into a type-2
+    // transaction, which those chains drop.
     overrides = {
-      gasPrice: feeData.gasPrice ?? 6_000_000_000n
+      gasPrice: feeData.gasPrice ?? 6_000_000_000n,
+      type: 0
     };
   }
 

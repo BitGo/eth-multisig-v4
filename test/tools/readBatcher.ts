@@ -17,9 +17,8 @@ async function main() {
       `Missing BATCHER and no registry entry for coin='${coin}' chainId=${chainId}`
     );
   }
-  const signers = await ethers.getSigners();
-  const s = signers[2] || signers[0];
-  const c = await ethers.getContractAt('Batcher', addr, s);
+  // Read-only diagnostics: no signer needed; connect via the provider.
+  const c = await ethers.getContractAt('Batcher', addr);
   const owner = await c.owner();
   const lim = await (c as any).transferGasLimit();
   console.log(

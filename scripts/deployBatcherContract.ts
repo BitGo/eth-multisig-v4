@@ -23,20 +23,36 @@ async function main() {
   // --- 1. Setup & Configuration ---
   logger.step('1. Setting up deployer and network information...');
 
-  const signers = await ethers.getSigners();
-  if (signers.length < 1) {
-    throw new Error('No signers available');
+  // Deployer identity is fixed: the PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT
+  // secret, loaded directly instead of via an ethers.getSigners() index lookup
+  // (same pattern as scripts/transferBatcherOwnership.ts). Selection is
+  // fail-closed: a missing or unfunded key aborts the script. Signer balances
+  // are attacker-influenceable (anyone can send funds to an address) and must
+  // never determine the deployer/owner identity.
+  // Accepts the key with or without the 0x prefix (hardhat config accepts both).
+  const deployerKeyRaw = (
+    process.env.PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT || ''
+  ).trim();
+  const deployerKey = deployerKeyRaw.startsWith('0x')
+    ? deployerKeyRaw
+    : `0x${deployerKeyRaw}`;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(deployerKey)) {
+    throw new Error(
+      'PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT is required and must be a valid secp256k1 private key'
+    );
+  }
+  const batcherDeployer = new ethers.Wallet(deployerKey, ethers.provider);
+  const address = await batcherDeployer.getAddress();
+
+  if ((await ethers.provider.getBalance(address)) === 0n) {
+    throw new Error(
+      `Batcher deployer ${address} has zero balance; aborting instead of falling ` +
+        'back to another signer. Fund the PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT account and retry.'
+    );
   }
 
-  // Use BATCHER_DEPLOYER_INDEX to override the signer used for deployment.
-  // Defaults to index 2, which maps to PRIVATE_KEY_FOR_BATCHER_CONTRACT_DEPLOYMENT in hardhat.config.ts.
-  // Falls back to the most funded account if the desired index has no balance.
-  const desiredIndex = process.env.BATCHER_DEPLOYER_INDEX
-    ? Number(process.env.BATCHER_DEPLOYER_INDEX)
-    : 2;
-  let batcherDeployer = signers[desiredIndex] || signers[signers.length - 1];
-
-  // Fetch balances upfront to validate the selected deployer and log diagnostics.
+  // Diagnostic only: log configured signer balances; never used for selection.
+  const signers = await ethers.getSigners();
   const signerInfos = await Promise.all(
     signers.map(async (s, i) => {
       const addr = await s.getAddress();
@@ -44,39 +60,15 @@ async function main() {
       return { index: i, addr, balance: bal };
     })
   );
-
-  if (
-    !batcherDeployer ||
-    (await ethers.provider.getBalance(await batcherDeployer.getAddress())) ===
-      0n
-  ) {
-    const funded = signerInfos
-      .filter((x) => x.balance > 0n)
-      .sort((a, b) => (b.balance > a.balance ? 1 : -1))[0];
-    if (!funded) {
-      logger.error(
-        'No funded signer available for batcher deployment. Aborting.'
-      );
-      throw new Error('No funded signer');
-    }
-    batcherDeployer = signers[funded.index];
-    logger.warn(
-      `Selected alternative funded signer index=${funded.index} address=${
-        funded.addr
-      } (balance=${ethers.formatEther(funded.balance)})`
-    );
-  }
-
-  logger.info('Available signer balances:');
+  logger.info('Available signer balances (diagnostics only):');
   signerInfos.forEach((s) =>
     logger.info(
       `  [${s.index}] ${s.addr} balance=${ethers.formatEther(s.balance)} ETH${
-        s.index === desiredIndex ? ' (desired)' : ''
-      }${s.addr === (batcherDeployer as any)?._address ? ' (using)' : ''}`
+        s.addr === address ? ' (deployer)' : ''
+      }`
     )
   );
 
-  const address = await batcherDeployer.getAddress();
   const { chainId } = await ethers.provider.getNetwork();
 
   logger.info(`Network: ${hre.network.name} (Chain ID: ${chainId})`);
