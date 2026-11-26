@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: 22.x
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - name: Run ownership transfer script
         # Inputs are passed via step env, never interpolated into the shell
         # source (command injection via workflow_dispatch inputs).

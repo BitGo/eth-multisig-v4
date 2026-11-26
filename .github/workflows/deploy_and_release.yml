@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 22.x
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run lint
       - run: npm run test
         env:
@@ -127,7 +127,7 @@ jobs:
         with:
           node-version: 22.x
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run deploy-test --network ${{ needs.get-network.outputs.network }}
         env:
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}
@@ -224,7 +224,7 @@ jobs:
         with:
           node-version: 22.x
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run deploy-prod --network ${{ needs.get-network.outputs.network }}
         env:
           MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT: ${{ secrets.MAINNET_PRIVATE_KEY_FOR_CONTRACT_DEPLOYMENT }}

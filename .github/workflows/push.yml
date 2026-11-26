@@ -30,7 +30,7 @@ jobs:
           mode: firewall-free
 
       - name: Install dependencies
-        run: ${{ vars.SOCKET_DEV_FIREWALL_MODE != 'disabled' && 'sfw npm ci' || 'npm ci' }}
+        run: ${{ vars.SOCKET_DEV_FIREWALL_MODE != 'disabled' && 'sfw npm ci --ignore-scripts' || 'npm ci --ignore-scripts' }}
         continue-on-error: ${{ vars.SOCKET_DEV_FIREWALL_MODE == 'monitor' }}
       - run: npm run test
         env:

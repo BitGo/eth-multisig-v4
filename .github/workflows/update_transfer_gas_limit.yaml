@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: 22.x
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - name: Run update script
         run: |
           export BATCHER_ADDRESS="${{ inputs.batcher_address }}"
